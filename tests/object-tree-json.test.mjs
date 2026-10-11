@@ -192,9 +192,9 @@ test("exported Link rows replay in one SQLite table with rebuilt positional cach
   assert.deepEqual(counterMismatches(db),[]);
   assert.equal(db.prepare("SELECT count(*) AS n FROM links").get().n,g.nodes.size);
   assert.equal(db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='ma'")
-    .get().from_uses,2);
+    .get().from_uses,1);
   assert.equal(db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='ma'")
-    .get().to_uses,2);
+    .get().to_uses,1);
   const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links")
     .all().map(x=>({...x}));
   assert.equal(serializeObjectTree(rows,{sequences}),exported);

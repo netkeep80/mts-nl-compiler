@@ -73,12 +73,17 @@ const e2={status:learned.status,binaryBytes:learned.binaryBytes,
 console.log("E2_GRAMMAR "+JSON.stringify(e2));
 
 const e2Sweep=[];
+let e2TopDuplets=null;
 const observations=all.map(x=>({
  id:x.metrics.id,source:x.source,inputSha256:x.metrics.inputSha256
 }));
 for(const requestedRounds of [0,32,256,512]) {
  const begin=process.hrtime.bigint();
- const trial=learnObservedPairGrammar(observations,{maxRounds:requestedRounds,minOccurrences:2});
+ const trial=learnObservedPairGrammar(observations,{
+  maxRounds:requestedRounds,minOccurrences:2,
+  diagnosticTopN:requestedRounds===512?Number(process.env.E2_TOP_N??20):0,
+  diagnosticCheckpoints:requestedRounds===512?[0,32,128,256,512]:[]
+ });
  e2Sweep.push({
   requestedRounds,actualRounds:trial.substitutionRounds,
   uniqueLinks:trial.graphRows,uniqueDuplets:trial.graphPairRows,
@@ -88,6 +93,12 @@ for(const requestedRounds of [0,32,256,512]) {
   binaryBytes:trial.binaryBytes,
   runtimeMs:Math.round(Number(process.hrtime.bigint()-begin)/1e6)
  });
+ if(trial.diagnostics){
+  for(const snapshot of trial.diagnostics.adjacentAtCheckpoints)
+   console.log("E2_TOP_ADJACENT "+JSON.stringify(snapshot));
+  console.log("E2_TOP_STRUCTURAL "+JSON.stringify(trial.diagnostics.topStructuralLinks));
+  e2TopDuplets=trial.diagnostics;
+ }
 }
 e2Sweep.push({
  requestedRounds:128,actualRounds:learned.substitutionRounds,
@@ -116,7 +127,7 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,packedE1,e2,e2Sweep,documents:docs,
+  sqlite,packedE1,e2,e2Sweep,e2TopDuplets,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
    "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",

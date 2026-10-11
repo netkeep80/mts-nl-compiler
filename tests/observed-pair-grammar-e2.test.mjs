@@ -34,3 +34,34 @@ test("E2 refuses source corruption and invalid budgets",()=>{
  assert.throws(()=>learnObservedPairGrammar([d("x","x")],{minOccurrences:1}),/invalid grammar budget/);
  assert.throws(()=>learnObservedPairGrammar([d("x","x")],{maxRounds:-1}),/invalid grammar budget/);
 });
+import {topAdjacentCandidates,topExpandedDupletLinks,atomProfile}
+ from "../src/pair-frequency-e2.mjs";
+test("E2 top N distinguishes overlaps and physical Link incidence",()=>{
+ const docs=[d("sample","aaaa")];
+ const r=learnObservedPairGrammar(docs,{maxRounds:1,diagnosticTopN:5,diagnosticCheckpoints:[0,1]});
+ const first=r.diagnostics.adjacentAtCheckpoints[0];
+ assert.equal(first.top[0].preview,"aa");
+ assert.equal(first.top[0].adjacentOccurrences,3);
+ assert.equal(first.top[0].nonOverlappingReplacements,2);
+ assert.equal(first.top[0].overlappingDiscarded,1);
+ assert.equal(first.top[0].byDocument[0].document,"sample");
+ assert.ok(r.diagnostics.topStructuralLinks.top.length>0);
+});
+test("E2 true expanded DAG frequency is not count of stored rows",()=>{
+ const docs=[d("one","ababab"),d("two","ab")];
+ const r=learnObservedPairGrammar(docs,{maxRounds:3,diagnosticTopN:10,
+  diagnosticCheckpoints:[0,1,2,3]});
+ const top=r.diagnostics.topStructuralLinks.top;
+ assert.ok(top.some(x=>x.expandedOccurrences>=2));
+ assert.ok(top.every(x=>x.byDocument.reduce((a,y)=>a+y.occurrences,0)===
+  x.expandedOccurrences));
+});
+test("E2 diagnostics deterministic and reject excessive topN",()=>{
+ const docs=[d("a","мама мама"),d("b","ababab")];
+ const a=learnObservedPairGrammar(docs,{maxRounds:2,
+  diagnosticTopN:4,diagnosticCheckpoints:[0,2]});
+ const b=learnObservedPairGrammar([...docs].reverse(),{maxRounds:2,
+  diagnosticTopN:4,diagnosticCheckpoints:[0,2]});
+ assert.deepEqual(a.diagnostics,b.diagnostics);
+ assert.throws(()=>learnObservedPairGrammar(docs,{diagnosticTopN:51}),/diagnostic/);
+});

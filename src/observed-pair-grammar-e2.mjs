@@ -5,6 +5,8 @@
 import {createHash} from "node:crypto";
 import {gzipSync} from "node:zlib";
 import {encodePackedGraph,decodePackedGraph} from "./packed-dag-e1.mjs";
+import {atomProfile,pairProfile,topAdjacentCandidates,topExpandedDupletLinks}
+ from "./pair-frequency-e2.mjs";
 const hash=s=>createHash("sha256").update(s).digest("hex");
 const fail=s=>{throw Error("E2 observed-pair oracle: "+s);};
 const compare=(a,b)=>a<b?-1:a>b?1:0;
@@ -14,16 +16,25 @@ function checkedDoc(d){
   fail("invalid source document");
  if(hash(Buffer.from(d.source,"utf8"))!==d.inputSha256)fail("source hash mismatch");
 }
-export function learnObservedPairGrammar(documents,{maxRounds=128,minOccurrences=2}={}){
+export function learnObservedPairGrammar(documents,{
+ maxRounds=128,minOccurrences=2,diagnosticTopN=0,diagnosticCheckpoints=[]
+}={}){
  if(!Array.isArray(documents)||documents.length===0||documents.length>1000)
   fail("invalid external documents");
  if(!Number.isSafeInteger(maxRounds)||maxRounds<0||maxRounds>5000||
     !Number.isSafeInteger(minOccurrences)||minOccurrences<2)
   fail("invalid grammar budget");
+ if(!Number.isSafeInteger(diagnosticTopN)||diagnosticTopN<0||diagnosticTopN>50||
+    !Array.isArray(diagnosticCheckpoints)||
+    diagnosticCheckpoints.some(x=>!Number.isSafeInteger(x)||x<0||x>maxRounds))
+  fail("invalid diagnostic arguments");
+ const checkpointSet=new Set(diagnosticCheckpoints);
+ const diagnostics=[];
  const docs=[...documents].sort((a,b)=>compare(a.id,b.id));
  const ids=new Set();for(const d of docs){checkedDoc(d);if(ids.has(d.id))fail("duplicate doc ID");ids.add(d.id);}
  const alphabet=[...new Set(docs.flatMap(d=>[...d.source]))].sort(compare);
  const symbolIndex=new Map(alphabet.map((s,i)=>[s,i]));
+ const profiles=alphabet.map(atomProfile);
  let sequences=docs.map(d=>[...d.source].map(s=>symbolIndex.get(s)));
  const definitions=new Map();
  const seenPair=new Map(),metrics=[];
@@ -38,6 +49,8 @@ export function learnObservedPairGrammar(documents,{maxRounds=128,minOccurrences
     else counts.set(k,{a,b,count:1});
    }
   }
+  if(diagnosticTopN&&checkpointSet.has(round))
+   diagnostics.push(topAdjacentCandidates({sequences,counts,profiles,docs,round,topN:diagnosticTopN}));
   let best=null;
   for(const candidate of counts.values()){
    if(candidate.count<minOccurrences)continue;
@@ -48,7 +61,10 @@ export function learnObservedPairGrammar(documents,{maxRounds=128,minOccurrences
   if(!best)break;
   const key=best.a+","+best.b;
   let symbol=seenPair.get(key);
-  if(symbol===undefined){symbol=next++;definitions.set(symbol,[best.a,best.b]);seenPair.set(key,symbol);}
+  if(symbol===undefined){
+   symbol=next++;definitions.set(symbol,[best.a,best.b]);seenPair.set(key,symbol);
+   profiles[symbol]=pairProfile(profiles[best.a],profiles[best.b]);
+  }
   let count=0;
   sequences=sequences.map(items=>{
    const out=[];
@@ -62,6 +78,17 @@ export function learnObservedPairGrammar(documents,{maxRounds=128,minOccurrences
   if(count<1)fail("selected pair was not observed");
   metrics.push({round:round+1,a:best.a,b:best.b,
    countedOverlaps:best.count,actualNonOverlappingReplacements:count});
+ }
+ // Capture state after the last requested round (including a 0-round run).
+ if(diagnosticTopN&&checkpointSet.has(metrics.length)&&
+    !diagnostics.some(x=>x.round===metrics.length)){
+  const counts=new Map();
+  for(const items of sequences)for(let i=0;i+1<items.length;i++){
+   const a=items[i],b=items[i+1],k=a+","+b,p=counts.get(k);
+   if(p)p.count++;else counts.set(k,{a,b,count:1});
+  }
+  diagnostics.push(topAdjacentCandidates({sequences,counts,profiles,docs,
+   round:metrics.length,topN:diagnosticTopN}));
  }
  // Convert learned substitutions to ordinary *binary* Link DAG records.
  // This is not an additional subject ontology; all definitions are pairs.
@@ -114,6 +141,10 @@ export function learnObservedPairGrammar(documents,{maxRounds=128,minOccurrences
   remainingPositions,substitutionRounds:metrics.length,
   uniqueLearnedRules:definitions.size,roundDetails:metrics,
   documents:roots,
+  diagnostics:diagnosticTopN?{
+   adjacentAtCheckpoints:diagnostics,
+   topStructuralLinks:topExpandedDupletLinks(decoded.rows,roots,diagnosticTopN)
+  }:null,
   status:"E2_GREEDY_PAIR_GRAMMAR_EXACT_ROUNDTRIP_PASS",
   explanation:"Observed adjacent-symbol grammar oracle; not native Gamma or probabilistic MP"
  };

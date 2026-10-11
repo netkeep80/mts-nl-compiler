@@ -88,7 +88,9 @@ export function importNumericGraph(db,sourceRows){
   if(row===null||typeof row!=='object'||Array.isArray(row)||!isKey(row.key))fail('invalid row/key');
   if(byKey.has(row.key))fail('duplicate external source key');
   const atom=keys(row)==='key,string,weight'&&typeof row.string==='string';
-  const pair=keys(row)==='from,key,to,weight'&&isKey(row.from)&&isKey(row.to);
+  const pair=(keys(row)==='from,key,to,weight'||keys(row)==='from,key,string,to,weight')&&
+   isKey(row.from)&&isKey(row.to)&&
+   (row.string===undefined||row.string===null||typeof row.string==='string');
   if((!atom&&!pair)||!validWeight(row.weight))fail('invalid row/poles/weight');
   byKey.set(row.key,{...row});
  }
@@ -101,7 +103,7 @@ export function importNumericGraph(db,sourceRows){
  const stage=db.prepare("INSERT INTO links(string,weight) VALUES('',NULL)");
  stage.setReadBigInts(true);
  const atom=db.prepare('UPDATE links SET string=?,weight=? WHERE link_id=?');
- const pair=db.prepare('UPDATE links SET from_id=?,to_id=?,string=NULL,weight=? WHERE link_id=?');
+ const pair=db.prepare('UPDATE links SET from_id=?,to_id=?,string=?,weight=? WHERE link_id=?');
  db.exec('PRAGMA foreign_keys=ON;');
  db.exec('BEGIN IMMEDIATE');
  try{
@@ -112,7 +114,7 @@ export function importNumericGraph(db,sourceRows){
   }
   for(const row of ordered){
    const id=allocated.get(row.key);
-   if(Object.hasOwn(row,'from'))pair.run(allocated.get(row.from),allocated.get(row.to),row.weight,id);
+   if(Object.hasOwn(row,'from'))pair.run(allocated.get(row.from),allocated.get(row.to),row.string??null,row.weight,id);
    else atom.run(row.string,row.weight,id);
   }
   rebuildNumericCounters(db);

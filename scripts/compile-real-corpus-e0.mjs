@@ -2,6 +2,8 @@ import {readFileSync,writeFileSync,mkdirSync} from "node:fs";
 import {resolve} from "node:path";
 import {createHash} from "node:crypto";
 import {DatabaseSync} from "node:sqlite";
+import {gzipSync} from "node:zlib";
+import {encodePackedGraph,decodePackedGraph} from "../src/packed-dag-e1.mjs";
 import {compileTextExact,unionCompiledGraphs,sqliteReplay}
  from "../src/real-corpus-e0.mjs";
 const reportSha=x=>createHash("sha256").update(x).digest("hex");
@@ -24,6 +26,34 @@ for(const meta of manifest.sources){
  console.log("E0_DOC "+JSON.stringify(docs.at(-1)));
 }
 const union=unionCompiledGraphs(all);
+const sourceRefs=all.map(x=>({
+ id:x.metrics.id,rootLink:x.metrics.rootLink,inputSha256:x.metrics.inputSha256
+}));
+const packedStart=process.hrtime.bigint();
+const packedBytes=encodePackedGraph(union,sourceRefs);
+const packedEncodeMs=Number(process.hrtime.bigint()-packedStart)/1e6;
+const decoded=decodePackedGraph(packedBytes);
+const packedRoundtrip=encodePackedGraph(decoded.rows,decoded.documents);
+if(!packedRoundtrip.equals(packedBytes))throw Error("packed byte determinism FAIL");
+if(decoded.documents.length!==all.length)throw Error("packed document count mismatch");
+for(const item of decoded.documents){
+ const original=all.find(x=>x.metrics.id===item.id);
+ if(!original||!item.bytes.equals(Buffer.from(original.source,"utf8")))
+  throw Error("packed exact document recovery FAIL: "+item.id);
+}
+if(decoded.rows.length!==union.length)throw Error("packed graph row count mismatch");
+const packedE1={
+ status:"E1_COMPACT_BINARY_GRAPH_EXACT_ROUNDTRIP_PASS",
+ binaryBytes:packedBytes.length,
+ binaryGzipBytes:gzipSync(packedBytes,{level:6}).length,
+ encodeMs:+packedEncodeMs.toFixed(2),
+ graphRows:decoded.rows.length,
+ documentCount:decoded.documents.length,
+ includesAllDictionaryAndRoots:true,
+ semantics:"acyclic unique-pole E0 graph; no general MTS transport parity"
+};
+console.log("E1_COMPACT "+JSON.stringify(packedE1));
+
 const db=new DatabaseSync(":memory:");
 try{
  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
@@ -36,7 +66,7 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,documents:docs,
+  sqlite,packedE1,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
    "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",
@@ -55,6 +85,7 @@ try{
   perDocumentGraphJsonBytes:report.sumPerDocumentGraphJsonBytes,
   sqliteReplay:report.sqlite.status,sqliteMs:report.sqlite.sqliteLoadIndexAndReplayMs,
   sqliteLogicalBytes:report.sqlite.sqliteLogicalBytes,
+  compactBinaryBytes:packedE1.binaryBytes,compactBinaryGzipBytes:packedE1.binaryGzipBytes,
   status:report.status
  }));
 } finally {db.close();}

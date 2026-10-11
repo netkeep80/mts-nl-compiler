@@ -103,3 +103,51 @@ test("E5 incremental source top 1 is independent of tracked probe counts",()=>{
  assert.deepEqual(s.pairCounts(),c0);
  assert.equal(s.snapshot().work.externalAppends,0);
 });
+
+import {createHash} from "node:crypto";
+
+test("E5 bounded agenda drains multiple old dependents without false quiescence",()=>{
+ const s=new ObservedPairAgenda(before);
+ const initial=[];
+ for(const [n,start] of [0,500,2000].entries())
+  initial.push(s.trackRange("old:"+n,start,256));
+ const independent=s.trackRange("boundary",11999,2);
+ const e=s.append("d",{eventId:"external:new"});
+ assert.equal(e.invalidated,3);
+ const partial=s.processPending({maxWatchers:1});
+ assert.equal(partial.status,"RESOURCE_LIMIT");
+ assert.equal(partial.remaining,2);
+ assert.equal(partial.processed,1);
+ const completed=s.processPending({maxWatchers:2});
+ assert.equal(completed.status,"QUIESCENT");
+ assert.equal(completed.remaining,0);
+ assert.equal(completed.processed,2);
+ assert.equal(s.watches.get("boundary").root,independent.root);
+ for(const [i,old] of initial.entries()){
+  const w=s.watches.get("old:"+i);
+  assert.notEqual(w.root,old.root);
+  assert.equal(w.versions.length,2);
+  assert.equal(s.decode(w.root),before.slice([0,500,2000][i],
+   [0,500,2000][i]+256));
+ }
+ assert.equal(s.snapshot().work.probeCodepointsReevaluated,3*256);
+ assert.equal(s.snapshot().work.appendAdjacentInspections,1);
+});
+test("E5 no selection change skips historical work even when new Unicode observations arrive",()=>{
+ const s=new ObservedPairAgenda(before);
+ s.trackRange("old",0,256);
+ const previous=s.leader;
+ const first=s.append("d",{eventId:"external:d"});
+ assert.equal(first.selectedChanged,true);
+ assert.equal(s.processPending().status,"QUIESCENT");
+ const unchangedRoot=s.watches.get("old").root;
+ const noChange=s.append("💡",{eventId:"external:bulb"});
+ assert.equal(noChange.selectedChanged,false);
+ assert.equal(noChange.invalidated,0);
+ assert.equal(s.processPending().processed,0);
+ assert.equal(s.watches.get("old").root,unchangedRoot);
+ assert.notDeepEqual(previous,s.leader);
+ assert.equal(s.snapshot().work.appendAdjacentInspections,2);
+ assert.equal(s.snapshot().sourceSha256,
+  createHash("sha256").update(before+"d💡").digest("hex"));
+});

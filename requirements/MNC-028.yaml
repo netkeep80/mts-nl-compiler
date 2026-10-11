@@ -1,0 +1,19 @@
+id: MNC-028
+status: RESEARCH_UNACCEPTED
+normative_language: ru
+requirement: >
+  Выбранная импликация сжатия из объектного JSON должна исполняться принятой
+  тестовой Γ v0.15 со snapshot S1, S2 и атомарной публикацией состояния.
+  Различать NO_MATCH, APPLIED_EMPTY и положительный результат; не считать
+  transport registry нативной семантической идентичностью.
+upstream:
+  repository: netkeep80/anum_docs
+  revision: c64b7e21340c6add248c8f380f3fef1292616ac6
+  test_side_entry: ts/test/v015-structural-aset-gamma-core-a9a.test.ts
+production_gamma_api: NOT_EXPORTED
+full_graph_semantic_parity: NOT_PROVED
+artifacts:
+  - path: tests/upstream-native-gamma.integration.mjs
+    relations: [requires, verifies]
+  - path: .github/workflows/formal-bridge.yml
+    relations: [requires, verifies]

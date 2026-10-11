@@ -151,7 +151,8 @@ function checkTypes(v,key="",path="$"){
  }else err("invalid JSON type: "+path);
 }
 export function importObjectTree(input,{maxNodes=10000}={}) {
- const doc=typeof input==="string"?parseStrictJson(input):input;
+ if(typeof input!=="string")err("import requires original JSON text to audit duplicate keys");
+ const doc=parseStrictJson(input);
  checkTypes(doc);
  keys(doc,["$format","$links","$sequences"],"document");
  if(doc.$format!==FORMAT)err("unknown protocol format");

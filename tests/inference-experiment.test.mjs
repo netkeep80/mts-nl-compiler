@@ -31,7 +31,9 @@ test("variable rule infers a never-memorized grounded fact",()=>{
  assert.equal(out.proofs[0].rule,rid);
  assert.deepEqual(out.proofs[0].premises,[pa]);
  assert.deepEqual(out.proofs[0].bindings,[["x","a"]]);
- assert.equal(e.g.get(out.proofs[0].proofRoot).from_id,"Context");
+ const proofHead=e.g.get(e.g.get(out.proofs[0].proofRoot).from_id);
+ assert.equal(proofHead.from_id,rid);
+ assert.equal(proofHead.to_id,"Context");
 });
 test("transitive chained implication, without memorized destination link",()=>{
  const e=setup();e.known(e.fact("P","b"));
@@ -99,4 +101,17 @@ test("physical adjacent pair does not imply logically active rule",()=>{
  const out=derive(e);
  assert.equal(out.status,"NO_MATCH");
  assert.equal(structuralExists(e.g,out,"Q","a"),false);
+});
+
+
+test("proof provenance never masquerades as an active fact on replay",()=>{
+ const e=setup();e.known(e.fact("P","a"));
+ e.rule(["x"],[e.fact("P","x")],[e.fact("Q","x")]);
+ const one=derive(e);
+ const two=derive(e);
+ assert.equal(one.proofs.length,1);
+ assert.equal(two.proofs.length,1);
+ assert.deepEqual(one.active,two.active);
+ const members=e.g.linksFrom("Context").map(x=>x.to_id);
+ assert.equal(members.length,1);
 });

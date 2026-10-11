@@ -46,3 +46,7 @@ jobs:
         env:
           UPSTREAM_MTS_PATH: upstream/anum_docs
         run: node tests/upstream-formal-v015.integration.mjs
+      - name: Identity-safe arbitrary Unicode full-graph registry differential
+        env:
+          UPSTREAM_MTS_PATH: upstream/anum_docs
+        run: node tests/upstream-graph-identity.integration.mjs

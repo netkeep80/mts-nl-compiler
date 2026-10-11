@@ -23,8 +23,8 @@ test("atoms, labelled pairs, parallel edges, weights, cache position counts",()=
   put(db,"ma","m","a","ма",1);put(db,"ma2","m","a",null,0);
   put(db,"mama","ma","ma","мама",.8);
   validateClosure(db);rebuildCounters(db);
-  assert.deepEqual(db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='ma'").get(),{from_uses:1,to_uses:1});
-  assert.deepEqual(db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='m'").get(),{from_uses:2,to_uses:0});
+  assert.deepEqual({...db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='ma'").get()},{from_uses:1,to_uses:1});
+  assert.deepEqual({...db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='m'").get()},{from_uses:2,to_uses:0});
   assert.equal(db.prepare("SELECT weight FROM links WHERE link_id='m'").get().weight,null);
   assert.deepEqual(counterMismatches(db),[]);
   assert.throws(()=>put(db,"bad","m",null,null,.3));

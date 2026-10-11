@@ -72,3 +72,5 @@ artifacts:
     relations: [requires, verifies]
   - path: docs/repo-guard-v324-routine-replay.md
     relations: [requires, documents]
+  - path: requirements/MNC-030.yaml
+    relations: [requires, implements]

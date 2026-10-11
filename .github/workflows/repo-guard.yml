@@ -1,4 +1,4 @@
-name: repo-guard advisory policy
+name: repo-guard blocking policy
 
 on:
   pull_request:
@@ -20,29 +20,29 @@ jobs:
           persist-credentials: false
       - name: Run pinned repo-guard
         id: repo_guard
-        uses: netkeep80/repo-guard@10f04af309fcb512dff3d690f595926472c52f40
+        uses: netkeep80/repo-guard@f0566a6599f6d37f2c76431a26bb259030c9c1b9
         with:
           mode: check-pr
-          enforcement: advisory
+          enforcement: blocking
           node-version: 24
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Capture advisory diagnostics when rules fail
-        if: steps.repo_guard.outputs.result != 'passed'
+      - name: Capture blocking diagnostics when rules fail
+        if: always() && steps.repo_guard.outputs.result != 'passed'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: netkeep80/repo-guard
-          ref: 10f04af309fcb512dff3d690f595926472c52f40
+          ref: f0566a6599f6d37f2c76431a26bb259030c9c1b9
           path: .tools/repo-guard
           persist-credentials: false
-      - name: Print advisory diagnostics
-        if: steps.repo_guard.outputs.result != 'passed'
+      - name: Print blocking diagnostics
+        if: always() && steps.repo_guard.outputs.result != 'passed'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm --prefix .tools/repo-guard install --omit=dev --silent
-          node .tools/repo-guard/dist/repo-guard.mjs --repo-root . --enforcement advisory check-pr --format json
+          node .tools/repo-guard/dist/repo-guard.mjs --repo-root . --enforcement blocking check-pr --format json
       - name: Publish summary
         if: always()
         run: |

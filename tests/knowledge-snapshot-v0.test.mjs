@@ -59,7 +59,7 @@ test('cold independent SQLite consumer is read-only with same physical identity 
    assert.equal(cold.prepare('PRAGMA integrity_check').get().integrity_check,'ok');
    const actual=cold.prepare('SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id').all();
    assert.deepEqual(actual.map(({link_id,from_id,to_id,string,weight})=>({link_id,from_id,to_id,string,weight})),canonicalPhysicalLinks(fixture));
-   assert.throws(()=>cold.exec(\"INSERT INTO links(link_id,string) VALUES('extra','invalid')\"),/readonly/i);
+   assert.throws(()=>cold.exec("INSERT INTO links(link_id,string) VALUES('extra','invalid')"),/readonly/i);
   }finally{cold.close();}
  }finally{rmSync(dir,{recursive:true,force:true});}
 });

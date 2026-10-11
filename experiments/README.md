@@ -1,0 +1,11 @@
+# Experimental implication witness (issue #15)
+
+**RESEARCH ONLY.** This implementation is not accepted MTS v0.15 FORMAL, not a production NL compiler, and has no probability arithmetic. It is a small bounded Horn-like reference interpreter over ordinary Links, deliberately isolated from `src/` and PR #3's accepted contracts.
+
+Every predicate application is an ordinary binary pair; variable bindings are declared in the `V` Link sequence. An executable rule has the _schematic_ shape `Rule = Pair(V, Pair(AntecedentSequence, ImageSequence))` where sequences are simple nested Links terminated by a passed-in `NIL` anchor. Rules only fire if an explicitly selected `Theory` Link points at them; facts are selected through a separate `Context` anchor. `match/bind` structurally unifies each antecedent Link pattern against facts, and `construct` creates ordinary temporary pair Links; alternate proof records refer to rule/premise/conclusion exact identities and contain an explicit derived proof Link root.
+
+Demonstrated: `P(a)`, `P(x)⇒Q(x)` derives `Q(a)`; `Q(x)⇒R(x)` then derives `R(a)`. Two-antecedent joining enforces shared bindings. One applied rule can emit zero or N outputs, distinct from no matching rule; cycles converge in finite cases; resource bounds fail closed. Unselected physical pairs (such as those used to concatenate text) do not generate any inference.
+
+**Known limitations:** host knows research-specific sequential carrier, selection anchors, and abstract rule/variable layout; no rigorous correspondence to actual native v0.15 `V` and `ExactSequence` established yet. It does not support full MTS semantics, non-Horn rules, negation, probabilistic model counting, variable freshness policies, semantics of link equality, robust arbitrary graph cycles, or mixed Unicode-to-predicate parsing. The graph's ephemeral `pairIndex` canonicalizes equal pole pairs for this experiment; this does **not** establish canonical identity equivalence for physical Links with duplicate poles. The test suite is a structural/logical micro-oracle only, **not a proof of soundness** against a formal prover.
+
+Next: derive an exact FORMAL/JSON-compatible on-table representation from accepted `anum_docs` and implement a second independent symbolic oracle. The PR must remain unmerged until author review.

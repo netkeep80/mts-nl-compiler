@@ -18,6 +18,14 @@ artifacts:
     relations: [requires]
   - path: tests/corpus-sources.test.mjs
     relations: [requires, verifies]
+  - path: experiments/object-tree-json-v0.mjs
+    relations: [requires, implements]
+  - path: tests/object-tree-json.test.mjs
+    relations: [requires, verifies]
+  - path: experiments/fixtures/mama-object-tree.json
+    relations: [requires]
+  - path: experiments/OBJECT_TREE_JSON.md
+    relations: [requires, documents]
   - path: tests/schema.test.mjs
     relations: [requires, verifies]
   - path: tests/dag.test.mjs

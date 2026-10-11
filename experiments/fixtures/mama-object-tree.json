@@ -1,0 +1,70 @@
+{
+  "$format": "mts-nl/anet-object-tree/v1",
+  "$links": {
+    "a": {
+      "string": "а"
+    },
+    "m": {
+      "string": "м"
+    },
+    "ma": {
+      "from": "m",
+      "to": "a"
+    },
+    "mama": {
+      "from": "ma",
+      "to": "ma",
+      "weight": "0.75"
+    },
+    "nil": {
+      "string": "NIL"
+    },
+    "s:1": {
+      "from": "m",
+      "to": "s:2"
+    },
+    "s:2": {
+      "from": "a",
+      "to": "s:3"
+    },
+    "s:3": {
+      "from": "m",
+      "to": "s:4"
+    },
+    "s:4": {
+      "from": "a",
+      "to": "nil"
+    }
+  },
+  "$sequences": {
+    "text": {
+      "$root": "s:1",
+      "$terminator": "nil",
+      "$tree": {
+        "$id": "s:1",
+        "$item": {
+          "$ref": "m"
+        },
+        "$next": {
+          "$id": "s:2",
+          "$item": {
+            "$ref": "a"
+          },
+          "$next": {
+            "$id": "s:3",
+            "$item": {
+              "$ref": "m"
+            },
+            "$next": {
+              "$id": "s:4",
+              "$item": {
+                "$ref": "a"
+              },
+              "$next": null
+            }
+          }
+        }
+      }
+    }
+  }
+}

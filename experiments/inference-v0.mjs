@@ -24,7 +24,11 @@ export class LinkGraph {
     this.nodes.set(link_id,link);
     if (from_id !== null) {
       const key = JSON.stringify([from_id,to_id]);
-      if (!this.pairIndex.has(key)) this.pairIndex.set(key,link_id);
+      // Experimental canonical representative among parallel physical Links.
+      // Keep every identity; selecting the first inserted ID would make results
+      // depend on SQLite iteration/import order (MNC-DET-001, #44).
+      const prior = this.pairIndex.get(key);
+      if (prior === undefined || link_id < prior) this.pairIndex.set(key,link_id);
     }
     return link_id;
   }
@@ -38,7 +42,7 @@ export class LinkGraph {
   }
   linksFrom(id) {
     return [...this.nodes.values()].filter(n=>n.from_id===id&&n.to_id!==null)
-      .sort((a,b)=>a.link_id.localeCompare(b.link_id,"en"));
+      .sort((a,b)=>a.link_id<b.link_id?-1:a.link_id>b.link_id?1:0);
   }
   makeDerived(a,b) {
     const key = JSON.stringify([a,b]);
@@ -120,7 +124,7 @@ export function infer(g,{theory,context,nil,maxFirings=1000,maxRounds=100,maxIte
     let grew=false;
     for(const rule of rules) {
       for(const m of matchingTuples(g,rule.antecedents,rule.variables,snapshot)) {
-        const bindings=[...m.env].sort((a,b)=>a[0].localeCompare(b[0]));
+        const bindings=[...m.env].sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0);
         const signature=hash([rule.id,m.used,bindings]);
         if(seenFirings.has(signature))continue;
         if(firings>=maxFirings) return {status:"RESOURCE_LIMIT",complete:false,active:[...active].sort(),proofs,firings};

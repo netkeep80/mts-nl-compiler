@@ -11,3 +11,9 @@ The exact-pinned upstream CI performs independent negative checks (duplicate rol
 Status markers used only after pinned CI success: `NATIVE_UTF8_GRAPH_REGISTRY_ROUNDTRIP_PASS` (transport only). `NATIVE_SOURCE_ANET_PARITY=NOT_EXECUTED`; `NATIVE_GAMMA_RULE_REPLAY=NOT_EXECUTED`; `FULL_V015_INTEROP=NOT_PROVED`.
 
 No merge or acceptance.
+
+## Проверенный S1/S2 над восстановленными идентичностями
+
+[CI #38149360122](https://github.com/netkeep80/mts-nl-compiler/actions/runs/38149360122) — SUCCESS на точном upstream SHA. Из объекта JSON по идентификаторам `P,Q,a,b,x` построен native registry и заново прочитан, затем **на действительных imported native ID anchors** создан структурный `RoleDictionary=[x]`, выбранное `Theory→Rule`, `Antecedent=P(x)`, `Image=Q(x)`. Принятые upstream функции `unifyStructuralRuleTemplate` и `instantiateV013StructuralTemplate` дают binding `x=a` и Link `Q(a)`. Контрпроверка `Q(a)` как посылки вместо `P(a)` отклонена, а невыбранное admission отклоняется через `verifyStructuralRuleAdmission`.
+
+Маркер: `NATIVE_STRUCTURAL_S1_S2_ON_IMPORTED_IDENTITIES_PASS`. **Это не end-to-end Γ:** исполнялся отдельный upstream `S1/S2` API с выбранной структурной rule-вью, а не полная публичная реакция `M_t→Γ(M_t)` с контекстной authority и атомарной публикацией. Для полной приёмки требуются тот же импорт source ANet в штатную `Γ`, native proof provenance и межверсионный replay.

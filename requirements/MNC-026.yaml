@@ -1,0 +1,35 @@
+id: MNC-026
+status: RESEARCH_UNACCEPTED
+normative_language: ru
+requirement: >
+  Каждая связь исходной асети должна сохранять индивидуальную идентичность
+  при экспорте и импорте JSON, включая параллельные связи с одинаковыми
+  полюсами, повторные вхождения и циклы. Строковые значения сохраняются
+  побайтово в UTF-8; null допускается только как терминатор выбранной
+  последовательности транспортного JSON, а не как идентификатор Link.
+  Исследовательское представление исходного графа в native МТС допустимо
+  через явно проверенные связанные структуры; их идентичности не становятся
+  без отдельного доказательства каноническими семантическими Links МТС.
+native_registry_transport: TESTED_ON_PINNED_UPSTREAM
+native_graph_semantic_parity: NOT_PROVED
+native_s1_s2_selected_rule: TESTED_ON_PINNED_UPSTREAM
+native_gamma_end_to_end: NOT_EXECUTED
+upstream:
+  repository: netkeep80/anum_docs
+  revision: c64b7e21340c6add248c8f380f3fef1292616ac6
+  sources:
+    - ts/src/memory.ts
+    - ts/src/v012-string-anum.ts
+    - ts/src/exact-sequence.ts
+    - ts/src/structural-rule.ts
+    - ts/src/structural-unification.ts
+    - ts/src/v013-structural-execution.ts
+artifacts:
+  - path: experiments/native-graph-registry-v0.mjs
+    relations: [requires, implements]
+  - path: tests/native-graph-registry.test.mjs
+    relations: [requires, verifies]
+  - path: tests/upstream-graph-identity.integration.mjs
+    relations: [requires, verifies]
+  - path: experiments/NATIVE_GRAPH_REGISTRY.md
+    relations: [requires, documents]

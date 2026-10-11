@@ -42,6 +42,10 @@ artifacts:
     relations: [requires, documents]
   - path: tests/upstream-graph-identity.integration.mjs
     relations: [requires, verifies]
+  - path: tests/native-graph-registry.test.mjs
+    relations: [requires, verifies]
+  - path: requirements/MNC-026.yaml
+    relations: [requires]
   - path: .github/workflows/formal-bridge.yml
     relations: [requires, verifies]
   - path: tests/schema.test.mjs

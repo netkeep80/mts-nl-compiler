@@ -16,7 +16,7 @@ test("native registry preflight: sorted canonical five fields, cycles, duplicate
  assert.equal(rows.find(x=>x.link_id==="r1").weight,null);
  assert.equal(rows.find(x=>x.link_id==="r2").weight,0);
  assert.equal(compareRowsExactly(rows,[...rows].reverse()),true);
- assert.equal(compareRowsExactly(rows,rows.slice(1)),false);
+ assert.equal(compareRowsExactly(rows,rows.filter(row=>row.link_id!=="r2")),false);
 });
 test("native registry preflight: invalid source identity or data fail closed",()=>{
  const valid=[atom("a","а")];

@@ -118,3 +118,48 @@ test("same structural rewrite may have no demonstrated full-cost gain",()=>{
  // No safe garbage collection or global MDL optimizer is implemented here.
  assert.equal(r.candidates[0].accepted,false);
 });
+
+
+test("finite exhaustive fragment combinations preserve the exact byte sequence",()=>{
+ const alphabet=["м","a","+"];
+ const blocks=[...alphabet];
+ for(const a of alphabet) for(const b of alphabet) blocks.push(a+b);
+ let checked=0;
+ for(const left of blocks) for(const right of blocks) {
+  const f=makeRewriteFixture({left,right});
+  const r=evaluateRewrite(f.g,f.root);
+  assert.equal(r.status,"QUIESCENT",JSON.stringify([left,right]));
+  assert.equal(r.candidates.length,1,JSON.stringify([left,right]));
+  assert.equal(r.candidates[0].decoded,left+right+left+right);
+  assert.equal(r.candidates[0].exactBytes,true);
+  assert.equal(r.candidates[0].representationCost.uniquePairs,2);
+  checked++;
+ }
+ assert.equal(checked,144);
+});
+
+test("repeated inference and persisted proof do not become new training facts",()=>{
+ const f=makeRewriteFixture({left:"не ",right:"обязательно"});
+ const first=evaluateRewrite(f.g,f.root);
+ const physical=f.g.nodes.size;
+ const second=evaluateRewrite(f.g,f.root);
+ assert.equal(first.proofs,1);
+ assert.equal(second.proofs,1);
+ assert.equal(second.candidates.length,1);
+ assert.equal(f.g.nodes.size,physical);
+ assert.equal(f.g.linksFrom("context").length,1);
+
+ // Restore the full post-inference graph through the ONLY SQLite subject table.
+ const db=new DatabaseSync(":memory:");
+ try {
+  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
+  loadRows(db,[...f.g.nodes.values()].map(n=>({...n})));
+  const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id")
+    .all().map(r=>({...r}));
+  const restored=new LinkGraph(rows);
+  const replay=evaluateRewrite(restored,f.root);
+  assert.equal(replay.proofs,1);
+  assert.equal(restored.linksFrom("context").length,1);
+  assert.equal(replay.candidates[0].exactBytes,true);
+ } finally { db.close(); }
+});

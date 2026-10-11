@@ -1,4 +1,4 @@
-name: Full 60-book Russian corpus and TOP100
+name: Full 60-book Russian corpus and TOP1000
 on:
   pull_request:
     branches: [main]
@@ -46,31 +46,31 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
-      - name: Run numeric Link full build, mandatory TOP100 and cold exact replay
+      - name: Run numeric Link full build, mandatory TOP1000 and cold exact replay
         run: node --expose-gc scripts/build-large-corpus.mjs
       - name: Verify all required reports exist and have exactly 100 items
         run: |
           node --input-type=module -e "
             import {readFileSync,statSync} from 'node:fs';
-            const top=JSON.parse(readFileSync('reports/top-100-links.json','utf8'));
+            const top=JSON.parse(readFileSync('reports/top-1000-links.json','utf8'));
             const perf=JSON.parse(readFileSync('reports/large-corpus-performance.json','utf8'));
-            if(top.links.top.length!==100||top.words.classes.length!==3||
-              top.words.classes.some(x=>x.top.length!==100)||
+            if(top.links.top.length!==1000||top.words.classes.length!==3||
+              top.words.classes.some(x=>x.top.length!==1000)||
               perf.books<60||perf.status!=='BUILD_AND_COLD_REPLAY_PASS'||
               statSync('reports/knowledge-large.sqlite').size<1024)
-              throw Error('Full-corpus gate: missing TOP100 / cold replay / SQLite');
-            console.log('VERIFIED_60_BOOKS_TOP100',JSON.stringify({
+              throw Error('Full-corpus gate: missing TOP1000 / cold replay / SQLite');
+            console.log('VERIFIED_60_BOOKS_TOP1000',JSON.stringify({
               books:perf.books,sqliteBytes:perf.sqliteVacuumBytes,
               LinkCount:perf.insertedLinks,topLinks:top.links.top.length}));
           "
-      - name: Publish numeric SQLite DB and TOP100 evidence (never source books)
+      - name: Publish numeric SQLite DB and TOP1000 evidence (never source books)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: numeric-60-books-sqlite-top100
+          name: numeric-60-books-sqlite-top1000
           path: |
             reports/knowledge-large.sqlite
-            reports/top-100-links.json
-            reports/top-100-links.md
+            reports/top-1000-links.json
+            reports/top-1000-links.md
             reports/large-corpus-performance.json
           if-no-files-found: error
           retention-days: 30

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {newNumericLinkDb,readNumericLinks} from '../src/numeric-link-store-v1.mjs';
-import {CountedNumericCorpusLoader,topObservedWords,top100Markdown}
+import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
 
 test('TOP ranks expanded source occurrences, not unique SQL rows or pole counts',()=>{
@@ -48,7 +48,7 @@ test('word and phrase frequencies count actual source token windows, not Link po
   const loader=new CountedNumericCorpusLoader(db);
   loader.appendBook(Buffer.from('aaa'),{id:'short'});
   const md=top100Markdown(loader.topLinks(10),words);
-  assert.match(md,/TOP 100/);
+  assert.match(md,/TOP 1000/);
   assert.match(md,/mama|мама/);
   assert.match(md,/observed/);
  }finally{db.close();}
@@ -70,4 +70,24 @@ test('large corpus manifest is exactly pinned and has >=60 distinct full works',
  assert.equal(fs.books.reduce((n,b)=>n+b.expectedBytes,0),fs.expectedTotalSourceBytes);
  assert.equal(fs.expectedTotalSourceBytes,19701816);
  assert.ok(fs.books.every(b=>b.repoPath.startsWith('prose/')&&b.expectedBytes>=125000));
+});
+
+test('TOP1000 selector keeps the numerically smallest physical IDs at equal frequency',()=>{
+ const db=newNumericLinkDb();
+ try{
+  const compiler=new CountedNumericCorpusLoader(db,{reusePairs:false,reuseAtoms:true});
+  for(let i=0;i<1200;i++)compiler.appendBook(Buffer.from('ab'),{id:'src-'+i});
+  const top=compiler.topLinks(1000);
+  assert.equal(top.top.length,1000);
+  assert.ok(top.top.every(x=>x.count===1));
+  assert.deepEqual(top.top.map(x=>BigInt(x.id)),[...top.top.map(x=>BigInt(x.id))].sort((a,b)=>a<b?-1:a>b?1:0));
+  assert.throws(()=>compiler.topLinks(1001),/invalid/);
+  assert.match(topRankedMarkdown(top,topObservedWords([{id:'x',source:'a b c'}],3)),/TOP 1000/);
+ }finally{db.close();}
+});
+test('TOP1000 word unigram bigram trigram rank cap is enforced',()=>{
+ const words=Array.from({length:1100},(_,i)=>'word'+i.toString(36)).join(' ');
+ const report=topObservedWords([{id:'stress',source:words}],1000);
+ assert.deepEqual(report.classes.map(x=>x.top.length),[1000,1000,1000]);
+ assert.throws(()=>topObservedWords([{id:'stress',source:words}],1001),/invalid top rank/);
 });

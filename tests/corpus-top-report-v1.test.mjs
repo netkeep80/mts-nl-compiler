@@ -47,7 +47,7 @@ test('word and phrase frequencies count actual source token windows, not Link po
  try{
   const loader=new CountedNumericCorpusLoader(db);
   loader.appendBook(Buffer.from('aaa'),{id:'short'});
-  const md=top100Markdown(loader.topLinks(10),words);
+  const md=topRankedMarkdown(loader.topLinks(10),words);
   assert.match(md,/TOP 1000/);
   assert.match(md,/mama|мама/);
   assert.match(md,/observed/);
@@ -76,10 +76,17 @@ test('TOP1000 selector keeps the numerically smallest physical IDs at equal freq
  const db=newNumericLinkDb();
  try{
   const compiler=new CountedNumericCorpusLoader(db,{reusePairs:false,reuseAtoms:true});
-  for(let i=0;i<1200;i++)compiler.appendBook(Buffer.from('ab'),{id:'src-'+i});
+  compiler.appendBook(Buffer.from('ab'),{id:'seed'});
+  const atoms=readNumericLinks(db).filter(x=>x.from_id===null);
+  const statement=db.prepare('INSERT INTO links(from_id,to_id) VALUES(?,?)');
+  statement.setReadBigInts(true);
+  for(let i=0;i<1200;i++){
+   const id=statement.run(atoms[0].link_id,atoms[1].link_id).lastInsertRowid;
+   compiler.pairCounts.set(id,{count:2,documents:2,last:2});
+  }
   const top=compiler.topLinks(1000);
   assert.equal(top.top.length,1000);
-  assert.ok(top.top.every(x=>x.count===1));
+  assert.ok(top.top.every(x=>x.count===2));
   assert.deepEqual(top.top.map(x=>BigInt(x.id)),[...top.top.map(x=>BigInt(x.id))].sort((a,b)=>a<b?-1:a>b?1:0));
   assert.throws(()=>compiler.topLinks(1001),/invalid/);
   assert.match(topRankedMarkdown(top,topObservedWords([{id:'x',source:'a b c'}],3)),/TOP 1000/);

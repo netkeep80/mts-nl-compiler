@@ -112,6 +112,24 @@ const grammarRoot=materializeNativeSyntaxGrammar(nativeCompilerMemory,b,{
 const sourceProfile=materializeV015SourceAnetProfile(nativeCompilerMemory,profile);
 const lowered=compileV015DirectJsonSourceAnet(nativeCompilerMemory,b,grammarRoot,
  sourceProfile,new TextEncoder().encode(nativeJson));
+// The converted native JSON and equivalent native FORMAL expression must
+// denote the SAME native SOURCE ANet, not merely produce similar strings.
+const {compileV015DirectFormalSourceAnet}=await importFrom(
+ "ts/dist/src/v015-direct-formal-source.js");
+const nativeFormal=[
+ "{",
+ " O : ♂∞,",
+ " C : ∞♀,",
+ " SelectedSequence : [O,C,O,C],",
+ " EmptySequence : [],",
+ " RootAsPosition : [R]",
+ "}"
+].join("\n");
+const formalLowered=compileV015DirectFormalSourceAnet(nativeCompilerMemory,b,
+ grammarRoot,sourceProfile,new TextEncoder().encode(nativeFormal));
+assert.equal(formalLowered.sourceAset,lowered.sourceAset,
+ "FORMAL/JSON did not create the same accepted native source ANet");
+
 const semantic=denoteV015ResolvedSourceAnet(nativeCompilerMemory,b,grammarRoot,
  sourceProfile,lowered.sourceAset);
 const expectedSelected=materializeExactSequence(nativeCompilerMemory,
@@ -125,6 +143,7 @@ assert.equal(values.has(expectedRootPosition),true,
  "singleton [R] must remain nonempty");
 console.log(JSON.stringify({
  status:"NATIVE_FORMAL_JSON_SEQUENCE_BRIDGE_PASS",
+ sourceParity:"NATIVE_FORMAL_JSON_SAME_SOURCE_PASS",
  scope:"explicit O/C basis mapping; selected sequence, empty, root-position",
  actualCompiler:"compileV015DirectJsonSourceAnet + denoteV015ResolvedSourceAnet",
  upstreamPinned:"c64b7e21340c6add248c8f380f3fef1292616ac6",

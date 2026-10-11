@@ -9,6 +9,9 @@ on:
       - experiments/fixtures/mama-object-tree.json
       - tests/native-exact-sequence-bridge.test.mjs
       - tests/upstream-formal-v015.integration.mjs
+      - tests/upstream-graph-identity.integration.mjs
+      - experiments/native-graph-registry-v0.mjs
+      - experiments/NATIVE_GRAPH_REGISTRY.md
       - requirements/MNC-024.yaml
       - .github/workflows/formal-bridge.yml
 

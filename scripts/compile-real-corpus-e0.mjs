@@ -4,6 +4,7 @@ import {createHash} from "node:crypto";
 import {DatabaseSync} from "node:sqlite";
 import {gzipSync} from "node:zlib";
 import {encodePackedGraph,decodePackedGraph} from "../src/packed-dag-e1.mjs";
+import {learnObservedPairGrammar} from "../src/observed-pair-grammar-e2.mjs";
 import {compileTextExact,unionCompiledGraphs,sqliteReplay}
  from "../src/real-corpus-e0.mjs";
 const reportSha=x=>createHash("sha256").update(x).digest("hex");
@@ -54,6 +55,22 @@ const packedE1={
 };
 console.log("E1_COMPACT "+JSON.stringify(packedE1));
 
+const e2start=process.hrtime.bigint();
+const learned=learnObservedPairGrammar(all.map(x=>({
+ id:x.metrics.id,source:x.source,inputSha256:x.metrics.inputSha256
+})),{maxRounds:128,minOccurrences:2});
+const e2={status:learned.status,binaryBytes:learned.binaryBytes,
+ gzipBytes:learned.binaryGzipBytes,graphRows:learned.graphRows,
+ graphPairs:learned.graphPairRows,rounds:learned.substitutionRounds,
+ learnedRules:learned.uniqueLearnedRules,
+ sourceCodepoints:learned.initialCodepoints,
+ remainingPositions:learned.remainingPositions,
+ totalRuntimeMs:+(Number(process.hrtime.bigint()-e2start)/1e6).toFixed(2),
+ limitations:["BPE/Re-Pair style greedy structural oracle, NOT native FORMAL/Γ",
+ "Trained and tested on the same six texts; no heldout generalization claim",
+ "All binary bytes include dictionary/roles-free grammar and document roots/hashes",
+ "Selection uses true observed positions, not from_uses or generated proof counts"]};
+console.log("E2_GRAMMAR "+JSON.stringify(e2));
 const db=new DatabaseSync(":memory:");
 try{
  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
@@ -66,7 +83,7 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,packedE1,documents:docs,
+  sqlite,packedE1,e2,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
    "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",
@@ -86,6 +103,7 @@ try{
   sqliteReplay:report.sqlite.status,sqliteMs:report.sqlite.sqliteLoadIndexAndReplayMs,
   sqliteLogicalBytes:report.sqlite.sqliteLogicalBytes,
   compactBinaryBytes:packedE1.binaryBytes,compactBinaryGzipBytes:packedE1.binaryGzipBytes,
+  learnedGrammarBytes:e2.binaryBytes,learnedGrammarGzipBytes:e2.gzipBytes,
   status:report.status
  }));
 } finally {db.close();}

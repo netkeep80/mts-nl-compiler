@@ -73,3 +73,31 @@ test("E2 long-structure top N filters out trivial two-character links",()=>{
   assert.ok(item.top.every(x=>x.expandedCodepoints>=item.minimumCodepoints));
  assert.deepEqual(r.diagnostics.topLongLinks.map(x=>x.minimumCodepoints),[5,10,20]);
 });
+
+test("E3 content-dependent grouping keeps exact Unicode, null bytes and 0-round input",()=>{
+ const items=[d("a","мама мама"),d("b","xмама мама"),
+  d("c","x²→Σχ²→Σ"),d("d","aaaaaaa"),d("e","")];
+ for(const rounds of [0,6,16]){
+  const result=learnObservedPairGrammar(items,{maxRounds:rounds,rootGrouping:"content-stable"});
+  assert.equal(result.rootGrouping,"content-stable");
+  assert.equal(result.documents.length,items.length);
+  assert.ok(result.groupingStats.every(x=>x.layers>=0));
+  assert.equal(result.status,"E2_GREEDY_PAIR_GRAMMAR_EXACT_ROUNDTRIP_PASS");
+ }
+});
+test("E3 compare identical trained grammar and selected front positions",()=>{
+ const data=[d("A","abcabc abcabc"),d("B","zabcabc xx abcabc")];
+ const a=learnObservedPairGrammar(data,{maxRounds:10,rootGrouping:"balanced"});
+ const b=learnObservedPairGrammar(data,{maxRounds:10,rootGrouping:"content-stable"});
+ assert.equal(a.substitutionRounds,b.substitutionRounds);
+ assert.equal(a.remainingPositions,b.remainingPositions);
+ assert.equal(a.uniqueLearnedRules,b.uniqueLearnedRules);
+ assert.ok(b.graphPairRows>0);
+});
+test("E3 deterministic content-aware grouping is independent of document order",()=>{
+ const data=[d("a","был человек и был человек"),d("b","он был человек и был человек")];
+ const a=learnObservedPairGrammar(data,{maxRounds:6,rootGrouping:"content-stable"});
+ const b=learnObservedPairGrammar([...data].reverse(),{maxRounds:6,rootGrouping:"content-stable"});
+ assert.deepEqual(a,b);
+ assert.throws(()=>learnObservedPairGrammar(data,{rootGrouping:"invalid"}),/rootGrouping/);
+});

@@ -7,6 +7,7 @@ import {gzipSync} from "node:zlib";
 import {encodePackedGraph,decodePackedGraph} from "./packed-dag-e1.mjs";
 import {atomProfile,pairProfile,topAdjacentCandidates,topExpandedDupletLinks}
  from "./pair-frequency-e2.mjs";
+import {buildContentStableRoot} from "./content-stable-grouping-e3.mjs";
 const hash=s=>createHash("sha256").update(s).digest("hex");
 const fail=s=>{throw Error("E2 observed-pair oracle: "+s);};
 const compare=(a,b)=>a<b?-1:a>b?1:0;
@@ -17,7 +18,8 @@ function checkedDoc(d){
  if(hash(Buffer.from(d.source,"utf8"))!==d.inputSha256)fail("source hash mismatch");
 }
 export function learnObservedPairGrammar(documents,{
- maxRounds=128,minOccurrences=2,diagnosticTopN=0,diagnosticCheckpoints=[]
+ maxRounds=128,minOccurrences=2,diagnosticTopN=0,diagnosticCheckpoints=[],
+ rootGrouping="balanced"
 }={}){
  if(!Array.isArray(documents)||documents.length===0||documents.length>1000)
   fail("invalid external documents");
@@ -28,6 +30,7 @@ export function learnObservedPairGrammar(documents,{
     !Array.isArray(diagnosticCheckpoints)||
     diagnosticCheckpoints.some(x=>!Number.isSafeInteger(x)||x<0||x>maxRounds))
   fail("invalid diagnostic arguments");
+ if(!["balanced","content-stable"].includes(rootGrouping))fail("invalid rootGrouping");
  const checkpointSet=new Set(diagnosticCheckpoints);
  const diagnostics=[];
  const docs=[...documents].sort((a,b)=>compare(a.id,b.id));
@@ -115,11 +118,22 @@ export function learnObservedPairGrammar(documents,{
   const cut=a+Math.floor((b-a)/2);
   return putPair(tree(items,a,cut),tree(items,cut,b));
  }
- const roots=sequences.map((items,i)=>({
-  id:docs[i].id,
-  inputSha256:docs[i].inputSha256,
-  rootLink:tree(items,0,items.length)
- }));
+ const groupingStats=[];
+ const roots=sequences.map((items,i)=>{
+  let rootLink;
+  if(rootGrouping==="balanced")rootLink=tree(items,0,items.length);
+  else{
+   const result=buildContentStableRoot(items.map(id=>{
+    const link=byToken.get(id);
+    if(link===undefined)fail("selected token missing native Link identity");
+    return link;
+   }),putPair,()=>putAtom(""));
+   rootLink=result.root;
+   groupingStats.push({document:docs[i].id,layers:result.layers,
+    anchors:result.anchors,fallbackPairs:result.fallbackPairs});
+  }
+  return {id:docs[i].id,inputSha256:docs[i].inputSha256,rootLink};
+ });
  const collected=[...rows.values()];
  const packet=encodePackedGraph(collected,roots);
  const decoded=decodePackedGraph(packet);
@@ -137,6 +151,7 @@ export function learnObservedPairGrammar(documents,{
   binaryGzipBytes:gzipSync(packet,{level:6}).length,
   graphRows:decoded.rows.length,
   graphPairRows:decoded.rows.filter(r=>r.from_id!==null).length,
+  rootGrouping,groupingStats,
   initialCodepoints:originalObservedCodepoints,
   remainingPositions,substitutionRounds:metrics.length,
   uniqueLearnedRules:definitions.size,roundDetails:metrics,

@@ -117,6 +117,39 @@ if(baseline0.uniqueDuplets!==packedE1.graphRows-175)
  throw new Error("round 0 must match E1 unique duplet baseline");
 console.log("E2_SWEEP "+JSON.stringify(e2Sweep));
 
+const groupingStart=process.hrtime.bigint();
+const stable=learnObservedPairGrammar(observations,{
+ maxRounds:512,minOccurrences:2,rootGrouping:"content-stable",
+ diagnosticTopN:Number(process.env.E2_TOP_N??20)
+});
+const balanced512=e2Sweep.find(x=>x.requestedRounds===512);
+if(!balanced512||stable.substitutionRounds!==balanced512.actualRounds||
+   stable.uniqueLearnedRules!==balanced512.grammarRules||
+   stable.remainingPositions!==balanced512.remainingPositions)
+ throw Error("grouping A/B did not hold training constant");
+const e3Comparison={
+ scope:"SAME_SOURCE_SAME_512_LEARNED_RULES_DIFFERENT_ROOT_GROUPING",
+ balanced:{rootGrouping:"balanced",uniqueLinks:balanced512.uniqueLinks,
+  uniqueDuplets:balanced512.uniqueDuplets},
+ contentStable:{rootGrouping:"content-stable",uniqueLinks:stable.graphRows,
+  uniqueDuplets:stable.graphPairRows},
+ deltaUniqueDuplets:stable.graphPairRows-balanced512.uniqueDuplets,
+ deltaPercent:+((stable.graphPairRows-balanced512.uniqueDuplets)/
+  balanced512.uniqueDuplets*100).toFixed(3),
+ unchangedObservedCodepoints:stable.initialCodepoints,
+ unchangedFinalTokenPositions:stable.remainingPositions,
+ learnedRules:stable.uniqueLearnedRules,
+ contentAnchors:stable.groupingStats.reduce((a,x)=>a+x.anchors,0),
+ timeMs:+(Number(process.hrtime.bigint()-groupingStart)/1e6).toFixed(2),
+ longRepeatedLinks:stable.diagnostics.topLongLinks,
+ scientificLimit:"Experimental local-minimum anchors + greedy gap grouping; not accepted Γ"
+};
+console.log("E3_GROUPING_COMPARISON "+JSON.stringify({
+ ...e3Comparison,longRepeatedLinks:e3Comparison.longRepeatedLinks.map(x=>({
+  minimumCodepoints:x.minimumCodepoints,top:x.top.slice(0,10)}))
+}));
+
+
 const db=new DatabaseSync(":memory:");
 try{
  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
@@ -129,7 +162,7 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,packedE1,e2,e2Sweep,e2TopDuplets,documents:docs,
+  sqlite,packedE1,e2,e2Sweep,e2TopDuplets,e3Comparison,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
    "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",

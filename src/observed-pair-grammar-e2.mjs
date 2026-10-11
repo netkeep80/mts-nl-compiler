@@ -19,7 +19,7 @@ function checkedDoc(d){
 }
 export function learnObservedPairGrammar(documents,{
  maxRounds=128,minOccurrences=2,diagnosticTopN=0,diagnosticCheckpoints=[],
- rootGrouping="balanced"
+ rootGrouping="balanced",probeDocuments=[],includeSelectedRows=false
 }={}){
  if(!Array.isArray(documents)||documents.length===0||documents.length>1000)
   fail("invalid external documents");
@@ -33,8 +33,12 @@ export function learnObservedPairGrammar(documents,{
  if(!["balanced","content-stable"].includes(rootGrouping))fail("invalid rootGrouping");
  const checkpointSet=new Set(diagnosticCheckpoints);
  const diagnostics=[];
+ if(!Array.isArray(probeDocuments)||probeDocuments.length>1000||
+    typeof includeSelectedRows!=="boolean")fail("invalid probe settings");
  const docs=[...documents].sort((a,b)=>compare(a.id,b.id));
  const ids=new Set();for(const d of docs){checkedDoc(d);if(ids.has(d.id))fail("duplicate doc ID");ids.add(d.id);}
+ const probes=[...probeDocuments].sort((a,b)=>compare(a.id,b.id));
+ for(const d of probes){checkedDoc(d);if(ids.has(d.id))fail("duplicate external/probe ID");ids.add(d.id);}
  const alphabet=[...new Set(docs.flatMap(d=>[...d.source]))].sort(compare);
  const symbolIndex=new Map(alphabet.map((s,i)=>[s,i]));
  const profiles=alphabet.map(atomProfile);
@@ -93,6 +97,23 @@ export function learnObservedPairGrammar(documents,{
   diagnostics.push(topAdjacentCandidates({sequences,counts,profiles,docs,
    round:metrics.length,topN:diagnosticTopN}));
  }
+ // Replay learned rules on an immutable old view. Probe fragments do NOT
+ // participate in observation counts, training, or candidate selection.
+ const probeSequences=probes.map(d=>[...d.source].map(ch=>{
+  const id=symbolIndex.get(ch);
+  if(id===undefined)fail("probe character not in the observed alphabet");
+  return id;
+ }));
+ for(const [replacement,[a,b]] of definitions){
+  for(let k=0;k<probeSequences.length;k++){
+   const old=probeSequences[k],next=[];
+   for(let i=0;i<old.length;i++){
+    if(i+1<old.length&&old[i]===a&&old[i+1]===b){next.push(replacement);i++;}
+    else next.push(old[i]);
+   }
+   probeSequences[k]=next;
+  }
+ }
  // Convert learned substitutions to ordinary *binary* Link DAG records.
  // This is not an additional subject ontology; all definitions are pairs.
  const byToken=new Map(),rows=new Map();
@@ -119,7 +140,10 @@ export function learnObservedPairGrammar(documents,{
   return putPair(tree(items,a,cut),tree(items,cut,b));
  }
  const groupingStats=[];
- const roots=sequences.map((items,i)=>{
+ const allViews=docs.map((doc,i)=>({doc,items:sequences[i]}))
+  .concat(probes.map((doc,i)=>({doc,items:probeSequences[i]})))
+  .sort((a,b)=>compare(a.doc.id,b.doc.id));
+ const roots=allViews.map(({doc,items})=>{
   let rootLink;
   if(rootGrouping==="balanced")rootLink=tree(items,0,items.length);
   else{
@@ -129,19 +153,19 @@ export function learnObservedPairGrammar(documents,{
     return link;
    }),putPair,()=>putAtom(""));
    rootLink=result.root;
-   groupingStats.push({document:docs[i].id,layers:result.layers,
+   groupingStats.push({document:doc.id,layers:result.layers,
     anchors:result.anchors,fallbackPairs:result.fallbackPairs});
   }
-  return {id:docs[i].id,inputSha256:docs[i].inputSha256,rootLink};
+  return {id:doc.id,inputSha256:doc.inputSha256,rootLink};
  });
  const collected=[...rows.values()];
  const packet=encodePackedGraph(collected,roots);
  const decoded=decodePackedGraph(packet);
- if(decoded.documents.length!==docs.length)fail("decoded doc count mismatch");
- for(let i=0;i<docs.length;i++)
-  if(decoded.documents[i].id!==docs[i].id||
-     !decoded.documents[i].bytes.equals(Buffer.from(docs[i].source,"utf8")))
-   fail("exact real source replay mismatch "+docs[i].id);
+ if(decoded.documents.length!==allViews.length)fail("decoded doc count mismatch");
+ for(let i=0;i<allViews.length;i++)
+  if(decoded.documents[i].id!==allViews[i].doc.id||
+     !decoded.documents[i].bytes.equals(Buffer.from(allViews[i].doc.source,"utf8")))
+   fail("exact real source replay mismatch "+allViews[i].doc.id);
  if(!encodePackedGraph(decoded.rows,decoded.documents).equals(packet))
   fail("noncanonical binary grammar replay");
  const originalObservedCodepoints=docs.reduce((n,d)=>n+[...d.source].length,0);
@@ -156,6 +180,8 @@ export function learnObservedPairGrammar(documents,{
   remainingPositions,substitutionRounds:metrics.length,
   uniqueLearnedRules:definitions.size,roundDetails:metrics,
   documents:roots,
+  probeRoots:roots.filter(x=>probes.some(p=>p.id===x.id)),
+  selectedRows:includeSelectedRows?decoded.rows:null,
   diagnostics:diagnosticTopN?{
    adjacentAtCheckpoints:diagnostics,
    topStructuralLinks:topExpandedDupletLinks(decoded.rows,roots,diagnosticTopN),

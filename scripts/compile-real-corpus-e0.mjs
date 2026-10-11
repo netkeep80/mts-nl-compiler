@@ -71,6 +71,39 @@ const e2={status:learned.status,binaryBytes:learned.binaryBytes,
  "All binary bytes include dictionary/roles-free grammar and document roots/hashes",
  "Selection uses true observed positions, not from_uses or generated proof counts"]};
 console.log("E2_GRAMMAR "+JSON.stringify(e2));
+
+const e2Sweep=[];
+const observations=all.map(x=>({
+ id:x.metrics.id,source:x.source,inputSha256:x.metrics.inputSha256
+}));
+for(const requestedRounds of [0,32,256,512]) {
+ const begin=process.hrtime.bigint();
+ const trial=learnObservedPairGrammar(observations,{maxRounds:requestedRounds,minOccurrences:2});
+ e2Sweep.push({
+  requestedRounds,actualRounds:trial.substitutionRounds,
+  uniqueLinks:trial.graphRows,uniqueDuplets:trial.graphPairRows,
+  observedCodepoints:trial.initialCodepoints,
+  remainingPositions:trial.remainingPositions,
+  grammarRules:trial.uniqueLearnedRules,
+  binaryBytes:trial.binaryBytes,
+  runtimeMs:Math.round(Number(process.hrtime.bigint()-begin)/1e6)
+ });
+}
+e2Sweep.push({
+ requestedRounds:128,actualRounds:learned.substitutionRounds,
+ uniqueLinks:learned.graphRows,uniqueDuplets:learned.graphPairRows,
+ observedCodepoints:learned.initialCodepoints,
+ remainingPositions:learned.remainingPositions,
+ grammarRules:learned.uniqueLearnedRules,
+ binaryBytes:learned.binaryBytes,
+ runtimeMs:e2.totalRuntimeMs
+});
+e2Sweep.sort((a,b)=>a.requestedRounds-b.requestedRounds);
+const baseline0=e2Sweep.find(x=>x.requestedRounds===0);
+if(baseline0.uniqueDuplets!==packedE1.graphRows-175)
+ throw new Error("round 0 must match E1 unique duplet baseline");
+console.log("E2_SWEEP "+JSON.stringify(e2Sweep));
+
 const db=new DatabaseSync(":memory:");
 try{
  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
@@ -83,7 +116,7 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,packedE1,e2,documents:docs,
+  sqlite,packedE1,e2,e2Sweep,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
    "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",

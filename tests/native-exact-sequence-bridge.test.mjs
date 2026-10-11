@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
+import { loadRows,counterMismatches } from "../src/store.mjs";
 import { LinkGraph } from "../experiments/inference-v0.mjs";
 import { makeRewriteFixture,evaluateRewrite } from "../experiments/compression-implication-v0.mjs";
 import { importObjectTree,serializeObjectTree,parseStrictJson }
@@ -104,4 +107,36 @@ test("resource caps and unresolved transport root must not produce false success
  assert.throws(()=>readTransportSequence(f.g,"unknown","nil"),/Unknown Link/);
  const final=materializeCellSequence(f.g,"R",["m","a"]);
  assert.throws(()=>readCellSequence(f.g,"R",final,{maxCells:1}),/RESOURCE_LIMIT/);
+});
+
+test("native-shaped self-closed cells replay through one SQLite subject table",()=>{
+ const f=build(["R","m","a","R"]);
+ const original=bridgeTransportToCell(f.g,{root:f.first,
+   terminator:"nil",semanticRoot:"R"});
+ const text=serializeObjectTree(f.g,{sequences:{text:{
+   root:f.first,terminator:"nil"
+ }}});
+ const recovered=importObjectTree(text);
+ const db=new DatabaseSync(":memory:");
+ try {
+  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
+  loadRows(db,recovered.rows);
+  assert.deepEqual(counterMismatches(db),[]);
+  assert.equal(db.prepare("SELECT count(*) as n FROM sqlite_master WHERE type='table'").get().n,1);
+  const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id")
+    .all().map(n=>({...n}));
+  const replay=new LinkGraph(rows);
+  assert.deepEqual(readCellSequence(replay,"R",original.cellFinal).values,["R","m","a","R"]);
+  assert.equal(serializeObjectTree(replay,{sequences:recovered.sequences}),text);
+ } finally {db.close();}
+});
+test("adapter produces stable cell identity for repeated same selected contents",()=>{
+ const f=build(["m","a","m","a"]);
+ const before=bridgeTransportToCell(f.g,{root:f.first,
+  terminator:"nil",semanticRoot:"R"});
+ const total=f.g.nodes.size;
+ const again=bridgeTransportToCell(f.g,{root:f.first,
+  terminator:"nil",semanticRoot:"R"});
+ assert.equal(before.cellFinal,again.cellFinal);
+ assert.equal(f.g.nodes.size,total);
 });

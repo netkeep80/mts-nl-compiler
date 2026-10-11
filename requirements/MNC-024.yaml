@@ -11,6 +11,7 @@ requirement: >
 compatibility_gate: FULL_SOURCE_ANET_INTERCHANGE_NOT_PROVED
 native_cell_shape_differential: PASS
 explicit_basis_sequence_native_compiler: PASS
+explicit_basis_formal_json_same_source: PASS
 arbitrary_text_atom_mapping: NOT_PROVED
 full_rule_graph_gamma_replay: NOT_EXECUTED
 source_of_truth:

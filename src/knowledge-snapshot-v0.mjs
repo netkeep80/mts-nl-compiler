@@ -7,6 +7,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import {loadRows,counterMismatches} from './store.mjs';
+import {readNumericLinks} from './numeric-link-store-v1.mjs';
 
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
 const order=(a,b)=>a<b?-1:a>b?1:0;
@@ -65,15 +66,14 @@ export function buildKnowledgeSnapshot({rows,schemaSql,productVersion='0.0.0'}={
   try{
    assert.equal(cold.prepare('PRAGMA integrity_check').get().integrity_check,'ok');
    assert.deepEqual(counterMismatches(cold),[]);
-   const loaded=cold.prepare(
-    'SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id'
-   ).all();
-   assert.equal(JSON.stringify(loaded),JSON.stringify(canonical),
-    'cold consumer must retain exact physical identities, weights and cycles');
+   // Never downcast 64-bit physical IDs into IEEE-754 Number or JSON numbers.
+   assert.deepEqual(readNumericLinks(cold),readNumericLinks(db),
+    'cold consumer must retain exact BigInt physical IDs, weights and cycles');
   }finally{cold.close();}
   const sqlite=readFileSync(path);
   const graph=logicalGraphDigest(canonical);
-  const manifest={format:'mts-nl/knowledge-snapshot/v0',
+  const manifest={format:'mts-nl/knowledge-snapshot/v1',
+   physicalIdentity:'sqlite-signed-int64-autoincrement',
    productVersion,graph,sqliteSha256:sha256(sqlite),
    sqliteBytes:sqlite.length,schemaSha256:sha256(Buffer.from(schemaSql,'utf8')),
    sourceStatus:'BOOTSTRAP_UNTRAINED__NOT_SEMANTICALLY_VERIFIED'};

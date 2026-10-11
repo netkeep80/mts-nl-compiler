@@ -188,15 +188,16 @@ test("exported Link rows replay in one SQLite table with rebuilt positional cach
  const db=new DatabaseSync(":memory:");
  try{
   db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
-  loadRows(db,restored.rows);
+  const imported=loadRows(db,restored.rows);
   assert.deepEqual(counterMismatches(db),[]);
   assert.equal(db.prepare("SELECT count(*) AS n FROM links").get().n,g.nodes.size);
-  assert.equal(db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='ma'")
-    .get().from_uses,1);
-  assert.equal(db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id='ma'")
-    .get().to_uses,1);
-  const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links")
-    .all().map(x=>({...x}));
+  const counters=db.prepare("SELECT from_uses,to_uses FROM links WHERE link_id=?");
+  counters.setReadBigInts(true);
+  const numericId=imported.idMap.get('ma');
+  assert.equal(typeof numericId,'bigint');
+  assert.equal(counters.get(numericId).from_uses,1n);
+  assert.equal(counters.get(numericId).to_uses,1n);
+  const rows=imported.restored;
   assert.equal(serializeObjectTree(rows,{sequences}),exported);
  }finally{db.close();}
 });

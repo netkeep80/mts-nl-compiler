@@ -120,11 +120,12 @@ test("native-shaped self-closed cells replay through one SQLite subject table",(
  const db=new DatabaseSync(":memory:");
  try {
   db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
-  loadRows(db,recovered.rows);
+  const migrated=loadRows(db,recovered.rows);
   assert.deepEqual(counterMismatches(db),[]);
-  assert.equal(db.prepare("SELECT count(*) as n FROM sqlite_master WHERE type='table'").get().n,1);
-  const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id")
-    .all().map(n=>({...n}));
+  assert.equal(db.prepare("SELECT count(*) as n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n,1);
+  const physical=db.prepare('SELECT link_id FROM links ORDER BY link_id');physical.setReadBigInts(true);
+  assert.ok(physical.all().every(x=>typeof x.link_id==='bigint'));
+  const rows=migrated.restored;
   const replay=new LinkGraph(rows);
   assert.deepEqual(readCellSequence(replay,"R",original.cellFinal).values,["R","m","a","R"]);
   assert.equal(serializeObjectTree(replay,{sequences:recovered.sequences}),text);

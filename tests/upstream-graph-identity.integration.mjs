@@ -100,6 +100,60 @@ g.atom("__proto__","__proto__");
  assert.throws(()=>readNativeRegistry(memory,basis,api,{...reg,maxRows:0}),
   /RESOURCE_LIMIT row count/); // intentionally invalid use corrected below
 }
+
+{
+ // TEST actual v0.15 generalized structural S1/S2 using arbitrary string
+ // identities decoded from our object-tree JSON through native registry.
+ const {unifyStructuralRuleTemplate}=await moduleAt("structural-unification");
+ const {instantiateV013StructuralTemplate}=await moduleAt("v013-structural-execution");
+ const rules=await moduleAt("structural-rule");
+ const g=new LinkGraph();
+ for(const id of ["P","Q","a","b","x"])g.atom(id,id);
+ g.pair("template:premise","P","x");
+ g.pair("template:image","Q","x");
+ g.pair("fact:P(a)","P","a");
+ g.pair("fact:Q(a)","Q","a");
+ const json=serializeObjectTree(g);
+ const {memory,basis}=newMemory();
+ const reg=createNativeRegistry(memory,basis,api,importObjectTree(json).rows);
+ const mapped=readNativeRegistry(memory,basis,api,reg);
+ assert.equal(serializeObjectTree(mapped),json);
+ const p=id=>reg.ids.get(id);
+ const dictionary=rules.defineStructuralRoleDictionary(memory,[p("x")]);
+ assert.deepEqual(rules.readStructuralRoleDictionary(memory,dictionary).roles,
+  [p("x")]);
+ const premise=memory.ensure(p("P"),p("x"));
+ const image=memory.ensure(p("Q"),p("x"));
+ const images=sequences.materializeExactSequence(memory,[image]);
+ const body=memory.ensure(premise,images);
+ const rule=rules.defineStructuralRule(memory,dictionary,body);
+ const theory=memory.ensureStartSelfClosed(memory.ensure(basis.U,basis.O));
+ const membership=rules.admitStructuralRule(memory,theory,rule);
+ rules.verifyStructuralRuleAdmission(memory,theory,rule,membership);
+ const active=memory.ensure(p("P"),p("a"));
+ const bindings=unifyStructuralRuleTemplate(memory,premise,active,[p("x")]);
+ assert.equal(bindings.length,1);
+ assert.equal(bindings[0].role,p("x"));
+ assert.equal(bindings[0].value,p("a"));
+ const result=instantiateV013StructuralTemplate(memory,image,bindings);
+ assert.equal(result,memory.ensure(p("Q"),p("a")));
+ assert.notEqual(result,memory.ensure(p("Q"),p("b")));
+ const selectedOutputs=sequences.readExactSequence(memory,memory.poles(body).end);
+ assert.equal(selectedOutputs.values.length,1);
+ assert.equal(selectedOutputs.values[0],image);
+ assert.throws(()=>unifyStructuralRuleTemplate(memory,premise,
+  memory.ensure(p("Q"),p("a")),[p("x")]),/template-mismatch/);
+ assert.throws(()=>rules.verifyStructuralRuleAdmission(memory,theory,rule,
+  memory.ensure(p("P"),p("a"))),/rule-not-admitted/);
+ console.log(JSON.stringify({
+  status:"NATIVE_STRUCTURAL_S1_S2_ON_IMPORTED_IDENTITIES_PASS",
+  source:"accepted structural-rule, structural-unification and v013 structural execution",
+  inputMappings:["P","Q","a","b","x"],boundVariable:"x",
+  proofScope:"selected rule / single-antecedent match+construct, not complete Γ",
+  fullNativeGamma:"NOT_EXECUTED"
+ }));
+}
+
 console.log(JSON.stringify({
  status:"NATIVE_UTF8_GRAPH_REGISTRY_ROUNDTRIP_PASS",
  source:"actual pinned MTS Memory + native StringAnum + native ExactSequence",

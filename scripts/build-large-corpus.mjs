@@ -7,6 +7,7 @@ import {resolve} from 'node:path';
 import {NUMERIC_LINK_SCHEMA_V1} from '../src/numeric-link-store-v1.mjs';
 import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
+import {compareWordAlignedCorpus} from '../src/word-aligned-ab-v1.mjs';
 const tick=()=>process.hrtime.bigint();
 const ms=from=>+(Number(tick()-from)/1e6).toFixed(3);
 const manifest=JSON.parse(readFileSync(new URL('../corpus/large-books-v1.json',import.meta.url),'utf8'));
@@ -137,6 +138,24 @@ const words=topObservedWords(docsForWords,1000);
 if(words.classes.some(x=>x.top.length!==1000))throw Error('TOP1000 words or phrases incomplete');
 const wordStatsMs=ms(wordsStart);
 perf.wordPhraseFrequencyMs=wordStatsMs;
+const wordAlignedAB=compareWordAlignedCorpus(documents,perf);
+if(wordAlignedAB.status!=='WORD_ALIGNED_60_BOOK_COLD_REPLAY_PASS'||
+ wordAlignedAB.books!==manifest.books.length)
+ throw Error('Word-aligned A/B did not cold-replay every source book');
+perf.wordAlignedAB=wordAlignedAB;
+console.log('WORD_ALIGNED_AB_SUMMARY '+JSON.stringify({
+ books:wordAlignedAB.books,sourceBytes:wordAlignedAB.sourceBytes,
+ balancedLinks:wordAlignedAB.baseline.insertedLinks,
+ alignedLinks:wordAlignedAB.wordAligned.insertedLinks,
+ alignedInsertMs:wordAlignedAB.wordAligned.insertWallMs,
+ alignedLinkPerSecond:wordAlignedAB.wordAligned.linkCreationPerSecond,
+ balancedSqliteBytes:wordAlignedAB.baseline.sqliteVacuumBytes,
+ alignedSqliteBytes:wordAlignedAB.wordAligned.sqliteVacuumBytes,
+ rootedWordOccurrences:wordAlignedAB.wordAligned.rootedWordTokenOccurrences,
+ rootedPhraseOccurrences:wordAlignedAB.wordAligned.rootedPhraseNodeOccurrences,
+ ratios:wordAlignedAB.measuredRatios,
+ coldStatus:wordAlignedAB.wordAligned.coldReadOnlyStatus
+}));
 // Reopen TOP links for output from in-memory record retained in the build.
 // The reports are emitted ONLY after all validation has completed.
 if(!top)throw Error('TOP1000 unavailable after loader close');

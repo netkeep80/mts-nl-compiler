@@ -77,11 +77,12 @@ test("single-table serialization and fresh-load replay preserve selected rule",(
  const db=new DatabaseSync(":memory:");
  try {
   db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
-  loadRows(db,sourceRows);
+  const imported=loadRows(db,sourceRows);
   assert.deepEqual(counterMismatches(db),[]);
-  assert.equal(db.prepare("SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table'").get().c,1);
-  const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id").all()
-    .map(r=>({...r}));
+  assert.equal(db.prepare("SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().c,1);
+  const numeric=db.prepare('SELECT link_id FROM links ORDER BY link_id');numeric.setReadBigInts(true);
+  assert.ok(numeric.all().every(r=>typeof r.link_id==='bigint'));
+  const rows=imported.restored;
   assert.equal(rows.length,sourceRows.length);
   const newGraph=new LinkGraph(rows);
   const replay=evaluateRewrite(newGraph,f.root);
@@ -153,9 +154,9 @@ test("repeated inference and persisted proof do not become new training facts",(
  const db=new DatabaseSync(":memory:");
  try {
   db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
-  loadRows(db,[...f.g.nodes.values()].map(n=>({...n})));
-  const rows=db.prepare("SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id")
-    .all().map(r=>({...r}));
+  const rows=loadRows(db,[...f.g.nodes.values()].map(n=>({...n}))).restored;
+  const numeric=db.prepare('SELECT link_id FROM links ORDER BY link_id');numeric.setReadBigInts(true);
+  assert.ok(numeric.all().every(r=>typeof r.link_id==='bigint'));
   const restored=new LinkGraph(rows);
   const replay=evaluateRewrite(restored,f.root);
   assert.equal(replay.proofs,1);

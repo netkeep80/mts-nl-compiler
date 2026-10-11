@@ -1,7 +1,7 @@
 id: MNC-001
 artifacts:
   - path: README.md
-    relations: [requires, documents]
+    relations: [requires]
   - path: docs/architecture.md
     relations: [requires, documents]
   - path: db/schema.sql

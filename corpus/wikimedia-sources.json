@@ -1,0 +1,99 @@
+{
+  "schema": "mts-nl-corpus-source-candidates/v1",
+  "status": "DISCOVERY_ONLY",
+  "description": "Кандидаты на лицензионный аудит и выбор конкретных rev_id; это не загруженный или разрешённый к обучению корпус.",
+  "candidateCount": 7,
+  "candidates": [
+    {
+      "id": "wiki-ru-language",
+      "project": "ruwiki",
+      "domain": "russian-language",
+      "title": "Русский язык",
+      "url": "https://ru.wikipedia.org/wiki/Русский_язык",
+      "kind": "encyclopedia",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    },
+    {
+      "id": "wiki-ru-literature",
+      "project": "ruwiki",
+      "domain": "literature",
+      "title": "Литература",
+      "url": "https://ru.wikipedia.org/wiki/Литература",
+      "kind": "encyclopedia",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    },
+    {
+      "id": "wiki-ru-mathlogic",
+      "project": "ruwiki",
+      "domain": "logic",
+      "title": "Математическая логика",
+      "url": "https://ru.wikipedia.org/wiki/Математическая_логика",
+      "kind": "encyclopedia",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    },
+    {
+      "id": "wiki-ru-grammar",
+      "project": "ruwiki",
+      "domain": "russian-language",
+      "title": "Формальная грамматика",
+      "url": "https://ru.wikipedia.org/wiki/Формальная_грамматика",
+      "kind": "encyclopedia",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    },
+    {
+      "id": "wiki-ru-algorithm",
+      "project": "ruwiki",
+      "domain": "programming",
+      "title": "Алгоритм",
+      "url": "https://ru.wikipedia.org/wiki/Алгоритм",
+      "kind": "encyclopedia",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    },
+    {
+      "id": "wikibooks-ru-r-math",
+      "project": "ruwikibooks",
+      "domain": "mathematics",
+      "title": "Язык программирования R/Математика",
+      "url": "https://ru.wikibooks.org/wiki/Язык_программирования_R/Математика",
+      "kind": "textbook",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    },
+    {
+      "id": "wikisource-ru-krylov",
+      "project": "ruwikisource",
+      "domain": "literature",
+      "title": "Басни, приписываемые Крылову",
+      "url": "https://ru.wikisource.org/wiki/Басни,_приписываемые_Крылову",
+      "kind": "literary-text",
+      "pageId": null,
+      "revisionId": null,
+      "licenseReview": "NOT_AUDITED",
+      "ingestionStatus": "NOT_INGESTED",
+      "textSha256": null
+    }
+  ]
+}

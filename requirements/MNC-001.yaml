@@ -14,6 +14,10 @@ artifacts:
     relations: [requires, implements]
   - path: corpus/pilot.json
     relations: [requires]
+  - path: corpus/wikimedia-sources.json
+    relations: [requires]
+  - path: tests/corpus-sources.test.mjs
+    relations: [requires, verifies]
   - path: tests/schema.test.mjs
     relations: [requires, verifies]
   - path: tests/dag.test.mjs

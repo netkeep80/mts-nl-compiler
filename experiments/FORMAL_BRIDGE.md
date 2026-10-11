@@ -30,3 +30,12 @@
 `.github/workflows/formal-bridge.yml` checks out public `netkeep80/anum_docs` at exact commit `c64b7e21340c6add248c8f380f3fef1292616ac6`, builds the accepted TypeScript source, runs its existing production-FORMAL refinement and Boolean package replay tests, then executes `tests/upstream-formal-v015.integration.mjs` against the **actual native `Memory`, `materializeExactSequence` and `readExactSequence`**. The differential only asserts recursive cell shape, order, identity of *mapped opaque positional values*, empty sequence and root-as-position; no mapping from arbitrary LinkGraph IDs to native accepted MTS handles is asserted.
 
 Even when this job passes, `NATIVE_CELL_SHAPE_DIFFERENTIAL=PASS` does NOT mean `TRANSPORT→NATIVE_METACOMPILER→Γ` end-to-end PASS. The source JSON formats remain distinct, so the latter gate stays `NOT_EXECUTED` until an approved total conversion is specified and executed.
+
+## Проверенный ограниченный мост в настоящий метакомпилятор (2026-10-11)
+
+[CI run 38148036633](https://github.com/netkeep80/mts-nl-compiler/actions/runs/38148036633) — **SUCCESS**. Upstream `anum_docs` был собран и выполнен по exact SHA `c64b7e21340c6add248c8f380f3fef1292616ac6`.
+
+В дополнение к accepted `v015-formal-production-refinement-f1` и `v015-boolean-package-replay-a2`, интеграционный тест берёт позиции выбранного дерева `мама` (`m,a,m,a`) и **явно** сопоставляет `m→O`, `a→C` (исследовательское соответствие ID; это не распознавание букв как полюсов МТС). Производится отдельный native source JSON с `SelectedSequence:["O","C","O","C"]`, `EmptySequence:[]`, `RootAsPosition:["R"]`, а затем настоящий `compileV015DirectJsonSourceAnet` и `denoteV015ResolvedSourceAnet` принимают его и дают искомые семантические Link handles, проверенные `materializeExactSequence`.
+
+Результаты: `NATIVE_CELL_SHAPE_DIFFERENTIAL_PASS`, `NATIVE_FORMAL_JSON_SEQUENCE_BRIDGE_PASS`, с принятым upstream `MTS_V015_FORMAL_PRODUCTION_REFINEMENT=GREEN`. **Статус полного семантического переноса остаётся NOT_PROVED**: произвольные строки и графовые ID не сопоставлены с native handles, исходный `$links` не импортируется целиком в source ANet, правила в нашем JSON не проходили этот метакомпилятор и не исполнялись в native Γ как часть полного end-to-end. Тем более нет доказанного преобразования всей асети с preservation of contextual identities. Нельзя объявлять `MTS_v015_FULL_INTEROP=PASS`.
+

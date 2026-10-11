@@ -33,7 +33,8 @@ try{
   observedSources:docs.length,
   totalInputBytes:docs.reduce((s,d)=>s+d.inputBytes,0),
   totalCodePoints:docs.reduce((s,d)=>s+d.codePoints,0),
-  fullCorpusGzipBytes:0,
+  sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
+  sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
   sqlite,documents:docs,
   scientificLimitations:[
@@ -49,7 +50,10 @@ try{
  console.log("E0_CORPUS_SUMMARY "+JSON.stringify({
   files:report.observedSources,sourceBytes:report.totalInputBytes,
   codePoints:report.totalCodePoints,uniqueLinks:report.graphUniqueRows,
-  uniquePairs:report.graphUniquePairs,sqliteReplay:report.sqlite.status,
+  uniquePairs:report.graphUniquePairs,
+  perDocumentGzipBytes:report.sumPerDocumentGzipBytes,
+  perDocumentGraphJsonBytes:report.sumPerDocumentGraphJsonBytes,
+  sqliteReplay:report.sqlite.status,sqliteMs:report.sqlite.sqliteLoadIndexAndReplayMs,
   status:report.status
  }));
 } finally {db.close();}

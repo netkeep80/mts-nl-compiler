@@ -6,6 +6,8 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import {canonicalPhysicalLinks,logicalGraphDigest,buildKnowledgeSnapshot} from '../src/knowledge-snapshot-v0.mjs';
+import {readNumericLinks} from '../src/numeric-link-store-v1.mjs';
+import {migrateLegacyLinks} from '../src/numeric-legacy-bridge-v1.mjs';
 const schema=readFileSync(new URL('../db/schema.sql',import.meta.url),'utf8');
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const atom=(link_id,string,weight=null)=>({link_id,from_id:null,to_id:null,string,weight});
@@ -57,8 +59,14 @@ test('cold independent SQLite consumer is read-only with same physical identity 
   const cold=new DatabaseSync(path,{readOnly:true});
   try{
    assert.equal(cold.prepare('PRAGMA integrity_check').get().integrity_check,'ok');
-   const actual=cold.prepare('SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id').all();
-   assert.deepEqual(actual.map(({link_id,from_id,to_id,string,weight})=>({link_id,from_id,to_id,string,weight})),canonicalPhysicalLinks(fixture));
+   const independent=new DatabaseSync(':memory:');
+   try{
+    independent.exec(schema);
+    migrateLegacyLinks(independent,fixture);
+    assert.deepEqual(readNumericLinks(cold),readNumericLinks(independent));
+    assert.equal(readNumericLinks(cold).length,fixture.length);
+    assert.ok(readNumericLinks(cold).every(x=>typeof x.link_id==='bigint'));
+   }finally{independent.close();}
    assert.throws(()=>cold.exec("INSERT INTO links(link_id,string) VALUES('extra','invalid')"),/readonly/i);
   }finally{cold.close();}
  }finally{rmSync(dir,{recursive:true,force:true});}

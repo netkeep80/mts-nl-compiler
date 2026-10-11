@@ -64,7 +64,7 @@ test("all projected profiles roundtrip through exactly one physical SQLite table
    db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
    assert.equal(replaySnapshotInSqlite(db,snapshot,loadRows,counterMismatches),
      snapshot.retainedLinks,label);
-   assert.equal(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table'").get().n,1);
+   assert.equal(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n,1);
    assert.equal(snapshot.closure,true);
   } finally {db.close();}
  }

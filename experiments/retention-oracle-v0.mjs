@@ -132,14 +132,23 @@ export function runRetentionExperiment(fixture) {
 export function replaySnapshotInSqlite(db,snapshot,loadRows,counterMismatches) {
  const raw=snapshot.links.map(l=>({link_id:l.link_id,from_id:l.from_id,
   to_id:l.to_id,string:l.string,weight:l.weight}));
- loadRows(db,raw);
+ const mapping=loadRows(db,raw).idMap;
  if(counterMismatches(db).length)throw new Error("Counter mismatch");
- const got=db.prepare(
+ const query=db.prepare(
   "SELECT link_id,from_id,to_id,string,weight,from_uses,to_uses FROM links ORDER BY link_id"
- ).all();
+ );query.setReadBigInts(true);
+ const got=query.all();
  if(got.length!==snapshot.links.length)throw new Error("Lost rows on replay");
- for(let i=0;i<got.length;i++)
-  if(JSON.stringify({...got[i]})!==JSON.stringify(snapshot.links[i]))
-   throw new Error("Rebuilt structural counters differ: "+i);
+ const phys=new Map(got.map(row=>[row.link_id,row]));
+ for(const expected of snapshot.links){
+  const physical=phys.get(mapping.get(expected.link_id));
+  if(!physical)throw new Error("Lost physical ID "+expected.link_id);
+  if(physical.from_id!==(expected.from_id===null?null:mapping.get(expected.from_id))||
+    physical.to_id!==(expected.to_id===null?null:mapping.get(expected.to_id))||
+    physical.string!==expected.string||physical.weight!==expected.weight||
+    physical.from_uses!==BigInt(expected.from_uses)||
+    physical.to_uses!==BigInt(expected.to_uses))
+    throw new Error("Rebuilt structural counters/aliases differ: "+expected.link_id);
+ }
  return got.length;
 }

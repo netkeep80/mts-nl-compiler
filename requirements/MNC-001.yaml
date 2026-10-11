@@ -8,9 +8,15 @@ artifacts:
     relations: [requires, implements]
   - path: data/links.json
     relations: [requires]
-  - path: data/strings.json
+  - path: src/store.mjs
+    relations: [requires, implements]
+  - path: src/dag.mjs
+    relations: [requires, implements]
+  - path: corpus/pilot.json
     relations: [requires]
   - path: tests/schema.test.mjs
+    relations: [requires, verifies]
+  - path: tests/dag.test.mjs
     relations: [requires, verifies]
   - path: package.json
     relations: [requires, implements]

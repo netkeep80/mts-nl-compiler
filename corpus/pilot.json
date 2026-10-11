@@ -1,0 +1,282 @@
+[
+  {
+    "id": "P001",
+    "domain": "ru",
+    "text": "Подлежащее согласуется со сказуемым.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P002",
+    "domain": "ru",
+    "text": "Сложное предложение состоит из нескольких частей.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P003",
+    "domain": "ru",
+    "text": "Причастие может зависеть от существительного.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P004",
+    "domain": "ru",
+    "text": "Не каждое слово имеет одно значение.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P005",
+    "domain": "ru",
+    "text": "Каждое слово не имеет значения.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P006",
+    "domain": "ru",
+    "text": "Буквы е и ё нельзя безусловно отождествлять.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P007",
+    "domain": "ru",
+    "text": "Падежная форма зависит от контекста.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P008",
+    "domain": "ru",
+    "text": "В предложении есть прямая речь: «Я вернусь!»",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P009",
+    "domain": "lit",
+    "text": "Лес молчал, словно прислушивался к шагам путника.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P010",
+    "domain": "lit",
+    "text": "Слово «ключ» обозначает родник или средство для замка.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P011",
+    "domain": "lit",
+    "text": "«Какой чудесный день», — сказал рассказчик.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P012",
+    "domain": "lit",
+    "text": "Время бежало незаметно, а город ещё спал.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P013",
+    "domain": "lit",
+    "text": "Образ героя раскрывается через его поступки.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P014",
+    "domain": "lit",
+    "text": "Повествователь может ошибаться в своих суждениях.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P015",
+    "domain": "lit",
+    "text": "Тема текста отличается от его основной мысли.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P016",
+    "domain": "lit",
+    "text": "Фраза «тяжёлое слово» может иметь переносный смысл.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P017",
+    "domain": "math",
+    "text": "Пусть x ∈ ℝ и x² ≥ 0.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P018",
+    "domain": "math",
+    "text": "Из a = b следует a + c = b + c.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P019",
+    "domain": "math",
+    "text": "При a ≠ 0 уравнение ax = b имеет решение x = b/a.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P020",
+    "domain": "math",
+    "text": "a+b*c",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P021",
+    "domain": "math",
+    "text": "(a+b)*c",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P022",
+    "domain": "math",
+    "text": "x², x^2 и x_{2} — разные исходные записи.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P023",
+    "domain": "math",
+    "text": "∀x ∈ ℕ: x + 0 = x.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P024",
+    "domain": "math",
+    "text": "Для всех ε > 0 существует δ > 0.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P025",
+    "domain": "logic",
+    "text": "Если A, то B.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P026",
+    "domain": "logic",
+    "text": "Если B, то A.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P027",
+    "domain": "logic",
+    "text": "¬∀x P(x) не равносильно ∀x ¬P(x).",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P028",
+    "domain": "logic",
+    "text": "A→B",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P029",
+    "domain": "logic",
+    "text": "B→A",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P030",
+    "domain": "logic",
+    "text": "Из A и A→B следует B.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P031",
+    "domain": "logic",
+    "text": "Не каждое требование обязательно выполняется.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P032",
+    "domain": "logic",
+    "text": "Для каждого x существует y: R(x,y).",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P033",
+    "domain": "code",
+    "text": "REST API возвращает JSON.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P034",
+    "domain": "code",
+    "text": "SQL-запрос SELECT извлекает строки из таблицы.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P035",
+    "domain": "code",
+    "text": "Если x == null, функция возвращает значение по умолчанию.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P036",
+    "domain": "code",
+    "text": "TypeScript допускает запись const x = 1;",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P037",
+    "domain": "code",
+    "text": "В Java метод public static void main(String[] args) запускает программу.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P038",
+    "domain": "code",
+    "text": "Компилятор различает идентификаторы API и Api.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P039",
+    "domain": "code",
+    "text": "Пусть f(x) = x*x; тогда f(3) = 9.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  },
+  {
+    "id": "P040",
+    "domain": "code",
+    "text": "Индексы позволяют ускорить поиск по ключу.",
+    "source": "synthetic-in-house",
+    "semantic_gold": "NOT_VERIFIED"
+  }
+]

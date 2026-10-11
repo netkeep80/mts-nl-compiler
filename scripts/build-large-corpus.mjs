@@ -1,11 +1,11 @@
 // Full corpus build: exactly pinned literary works → SQLite bigint Links.
-// Every successful full build MUST write both TOP-100 reports and performance.
+// Every successful full build MUST write both TOP-1000 reports and performance.
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdirSync,rmSync,existsSync,statSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {resolve} from 'node:path';
 import {NUMERIC_LINK_SCHEMA_V1} from '../src/numeric-link-store-v1.mjs';
-import {CountedNumericCorpusLoader,topObservedWords,top100Markdown}
+import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
 const tick=()=>process.hrtime.bigint();
 const ms=from=>+(Number(tick()-from)/1e6).toFixed(3);
@@ -17,8 +17,8 @@ const totalExpected=manifest.books.reduce((n,x)=>n+x.expectedBytes,0);
 if(totalExpected!==manifest.expectedTotalSourceBytes)throw Error('Corpus source budget mismatch');
 mkdirSync('reports',{recursive:true});
 const databasePath=resolve('reports/knowledge-large.sqlite');
-const reportJson=resolve('reports/top-100-links.json');
-const reportMd=resolve('reports/top-100-links.md');
+const reportJson=resolve('reports/top-1000-links.json');
+const reportMd=resolve('reports/top-1000-links.md');
 const perfPath=resolve('reports/large-corpus-performance.json');
 // Never allow stale artifacts from a previous successful build to survive failure.
 for(const file of [databasePath,reportJson,reportMd,perfPath])
@@ -51,8 +51,8 @@ try{
  const finalizeStart=tick();
  const final=loader.finalize();
  const finishMs=ms(finalizeStart);
- top=loader.topLinks(100);
- if(top.top.length!==100)throw Error('TOP-100 links missing/underfilled');
+ top=loader.topLinks(1000);
+ if(top.top.length!==1000)throw Error('TOP-1000 links missing/underfilled');
  if(top.denominatorPairEvents!==measurements.reduce((n,x)=>n+Math.max(0,x.codepoints-1),0))
   throw Error('Observed pair event count inconsistent with sources');
  const sqliteStart=tick();
@@ -129,24 +129,24 @@ try{
  // Finish SQL before linguistic frequency accounting; explicit memory release.
  loader=null;
 }finally{db.close();}
-if(!perf)throw Error('Incomplete build refused: TOP100 not published');
+if(!perf)throw Error('Incomplete build refused: TOP1000 not published');
 if(global.gc)global.gc();
 const wordsStart=tick();
 const docsForWords=documents.map(x=>({id:x.id,source:x.bytes.toString('utf8')}));
-const words=topObservedWords(docsForWords,100);
-if(words.classes.some(x=>x.top.length!==100))throw Error('TOP100 words or phrases incomplete');
+const words=topObservedWords(docsForWords,1000);
+if(words.classes.some(x=>x.top.length!==1000))throw Error('TOP1000 words or phrases incomplete');
 const wordStatsMs=ms(wordsStart);
 perf.wordPhraseFrequencyMs=wordStatsMs;
 // Reopen TOP links for output from in-memory record retained in the build.
 // The reports are emitted ONLY after all validation has completed.
-if(!top)throw Error('TOP100 unavailable after loader close');
-writeFileSync(reportJson,JSON.stringify({schema:'mts-nl/full-corpus-top100/v1',
+if(!top)throw Error('TOP1000 unavailable after loader close');
+writeFileSync(reportJson,JSON.stringify({schema:'mts-nl/full-corpus-top1000/v2',
  corpus:{books:perf.books,sourceBytes:perf.sourceBytes,insertedLinks:perf.insertedLinks},
  links:top,words},null,2)+'\n');
-writeFileSync(reportMd,top100Markdown(top,words));
+writeFileSync(reportMd,topRankedMarkdown(top,words));
 writeFileSync(perfPath,JSON.stringify(perf,null,2)+'\n');
-console.log('LARGE_CORPUS_TOP100_ROWS '+JSON.stringify(top.top));
-console.log('LARGE_CORPUS_TOP100 '+JSON.stringify({
+console.log('LARGE_CORPUS_TOP1000_ROWS '+JSON.stringify(top.top));
+console.log('LARGE_CORPUS_TOP1000 '+JSON.stringify({
  links:top.top.length,words:words.classes[0].top.length,
  bigrams:words.classes[1].top.length,trigrams:words.classes[2].top.length,
  mostObservedLink:top.top[0],topReport:reportMd,

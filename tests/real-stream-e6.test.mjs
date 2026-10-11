@@ -40,12 +40,23 @@ test("E6 local scalar stream and complete current/retained source-Link costs",()
 test("E6 full real book + two full articles pinned by exact Git blob",{
  timeout:240000
 },async()=>{
- const records=[];
+ const records=[],mergedSelected=new Set(),mergedRetained=new Set();
  for(const id of ids){
   const meta=manifest.sources.find(x=>x.id===id);
   assert.ok(meta,"missing pinned original "+id);
   const raw=await getPinned(meta);
-  const r=analyzeRealStream(raw,{id:meta.id});
+  const full=analyzeRealStream(raw,{id:meta.id,includeLinkIds:true});
+  const {selectedDupletIds,retainedDupletIds,...r}=full;
+  assert.equal(selectedDupletIds.length,r.selectedDuplets);
+  assert.equal(retainedDupletIds.length,r.retainedDuplets);
+  for(const link of selectedDupletIds)mergedSelected.add(link);
+  for(const link of retainedDupletIds)mergedRetained.add(link);
+  assert.equal(r.lateRevisionWitnesses.length,r.lateOldRootsChanged);
+  for(const witness of r.lateRevisionWitnesses){
+   assert.ok(witness.distanceFromFront>10000);
+   assert.notEqual(witness.oldRoot,witness.newRoot);
+   assert.match(witness.originalWatchSha256,/^[0-9a-f]{64}$/);
+  }
   assert.equal(r.inputBytes,meta.expectedBytes);
   assert.equal(r.newAdjacentPositionsInspected,r.codepoints-r.bootstrap);
   assert.ok(r.fullScanOracleChecks>0);
@@ -57,6 +68,9 @@ test("E6 full real book + two full articles pinned by exact Git blob",{
   }));
  }
  assert.equal(records.length,3);
+ assert.ok(mergedSelected.size>0);
+ assert.ok(mergedRetained.size>=mergedSelected.size);
+ assert.ok(mergedSelected.size<=records.reduce((n,r)=>n+r.selectedDuplets,0));
  assert.ok(records.some(x=>x.kind==="book"));
  assert.ok(records.some(x=>x.language==="ru"));
  assert.ok(records.some(x=>x.kind==="technical-article"));
@@ -70,7 +84,11 @@ test("E6 full real book + two full articles pinned by exact Git blob",{
   lateOldRootsChanged:records.reduce((a,x)=>a+x.lateOldRootsChanged,0),
   sumPerDocumentSelectedDuplets:records.reduce((a,x)=>a+x.selectedDuplets,0),
   sumPerDocumentRetainedDuplets:records.reduce((a,x)=>a+x.retainedDuplets,0),
-  limitation:"sum of independent per-document graphs; no corpus-wide Link dedup"
+  mergedSelectedUniqueDuplets:mergedSelected.size,
+  mergedRetainedUniqueDuplets:mergedRetained.size,
+  crossDocumentSharingSavings:records.reduce((a,x)=>a+x.selectedDuplets,0)-
+   mergedSelected.size,
+  limitation:"merge of structurally reachable per-document Links only, not semantic MTS contexts/proofs"
  }));
 });
 test("E6 rejects invalid bytes/length/range without silent fallback",()=>{

@@ -16,7 +16,7 @@ function cost(rows,roots){
   seen.add(id);
   if(r.from_id!==null){pairs.add(id);todo.push(r.from_id,r.to_id);}
  }
- return {uniqueLinks:seen.size,uniqueDuplets:pairs.size};
+ return {uniqueLinks:seen.size,uniqueDuplets:pairs.size,dupletIds:pairs};
 }
 const rule=(a,r)=>r?a.putPair(a.putAtom(r.a),a.putAtom(r.b)):null;
 function roots(a,whole,initial,retained){
@@ -32,14 +32,15 @@ function roots(a,whole,initial,retained){
 }
 export function analyzeRealStream(raw,{
  id,bootstrap=384,starts=[0,128,256],watchLength=64,stride=8192,
- maxWatchers=32
+ maxWatchers=32,includeLinkIds=false
 }={}){
  if(!Buffer.isBuffer(raw)||typeof id!=="string"||!id||
   !Number.isSafeInteger(bootstrap)||bootstrap<8||
   !Array.isArray(starts)||starts.length===0||
   !Number.isSafeInteger(watchLength)||watchLength<2||
   !Number.isSafeInteger(stride)||stride<1||
-  !Number.isSafeInteger(maxWatchers)||maxWatchers<starts.length)
+  !Number.isSafeInteger(maxWatchers)||maxWatchers<starts.length||
+  typeof includeLinkIds!=="boolean")
   fail("invalid options");
  let source;
  try{source=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(raw);}
@@ -57,7 +58,7 @@ export function analyzeRealStream(raw,{
  const initialLeader=a.leader;
  let leaderChanges=0,affected=0,changedRoots=0,late=0,processed=0;
  let checkCount=0,referenceInspections=0;
- const samples=[];
+ const samples=[],lateRevisionWitnesses=[];
  const tick=process.hrtime.bigint();
  for(let i=bootstrap;i<n;i++){
   const event=a.append(chars[i],{eventId:id+":"+i});
@@ -72,8 +73,24 @@ export function analyzeRealStream(raw,{
    let response=a.processPending({maxWatchers});
    while(true){
     processed+=response.processed;
-    changedRoots+=response.modified.filter(v=>v.changed).length;
-    late+=response.modified.filter(v=>v.changed&&v.distanceFromFront>10000).length;
+    for(const change of response.modified){
+     if(!change.changed)continue;
+     changedRoots++;
+     if(change.distanceFromFront>10000){
+      late++;
+      const w=a.watches.get(change.id);
+      if(a.decode(change.oldRoot)!==w.content||
+         a.decode(change.newRoot)!==w.content)fail("late root lost immutable observation");
+      lateRevisionWitnesses.push({
+       externalOccurrenceId:id+":"+i,atCodepoint:i,
+       watchId:change.id,distanceFromFront:change.distanceFromFront,
+       originalWatchSha256:w.sha256,oldRoot:change.oldRoot,newRoot:change.newRoot,
+       oldRootDuplets:cost(a.rows,[change.oldRoot]).uniqueDuplets,
+       newRootDuplets:cost(a.rows,[change.newRoot]).uniqueDuplets,
+       selectedRuleBefore:event.previous,selectedRuleAfter:event.current
+      });
+     }
+    }
     if(response.status==="QUIESCENT")break;
     if(response.status!=="RESOURCE_LIMIT")fail("unknown queue status");
     response=a.processPending({maxWatchers});
@@ -114,6 +131,9 @@ export function analyzeRealStream(raw,{
   retainedDuplets: retained.uniqueDuplets,
   selectedLinks:selected.uniqueLinks,retainedLinks:retained.uniqueLinks,
   selectedFullSourceRoot:whole,transitionExamples:samples,
+  lateRevisionWitnesses,
+  selectedDupletIds:includeLinkIds?[...selected.dupletIds]:undefined,
+  retainedDupletIds:includeLinkIds?[...retained.dupletIds]:undefined,
   costScope:"source root + watched old views + selected pair; retained adds old source prefix and historical roots/rules",
   doesNotProve:"full-source DAG incremental update, native Γ, semantic inference, global MDL"
  };

@@ -97,7 +97,7 @@ g.atom("__proto__","__proto__");
 {
  const {memory,basis}=newMemory();
  const reg=createNativeRegistry(memory,basis,api,loaded.rows);
- assert.throws(()=>readNativeRegistry(memory,basis,api,reg,{maxRows:0}),
+ assert.throws(()=>readNativeRegistry(memory,basis,api,{...reg,maxRows:0}),
   /RESOURCE_LIMIT row count/); // intentionally invalid use corrected below
 }
 console.log(JSON.stringify({

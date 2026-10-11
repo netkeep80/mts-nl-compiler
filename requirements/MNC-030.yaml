@@ -12,7 +12,9 @@ upstream:
   repository: netkeep80/anum_docs
   revision: c64b7e21340c6add248c8f380f3fef1292616ac6
   gamma_test_side: ts/test/v015-structural-aset-gamma-core-a9a.test.ts
-native_gamma_cascade: PENDING_CI
+native_gamma_cascade: TESTED_ON_PINNED_A9
+empirical_score_semantics: RESEARCH_ONLY_UNCALIBRATED
+self_generated_evidence_guard: TESTED
 weight_semantics: NOT_ACCEPTED
 production_gamma_api: NOT_EXPORTED
 full_native_source_parity: NOT_PROVED

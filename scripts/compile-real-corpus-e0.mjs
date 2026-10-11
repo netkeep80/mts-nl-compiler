@@ -8,6 +8,7 @@ import {encodePackedGraph,decodePackedGraph} from "../src/packed-dag-e1.mjs";
 import {learnObservedPairGrammar} from "../src/observed-pair-grammar-e2.mjs";
 import {compileTextExact,unionCompiledGraphs,sqliteReplay}
  from "../src/real-corpus-e0.mjs";
+import {NumericCorpusLoader,coldNumericCorpusReplay} from "../src/numeric-corpus-loader-v1.mjs";
 const reportSha=x=>createHash("sha256").update(x).digest("hex");
 const manifest=JSON.parse(readFileSync(new URL("../corpus/real-sources-e0.json",import.meta.url),"utf8"));
 if(manifest.sources.length<5)throw Error("minimum five genuine external sources");
@@ -28,6 +29,71 @@ for(const meta of manifest.sources){
  console.log("E0_DOC "+JSON.stringify(docs.at(-1)));
 }
 const union=unionCompiledGraphs(all);
+
+// Independent direct source-to-SQLite numeric loader: no structural hash IDs,
+// no legacy a:/p: aliases. Per-book performance is collected on exact pinned bytes.
+const directDb=new DatabaseSync(":memory:");
+let numericImport;
+try{
+ const schemaBegin=process.hrtime.bigint();
+ directDb.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
+ const schemaAndIndexesMs=Number(process.hrtime.bigint()-schemaBegin)/1e6;
+ const constructorBegin=process.hrtime.bigint();
+ const loader=new NumericCorpusLoader(directDb);
+ const cacheStartupMs=Number(process.hrtime.bigint()-constructorBegin)/1e6;
+ const loaded=[],perBook=[];
+ const wallBegin=process.hrtime.bigint();
+ for(const meta of manifest.sources){
+  const bytes=readFileSync(resolve(meta.path));
+  const compiled=all.find(x=>x.metrics.id===meta.id);
+  if(!compiled||!bytes.equals(Buffer.from(compiled.source,"utf8")))
+   throw Error("Different input to direct numeric benchmark "+meta.id);
+  const row=loader.appendBook(bytes,{id:meta.id,maxCodePoints:350000});
+  loaded.push({id:meta.id,rootLinkId:row.rootLinkId,bytes});
+  perBook.push(row);
+  console.log("E0_NUMERIC_IMPORT_DOC "+JSON.stringify(row));
+ }
+ const insertionWallMs=Number(process.hrtime.bigint()-wallBegin)/1e6;
+ const final=loader.finalize();
+ if(Number(final.links)!==union.length)
+  throw Error("Direct numeric Link count differs from E0 structural oracle");
+ const cold=coldNumericCorpusReplay(directDb,loaded);
+ if(cold.status!=="EXACT_NUMERIC_SQLITE_REPLAY_PASS"||
+    cold.documents.length!==loaded.length)
+  throw Error("Hashless numeric SQLite cold verification failed");
+ const imported=perBook.reduce((n,d)=>n+d.insertedLinks,0);
+ const totalInput=perBook.reduce((n,d)=>n+d.sourceBytes,0);
+ const measuredInsertMs=perBook.reduce((n,d)=>n+d.compileAndSqlInsertMs+d.commitMs,0);
+ const summary={
+  schema:"mts-nl/numeric-corpus-import/v1",
+  status:"HASHLESS_NUMERIC_SQLITE_EXACT_REPLAY_PASS",
+  limits:"Benchmarks are per-run wall-clock observations, not cross-machine normalized claims",
+  toolchain:{node:process.version,sqlite:directDb.prepare("SELECT sqlite_version() v").get().v,
+   platform:process.platform,arch:process.arch,ci:!!process.env.CI,
+   transaction:"BEGIN IMMEDIATE / COMMIT per document",
+   poleIndexes:"indexed throughout load",
+   reuse:"explicit exact atoms/pairs maps; nonunique Link physical schema"},
+  sources:perBook.length,sourceBytes:totalInput,
+  insertedLinks:imported,expectedStructuralLinks:union.length,
+  reusedAtoms:perBook.reduce((n,d)=>n+d.reusedAtoms,0),
+  reusedPairs:perBook.reduce((n,d)=>n+d.reusedPairs,0),
+  schemaAndIndexesMs:+schemaAndIndexesMs.toFixed(3),
+  cacheStartupMs:+cacheStartupMs.toFixed(3),
+  documentInsertionWallMs:+insertionWallMs.toFixed(3),
+  sumCompileAndSqlInsertMs:+perBook.reduce((n,d)=>n+d.compileAndSqlInsertMs,0).toFixed(3),
+  sumCommitMs:+perBook.reduce((n,d)=>n+d.commitMs,0).toFixed(3),
+  aggregateInsertedLinksPerSecond:+(imported/Math.max(.001,measuredInsertMs)*1000).toFixed(1),
+  aggregateSourceMiBPerSecond:+(totalInput/1048576/Math.max(.001,insertionWallMs)*1000).toFixed(3),
+  ...final,
+  sqliteVacuumBytes:cold.sqliteVacuumBytes,
+  vacuumMs:cold.vacuumMs,coldReadOnlyReplayMs:cold.coldReadOnlyReplayMs,
+  coldStatus:cold.status,coldResidentLinks:cold.residentLinkRows,
+  perBook
+ };
+ numericImport=summary;
+ console.log("E0_NUMERIC_IMPORT_SUMMARY "+JSON.stringify(summary));
+}finally{directDb.close();}
+
 const sourceRefs=all.map(x=>({
  id:x.metrics.id,rootLink:x.metrics.rootLink,inputSha256:x.metrics.inputSha256
 }));
@@ -165,10 +231,11 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,sqliteArchive,packedE1,e2,e2Sweep,e2TopDuplets,e3Comparison,documents:docs,
+  sqlite,sqliteArchive,numericImport,packedE1,e2,e2Sweep,e2TopDuplets,e3Comparison,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
-   "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",
+   "Legacy structural E0 hash-consing is an independent research oracle, not SQL Link identity",
+   "Numeric import metrics are same-run wall-clock samples; compare under controlled settings",
    "Full graph JSON includes long SHA256 link identities; no claim of byte compression",
    "Source files checked out at exact Git commit and blob SHA1, no training/LLM",
    "Weights and physical usage counters do not represent observation probabilities",
@@ -188,6 +255,9 @@ try{
   sqliteZstdArchiveBytes:sqliteArchive.zstdArchiveBytes,
   compactBinaryBytes:packedE1.binaryBytes,compactBinaryGzipBytes:packedE1.binaryGzipBytes,
   learnedGrammarBytes:e2.binaryBytes,learnedGrammarGzipBytes:e2.gzipBytes,
+  numericImportStatus:numericImport.status,
+  numericImportLinks:numericImport.insertedLinks,
+  numericImportLinksPerSecond:numericImport.aggregateInsertedLinksPerSecond,
   status:report.status
  }));
 } finally {db.close();}

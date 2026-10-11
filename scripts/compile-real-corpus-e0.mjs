@@ -3,6 +3,7 @@ import {resolve} from "node:path";
 import {createHash} from "node:crypto";
 import {DatabaseSync} from "node:sqlite";
 import {gzipSync} from "node:zlib";
+import {measureTransientSqliteArchive} from "../src/sqlite-archive-metrics-e0.mjs";
 import {encodePackedGraph,decodePackedGraph} from "../src/packed-dag-e1.mjs";
 import {learnObservedPairGrammar} from "../src/observed-pair-grammar-e2.mjs";
 import {compileTextExact,unionCompiledGraphs,sqliteReplay}
@@ -154,6 +155,8 @@ const db=new DatabaseSync(":memory:");
 try{
  db.exec(readFileSync(new URL("../db/schema.sql",import.meta.url),"utf8"));
  const sqlite=sqliteReplay(db,union,all);
+ const sqliteArchive=measureTransientSqliteArchive(db,{expectedRows:union.length});
+ console.log("E0_SQLITE_ARCHIVE "+JSON.stringify(sqliteArchive));
  const report={schema:"mts-nl/real-corpus-benchmark-e0/v1",status:"EXACT_STRUCTURAL_ENCODING_ONLY",
   manifestSha256:reportSha(readFileSync(new URL("../corpus/real-sources-e0.json",import.meta.url))),
   observedSources:docs.length,
@@ -162,7 +165,7 @@ try{
   sumPerDocumentGzipBytes:docs.reduce((sum,d)=>sum+d.gzipInputBytes,0),
   sumPerDocumentGraphJsonBytes:docs.reduce((sum,d)=>sum+d.canonicalJsonBytes,0),
   graphUniqueRows:union.length,graphUniquePairs:sqlite.pairRows,
-  sqlite,packedE1,e2,e2Sweep,e2TopDuplets,e3Comparison,documents:docs,
+  sqlite,sqliteArchive,packedE1,e2,e2Sweep,e2TopDuplets,e3Comparison,documents:docs,
   scientificLimitations:[
    "Only P0 balanced Unicode DAG, not grammatical or semantic FORMAL compilation",
    "Hash-consing minimizes repeated identical chosen subtrees, not global MDL",
@@ -181,6 +184,8 @@ try{
   perDocumentGraphJsonBytes:report.sumPerDocumentGraphJsonBytes,
   sqliteReplay:report.sqlite.status,sqliteMs:report.sqlite.sqliteLoadIndexAndReplayMs,
   sqliteLogicalBytes:report.sqlite.sqliteLogicalBytes,
+  sqliteVacuumBytes:sqliteArchive.sqliteVacuumBytes,
+  sqliteZstdArchiveBytes:sqliteArchive.zstdArchiveBytes,
   compactBinaryBytes:packedE1.binaryBytes,compactBinaryGzipBytes:packedE1.binaryGzipBytes,
   learnedGrammarBytes:e2.binaryBytes,learnedGrammarGzipBytes:e2.gzipBytes,
   status:report.status

@@ -26,6 +26,18 @@ artifacts:
     relations: [requires]
   - path: experiments/OBJECT_TREE_JSON.md
     relations: [requires, documents]
+  - path: experiments/native-exact-sequence-bridge-v0.mjs
+    relations: [requires, implements]
+  - path: experiments/FORMAL_BRIDGE.md
+    relations: [requires, documents]
+  - path: tests/native-exact-sequence-bridge.test.mjs
+    relations: [requires, verifies]
+  - path: requirements/MNC-024.yaml
+    relations: [requires]
+  - path: tests/upstream-formal-v015.integration.mjs
+    relations: [requires, verifies]
+  - path: .github/workflows/formal-bridge.yml
+    relations: [requires, verifies]
   - path: tests/schema.test.mjs
     relations: [requires, verifies]
   - path: tests/dag.test.mjs

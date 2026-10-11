@@ -1,0 +1,32 @@
+id: MNC-024
+status: RESEARCH_UNACCEPTED
+normative_language: ru
+requirement: >
+  Экспорт асети в JSON допускает только строки, объекты и null.
+  null является исключительно терминатором выбранной последовательности
+  в транспортном JSON и не переопределяет bare-entry канонического
+  FORMAL JSON МТС v0.15. Пустая ExactSequence имеет денотацию R;
+  сама R может встречаться значением позиции. Переход между транспортом
+  и семантическими ячейками допускается только как явно проверенный адаптер.
+compatibility_gate: FULL_SOURCE_ANET_INTERCHANGE_NOT_PROVED
+native_cell_shape_differential: PASS
+explicit_basis_sequence_native_compiler: PASS
+explicit_basis_formal_json_same_source: PASS
+arbitrary_text_atom_mapping: NOT_PROVED
+full_rule_graph_gamma_replay: NOT_EXECUTED
+source_of_truth:
+  repository: netkeep80/anum_docs
+  revision: c64b7e21340c6add248c8f380f3fef1292616ac6
+  references:
+    - docs/specs/Формальная нотация МТС.md
+    - ts/src/exact-sequence.ts
+    - formal/v0.15/regression/grounded-zero-role.json
+artifacts:
+  - path: experiments/native-exact-sequence-bridge-v0.mjs
+    relations: [requires, implements]
+  - path: tests/native-exact-sequence-bridge.test.mjs
+    relations: [requires, verifies]
+  - path: experiments/FORMAL_BRIDGE.md
+    relations: [requires, documents]
+  - path: experiments/object-tree-json-v0.mjs
+    relations: [requires, implements]

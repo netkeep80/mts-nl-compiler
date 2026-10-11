@@ -115,3 +115,27 @@ test("proof provenance never masquerades as an active fact on replay",()=>{
  const members=e.g.linksFrom("Context").map(x=>x.to_id);
  assert.equal(members.length,1);
 });
+
+
+test("parallel Link representatives and Γ proof results ignore input row order (#44)",()=>{
+ const e=setup();
+ e.known(e.fact("P","a"));
+ e.rule(["x"],[e.fact("P","x")],[e.fact("Q","x")]);
+ // Both pre-existing physical Links survive with distinct IDs and equal poles.
+ // They must never be selected by insertion order when the experiment derives Q(a).
+ const rows=[...e.g.nodes.values(),
+   {link_id:"zz:parallel",from_id:"Q",to_id:"a",string:null,weight:null},
+   {link_id:"aa:parallel",from_id:"Q",to_id:"a",string:null,weight:null}];
+ const forward=new LinkGraph(rows);
+ const reversed=new LinkGraph([...rows].reverse());
+ for(const graph of [forward,reversed]){
+   assert.equal(graph.get("zz:parallel").link_id,"zz:parallel");
+   assert.equal(graph.get("aa:parallel").link_id,"aa:parallel");
+   assert.equal(graph.makeDerived("Q","a"),"aa:parallel");
+ }
+ const options={theory:"Theory",context:"Context",nil:"NIL"};
+ const first=infer(forward,options),second=infer(reversed,options);
+ assert.deepEqual(first,second);
+ assert.equal(first.status,"QUIESCENT");
+ assert.ok(first.active.includes("aa:parallel"));
+});

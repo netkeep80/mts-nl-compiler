@@ -10,6 +10,8 @@ on:
       - tests/native-exact-sequence-bridge.test.mjs
       - tests/upstream-formal-v015.integration.mjs
       - tests/upstream-graph-identity.integration.mjs
+      - tests/upstream-native-gamma.integration.mjs
+      - requirements/MNC-028.yaml
       - experiments/native-graph-registry-v0.mjs
       - experiments/NATIVE_GRAPH_REGISTRY.md
       - requirements/MNC-024.yaml
@@ -53,3 +55,7 @@ jobs:
         env:
           UPSTREAM_MTS_PATH: upstream/anum_docs
         run: node tests/upstream-graph-identity.integration.mjs
+      - name: Accepted A9 test-side Gamma imported compression rule
+        env:
+          UPSTREAM_MTS_PATH: upstream/anum_docs
+        run: node tests/upstream-native-gamma.integration.mjs

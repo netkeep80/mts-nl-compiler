@@ -26,7 +26,9 @@ test("same Γ fires a Link-stored compression implication with fresh bindings",(
  assert.equal(p.fewerUniquePairs,true);
  assert.equal(p.accepted,false);
  assert.ok(report.physicalAfter>report.physicalBefore); // old graph AND witness remain
- assert.equal(g.get(p.provenance).from_id,"context");
+ const proofHead=g.get(g.get(p.provenance).from_id);
+ assert.equal(proofHead.from_id,rule);
+ assert.equal(proofHead.to_id,"context");
 });
 
 test("rule applies to unseen substrings and mixed Unicode without a new host branch",()=>{

@@ -101,3 +101,29 @@ test("E3 deterministic content-aware grouping is independent of document order",
  assert.deepEqual(a,b);
  assert.throws(()=>learnObservedPairGrammar(data,{rootGrouping:"invalid"}),/rootGrouping/);
 });
+
+test("E3 shared long Link nodes survive different preceding prefixes",()=>{
+ const phrase="переосмысление_сложной_последовательности_непрерывной_асети".repeat(3);
+ const corpus=[
+  d("a","A"+phrase+"-конец1"),
+  d("b","другая-предыстория-весьма-длинная-"+phrase+"-конец2")
+ ];
+ const run=rootGrouping=>learnObservedPairGrammar(corpus,{
+  maxRounds:0,rootGrouping,diagnosticTopN:50
+ });
+ const positional=run("balanced"),anchored=run("content-stable");
+ const sharedAtLeast10=x=>
+  x.diagnostics.topLongLinks.find(y=>y.minimumCodepoints===10).top
+   .filter(p=>p.byDocument.length===2);
+ const before=sharedAtLeast10(positional),after=sharedAtLeast10(anchored);
+ assert.ok(after.length>0,"content-based grouping should share a long interior Link");
+ assert.equal(positional.remainingPositions,anchored.remainingPositions);
+ assert.equal(positional.substitutionRounds,anchored.substitutionRounds);
+ console.log("E3_SHIFTED_PHRASE "+JSON.stringify({
+  commonSubstringCodepoints:[...phrase].length,
+  balanced:{uniqueDuplets:positional.graphPairRows,sharedLongTop50:before.length,
+   longestSharedSpan:Math.max(0,...before.map(x=>x.expandedCodepoints))},
+  contentStable:{uniqueDuplets:anchored.graphPairRows,sharedLongTop50:after.length,
+   longestSharedSpan:Math.max(0,...after.map(x=>x.expandedCodepoints))}
+ }));
+});

@@ -25,3 +25,25 @@ test("E4 rejects non-event or nonexistent prior observation",()=>{
  assert.throws(()=>analyzeLateSymbolRevision({before:"abc",receivedSymbol:"d",
   oldFragment:"xyz"}),/invalid event/);
 });
+
+test("E4 probe source does not contribute to learning counts or change selected rule",async()=>{
+ const {learnObservedPairGrammar}=await import("../src/observed-pair-grammar-e2.mjs");
+ const {createHash}=await import("node:crypto");
+ const d=(id,source)=>({id,source,
+  inputSha256:createHash("sha256").update(Buffer.from(source,"utf8")).digest("hex")});
+ const train=[d("source","abababcdcd")],probe=[d("probe","ababababab")];
+ const plain=learnObservedPairGrammar(train,{maxRounds:2,rootGrouping:"content-stable"});
+ const withProbe=learnObservedPairGrammar(train,{maxRounds:2,rootGrouping:"content-stable",
+  probeDocuments:probe});
+ assert.deepEqual(withProbe.roundDetails,plain.roundDetails);
+ assert.equal(withProbe.remainingPositions,plain.remainingPositions);
+ assert.equal(withProbe.substitutionRounds,plain.substitutionRounds);
+ assert.equal(withProbe.probeRoots.length,1);
+ assert.equal(withProbe.documents.length,plain.documents.length+1);
+ assert.throws(()=>learnObservedPairGrammar(train,{
+  maxRounds:1,probeDocuments:[d("source","abab")]
+ }),/duplicate external\/probe/);
+ assert.throws(()=>learnObservedPairGrammar(train,{
+  maxRounds:1,probeDocuments:[d("new","💡")]
+ }),/probe character not in the observed alphabet/);
+});

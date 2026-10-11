@@ -64,6 +64,11 @@ export function analyzeRealStream(raw,{
   const event=a.append(chars[i],{eventId:id+":"+i});
   assert.equal(event.inspectedNewAdjacentPositions,1);
   if(event.selectedChanged){
+   // Independently validate EACH natural rule transition, not only scheduled
+   // checkpoints. Essential for attributing a far-past root revision to one
+   // actually observed new Unicode scalar.
+   assert.deepEqual(a.leader,fullScanPairLeader(chars.slice(0,i+1).join("")));
+   checkCount++;referenceInspections+=i;
    leaderChanges++;
    affected+=event.invalidated;
    if(samples.length<8)samples.push({position:i,from:event.previous,

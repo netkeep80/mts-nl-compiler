@@ -1,0 +1,68 @@
+name: Exact compilation of real books and articles (E0)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - src/real-corpus-e0.mjs
+      - scripts/compile-real-corpus-e0.mjs
+      - corpus/real-sources-e0.json
+      - tests/real-corpus-e0.test.mjs
+      - .github/workflows/real-corpus-e0.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  corpus-e0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: d0rj/RusLit
+          ref: 4509680428729da225a73a22008133660f92bb7e
+          path: .sources/ruslit
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            poems/Pushkin/Евгений Онегин.txt
+            poems/Pushkin/Борис Годунов.txt
+            publicism/Tolstoy/Две войны.txt
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: GITenberg/Alice-s-Adventures-in-Wonderland_11
+          ref: 7f18748e114b994d5d9454d5793581bc0b9cf9d7
+          path: .sources/gitenberg
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            11-0.txt
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: mdn/content
+          ref: 276ba1b693cea46ed322a954ee9c58a2e880ece5
+          path: .sources/mdn
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            files/en-us/web/javascript/guide/introduction/index.md
+            files/en-us/web/javascript/guide/grammar_and_types/index.md
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+      - name: Unit smoke including Unicode/SQLite
+        run: npm test
+      - name: Compile six complete pinned real external texts
+        run: node scripts/compile-real-corpus-e0.mjs
+      - name: Retain reproducible metrics (NO source text)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: real-books-and-articles-e0
+          path: reports/real-corpus-E0.json
+          if-no-files-found: warn
+          retention-days: 30

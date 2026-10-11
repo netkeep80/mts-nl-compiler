@@ -1,4 +1,4 @@
-name: Two-table database checks
+name: One-table links and Unicode DAG checks
 
 on:
   pull_request:
@@ -16,5 +16,5 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
-      - name: Validate the two-table store
+      - name: Validate one-table store and lossless sequence DAG
         run: npm test

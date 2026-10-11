@@ -1,4 +1,5 @@
 id: MNC-001
+statement: unauthorized change to accepted authority
 artifacts:
   - path: README.md
     relations: [requires, documents]

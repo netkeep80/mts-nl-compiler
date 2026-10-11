@@ -1,0 +1,28 @@
+id: MNC-001
+artifacts:
+  - path: README.md
+    relations: [requires, documents]
+  - path: docs/architecture.md
+    relations: [requires, documents]
+  - path: db/schema.sql
+    relations: [requires, implements]
+  - path: data/links.json
+    relations: [requires]
+  - path: data/strings.json
+    relations: [requires]
+  - path: tests/schema.test.mjs
+    relations: [requires, verifies]
+  - path: package.json
+    relations: [requires, implements]
+  - path: repo-policy.json
+    relations: [requires, implements]
+  - path: .github/workflows/ci.yml
+    relations: [requires, verifies]
+  - path: .github/workflows/repo-guard.yml
+    relations: [requires, verifies]
+  - path: .anet/memory.json
+    relations: [requires, documents]
+  - path: requirements/MNC-001.yaml
+    relations: [requires]
+  - path: .github/PULL_REQUEST_TEMPLATE.md
+    relations: [requires, documents]

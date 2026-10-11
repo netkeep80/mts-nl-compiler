@@ -130,8 +130,11 @@ export function infer(g,{theory,context,nil,maxFirings=1000,maxRounds=100,maxIte
         const supports=g.makeList(m.used,nil);
         const outputs=g.makeList(results,nil);
         const bindingsGraph=g.makeList(bindings.map(([x,y])=>g.makeDerived(x,y)),nil);
-        const proofRoot=g.makeDerived(context,g.makeDerived(rule.id,
-          g.makeDerived(bindingsGraph,g.makeDerived(supports,outputs))));
+        // Proof witnesses MUST NOT have from_id=context: linksFrom(context)
+        // selects facts, so such a proof would become a false premise on replay.
+        // Keep context only as the SECOND pole of a dedicated provenance pair.
+        const proofRoot=g.makeDerived(g.makeDerived(rule.id,context),
+          g.makeDerived(bindingsGraph,g.makeDerived(supports,outputs)));
         proofs.push({rule:rule.id,premises:m.used,conclusions:results,
           bindings,proofRoot,kind:results.length?"APPLIED_NONEMPTY":"APPLIED_EMPTY"});
         firings++;

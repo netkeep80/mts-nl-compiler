@@ -60,6 +60,17 @@ export function buildKnowledgeSnapshot({rows,schemaSql,productVersion='0.0.0'}={
   assert.deepEqual(counterMismatches(db),[]);
   assert.equal(db.prepare('PRAGMA integrity_check').get().integrity_check,'ok');
   db.exec("VACUUM INTO '"+path.replaceAll("'","''")+"'");
+  // Cold consumer opens the actual persisted artifact independently in read-only mode.
+  const cold=new DatabaseSync(path,{readOnly:true});
+  try{
+   assert.equal(cold.prepare('PRAGMA integrity_check').get().integrity_check,'ok');
+   assert.deepEqual(counterMismatches(cold),[]);
+   const loaded=cold.prepare(
+    'SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id'
+   ).all();
+   assert.equal(JSON.stringify(loaded),JSON.stringify(canonical),
+    'cold consumer must retain exact physical identities, weights and cycles');
+  }finally{cold.close();}
   const sqlite=readFileSync(path);
   const graph=logicalGraphDigest(canonical);
   const manifest={format:'mts-nl/knowledge-snapshot/v0',

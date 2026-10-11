@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createHash} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {readFileSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {DatabaseSync} from 'node:sqlite';
 import {canonicalPhysicalLinks,logicalGraphDigest,buildKnowledgeSnapshot} from '../src/knowledge-snapshot-v0.mjs';
 const schema=readFileSync(new URL('../db/schema.sql',import.meta.url),'utf8');
 const sha=b=>createHash('sha256').update(b).digest('hex');
@@ -43,4 +46,20 @@ test('invalid source Link structures fail before SQLite publication',()=>{
  for(const rows of bad)assert.throws(()=>buildKnowledgeSnapshot({rows,schemaSql:schema}),/KNOWLEDGE_SNAPSHOT_INVALID/);
  assert.throws(()=>buildKnowledgeSnapshot({rows:fixture,schemaSql:'',productVersion:'0.1.0'}),/KNOWLEDGE_SNAPSHOT_INVALID/);
  assert.throws(()=>buildKnowledgeSnapshot({rows:fixture,schemaSql:schema,productVersion:'bad'}),/KNOWLEDGE_SNAPSHOT_INVALID/);
+});
+
+test('cold independent SQLite consumer is read-only with same physical identity graph',()=>{
+ const built=buildKnowledgeSnapshot({rows:fixture,schemaSql:schema});
+ const dir=mkdtempSync(join(tmpdir(),'mnc-rg324-cold-'));
+ try{
+  const path=join(dir,'knowledge.sqlite');
+  writeFileSync(path,built.sqlite);
+  const cold=new DatabaseSync(path,{readOnly:true});
+  try{
+   assert.equal(cold.prepare('PRAGMA integrity_check').get().integrity_check,'ok');
+   const actual=cold.prepare('SELECT link_id,from_id,to_id,string,weight FROM links ORDER BY link_id').all();
+   assert.deepEqual(actual.map(({link_id,from_id,to_id,string,weight})=>({link_id,from_id,to_id,string,weight})),canonicalPhysicalLinks(fixture));
+   assert.throws(()=>cold.exec("INSERT INTO links(link_id,string) VALUES('extra','invalid')"),/readonly/i);
+  }finally{cold.close();}
+ }finally{rmSync(dir,{recursive:true,force:true});}
 });

@@ -66,3 +66,9 @@ artifacts:
     relations: [requires]
   - path: .github/PULL_REQUEST_TEMPLATE.md
     relations: [requires, documents]
+  - path: src/knowledge-snapshot-v0.mjs
+    relations: [requires, implements]
+  - path: tests/knowledge-snapshot-v0.test.mjs
+    relations: [requires, verifies]
+  - path: docs/repo-guard-v324-routine-replay.md
+    relations: [requires, documents]

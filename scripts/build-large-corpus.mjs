@@ -143,7 +143,7 @@ if(!top)throw Error('TOP1000 unavailable after loader close');
 writeFileSync(reportJson,JSON.stringify({schema:'mts-nl/full-corpus-top1000/v2',
  corpus:{books:perf.books,sourceBytes:perf.sourceBytes,insertedLinks:perf.insertedLinks},
  links:top,words},null,2)+'\n');
-writeFileSync(reportMd,top100Markdown(top,words));
+writeFileSync(reportMd,topRankedMarkdown(top,words));
 writeFileSync(perfPath,JSON.stringify(perf,null,2)+'\n');
 console.log('LARGE_CORPUS_TOP1000_ROWS '+JSON.stringify(top.top));
 console.log('LARGE_CORPUS_TOP1000 '+JSON.stringify({

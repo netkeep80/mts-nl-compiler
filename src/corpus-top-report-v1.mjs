@@ -2,11 +2,18 @@
 import {NumericCorpusLoader} from './numeric-corpus-loader-v1.mjs';
 import {formatLinkId} from './numeric-link-store-v1.mjs';
 const error=x=>{throw Error('TOP100: '+x);};
-function rankTop(entries,n=100){
- if(!Number.isSafeInteger(n)||n<1||n>100)error('invalid top rank');
+function rankTop(entries,n=1000,numericIds=false){
+ if(!Number.isSafeInteger(n)||n<1||n>1000)error('invalid top rank');
+ const compareId=(a,b)=>{
+  if(numericIds){
+   const x=BigInt(a),y=BigInt(b);
+   return x<y?-1:x>y?1:0;
+  }
+  return a<b?-1:a>b?1:0;
+ };
  const heap=[];
  const worse=(a,b)=>a.count<b.count||
-  (a.count===b.count&&a.id>b.id);
+  (a.count===b.count&&compareId(a.id,b.id)>0);
  const swap=(i,j)=>{const t=heap[i];heap[i]=heap[j];heap[j]=t;};
  const up=()=>{for(let i=heap.length-1;i>0;){const p=(i-1)>>1;
   if(!worse(heap[i],heap[p]))break;swap(i,p);i=p;}};
@@ -18,7 +25,7 @@ function rankTop(entries,n=100){
   if(heap.length<n){heap.push(x);up();}
   else if(worse(heap[0],x)){heap[0]=x;down();}
  }
- heap.sort((a,b)=>b.count-a.count||(a.id<b.id?-1:a.id>b.id?1:0));
+ heap.sort((a,b)=>b.count-a.count||compareId(a.id,b.id));
  return heap.map((x,i)=>({...x,rank:i+1}));
 }
 export class CountedNumericCorpusLoader extends NumericCorpusLoader{
@@ -36,8 +43,8 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
   try{return super.appendBook(bytes,options);}
   catch(e){this.poisoned=true;throw e;}
  }
- topLinks(n=100){
-  if(this.poisoned||n<1||n>100)error('invalid/incomplete corpus');
+ topLinks(n=1000){
+  if(this.poisoned||n<1||n>1000)error('invalid/incomplete corpus');
   const q=this.db.prepare('SELECT from_id,to_id,string FROM links WHERE link_id=?');
   q.setReadBigInts(true);
   const memo=new Map(),active=new Set();
@@ -59,8 +66,8 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
   const candidates=rankTop((function*(counts){
    for(const [id,v] of counts)if(v.count>1)
     yield {id:formatLinkId(id),count:v.count,documents:v.documents};
-  })(this.pairCounts),n);
-  return {schema:'mts-nl/observed-links-top100/v1',books:this.docNumber,
+  })(this.pairCounts),n,true);
+  return {schema:'mts-nl/observed-links-top1000/v2',books:this.docNumber,
    denominatorPairEvents:this.pairEvents,notSemanticProbability:true,
    top:candidates.map(x=>{
     const r=q.get(BigInt(x.id)),p=walk(BigInt(x.id));
@@ -71,7 +78,7 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
    })};
  }
 }
-export function topObservedWords(documents,n=100){
+export function topObservedWords(documents,n=1000){
  const maps=[new Map(),new Map(),new Map()],positions=[0,0,0],max=5000000;
  let totalUnique=0,doc=0;
  const add=(i,key)=>{
@@ -93,7 +100,7 @@ export function topObservedWords(documents,n=100){
    prev.push(w);if(prev.length>2)prev.shift();
   }
  }
- return {schema:'mts-nl/observed-word-phrase-top100/v1',books:doc,
+ return {schema:'mts-nl/observed-word-phrase-top1000/v2',books:doc,
   note:'Lowercased Unicode word positions, sentence punctuation resets phrases; observation frequencies are not Link weights.',
   notLinkWeights:true,
   classes:['word','two-words','three-words'].map((name,i)=>({
@@ -104,9 +111,9 @@ export function topObservedWords(documents,n=100){
      empiricalRate:+(x.count/positions[i]).toPrecision(8)}))
   }))};
 }
-export function top100Markdown(links,words){
+export function topRankedMarkdown(links,words){
  const esc=s=>String(s).replaceAll('|','\\|').replaceAll('\n','\\\\n').replaceAll('\r','\\\\r');
- const out=['# TOP 100 observed Link and word/phrase frequencies','',
+ const out=['# TOP 1000 observed Link and word/phrase frequencies','',
   'Link ID is SQLite AUTOINCREMENT; count = observed expanded occurrences, not structural degree or learned probability.','',
   '| Rank | Link | From / To | Occurrences | Books | Length | Preview |',
   '|---:|---:|---|---:|---:|---:|---|'];

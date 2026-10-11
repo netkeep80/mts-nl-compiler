@@ -1,0 +1,6 @@
+{
+  "project": "netkeep80/mts-nl-compiler",
+  "protocol": "https://github.com/netkeep80/anet-memory/blob/2cc0c6516a4a992b39b642a91f78987a6489d3aa/ARCHITECTURE.md",
+  "memory": "https://github.com/netkeep80/mts-nl-compiler/issues/2",
+  "start": "Inspect live GitHub main, open PRs/issues and CI first. Read issue #1 for the accepted plan and issue #2 for bounded project context. Follow deeper links only if needed. Memory snapshots are context, not semantic authority. The minimal two-table weighted-link model is still under research."
+}

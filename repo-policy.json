@@ -1,0 +1,72 @@
+{
+  "policy_format_version": "0.3.0",
+  "repository_kind": "tooling",
+  "enforcement": {
+    "mode": "advisory"
+  },
+  "packs": {
+    "requirements-strict": {
+      "requirement_yaml_globs": [
+        "requirements/*.yaml"
+      ],
+      "requirement_id_pattern": "MNC-[0-9]{3}",
+      "closed_repository": false,
+      "strict_heading_docs": [
+        "requirements/**/*.md"
+      ],
+      "evidence_surfaces": [
+        "README.md",
+        "docs/**",
+        "data/**",
+        "db/**",
+        "src/**",
+        "tests/**",
+        ".github/**"
+      ],
+      "changed_requirement_evidence_surfaces": [
+        "README.md",
+        "docs/**",
+        "db/**",
+        "tests/**"
+      ],
+      "implementation_evidence_surfaces": [
+        "src/**",
+        "db/**",
+        ".github/workflows/**"
+      ],
+      "verification_evidence_surfaces": [
+        "tests/**",
+        ".github/workflows/**"
+      ]
+    }
+  },
+  "paths": {
+    "forbidden": [
+      "*.bak",
+      "*.tmp",
+      "*.orig",
+      "legacy/**",
+      "archive/**"
+    ],
+    "canonical_docs": [
+      "README.md",
+      "docs/architecture.md"
+    ],
+    "governance_paths": [
+      "repo-policy.json",
+      ".github/workflows/**",
+      ".github/PULL_REQUEST_TEMPLATE.md",
+      ".anet/memory.json",
+      "db/schema.sql",
+      "requirements/**"
+    ],
+    "operational_paths": []
+  },
+  "diff_rules": {
+    "max_new_docs": 8,
+    "max_new_files": 24,
+    "max_net_added_lines": 4000
+  },
+  "content_rules": [],
+  "cochange_rules": []
+}

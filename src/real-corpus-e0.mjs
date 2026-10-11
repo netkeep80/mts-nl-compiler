@@ -86,5 +86,8 @@ export function sqliteReplay(db,rows,compiled) {
   rows:rows.length,atomRows:restoredAtoms.size,pairRows:restoredPairs.size,
   totalFromUses:totals.from_positions,totalToUses:totals.to_positions,
   sqliteLoadIndexAndReplayMs:+ms(timer).toFixed(2),
+  sqliteLogicalPages:db.prepare("PRAGMA page_count").get().page_count,
+  sqlitePageSize:db.prepare("PRAGMA page_size").get().page_size,
+  sqliteLogicalBytes:db.prepare("PRAGMA page_count").get().page_count * db.prepare("PRAGMA page_size").get().page_size,
   peakObservedRssBytes:process.memoryUsage().rss};
 }

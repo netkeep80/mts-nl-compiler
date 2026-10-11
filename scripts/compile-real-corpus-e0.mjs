@@ -54,6 +54,7 @@ try{
   perDocumentGzipBytes:report.sumPerDocumentGzipBytes,
   perDocumentGraphJsonBytes:report.sumPerDocumentGraphJsonBytes,
   sqliteReplay:report.sqlite.status,sqliteMs:report.sqlite.sqliteLoadIndexAndReplayMs,
+  sqliteLogicalBytes:report.sqlite.sqliteLogicalBytes,
   status:report.status
  }));
 } finally {db.close();}

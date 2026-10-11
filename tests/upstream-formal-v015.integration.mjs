@@ -55,6 +55,84 @@ assert.notEqual(singleton,upstream.root);
 assert.deepEqual(readExactSequence(upstream,singleton).values,[upstream.root]);
 const transportBack=readCellSequence(g,"R",local.cellFinal).values;
 assert.deepEqual(transportBack,local.values);
+
+// A bounded, explicit conversion of sequence *positions* in our transport
+// to ACCEPTED native JSON (which intentionally uses arrays). The mapping of
+// 'm'/'a' to basis.O/C is supplied by this test, never guessed from characters.
+const {
+ materializeNativeSyntaxGrammar
+}=await importFrom("ts/dist/src/native-syntax-grammar.js");
+const {
+ materializeV015SourceAnetProfile,denoteV015ResolvedSourceAnet
+}=await importFrom("ts/dist/src/v015-source-anet.js");
+const {
+ compileV015DirectJsonSourceAnet
+}=await importFrom("ts/dist/src/v015-direct-json-source.js");
+const converted=local.values.map(id=>{
+ if(id==="m")return "O";
+ if(id==="a")return "C";
+ throw new Error("explicit FORMAL value mapping missing");
+});
+const nativeJson=JSON.stringify({
+ O:"♂∞",C:"∞♀",
+ SelectedSequence:converted,
+ EmptySequence:[],
+ RootAsPosition:["R"]
+});
+const nativeCompilerMemory=new Memory();
+const b=ensureRootBasis(nativeCompilerMemory);
+let cursor=nativeCompilerMemory.ensure(b.U,b.L);
+const fresh=()=>{
+ cursor=nativeCompilerMemory.ensureStartSelfClosed(cursor);return cursor;
+};
+const profile=Object.freeze({
+ blockForm:fresh(),bareForm:fresh(),bindingForm:fresh(),bundleForm:fresh(),
+ itemRole:fresh(),bareValueRole:fresh(),bindingNameRole:fresh(),
+ bindingValueRole:fresh(),bundleAnchorRole:fresh(),bundleBodyRole:fresh()
+});
+const rules=[
+ {form:profile.blockForm,fields:[
+  {role:profile.itemRole,target:"child",min:0,max:null}
+ ]},
+ {form:profile.bareForm,fields:[
+  {role:profile.bareValueRole,target:"carrier",min:1,max:1}
+ ]},
+ {form:profile.bindingForm,fields:[
+  {role:profile.bindingNameRole,target:"carrier",min:1,max:1},
+  {role:profile.bindingValueRole,target:"carrier",min:1,max:1}
+ ]},
+ {form:profile.bundleForm,fields:[
+  {role:profile.bundleAnchorRole,target:"carrier",min:1,max:1},
+  {role:profile.bundleBodyRole,target:"child",min:1,max:1}
+ ]}
+];
+const grammarRoot=materializeNativeSyntaxGrammar(nativeCompilerMemory,b,{
+ syntaxTag:fresh(),markerSeed:fresh(),rules
+});
+const sourceProfile=materializeV015SourceAnetProfile(nativeCompilerMemory,profile);
+const lowered=compileV015DirectJsonSourceAnet(nativeCompilerMemory,b,grammarRoot,
+ sourceProfile,new TextEncoder().encode(nativeJson));
+const semantic=denoteV015ResolvedSourceAnet(nativeCompilerMemory,b,grammarRoot,
+ sourceProfile,lowered.sourceAset);
+const expectedSelected=materializeExactSequence(nativeCompilerMemory,
+ [b.O,b.C,b.O,b.C]);
+const expectedRootPosition=materializeExactSequence(nativeCompilerMemory,[b.R]);
+const values=new Set(semantic.bindings.map(x=>x.value));
+assert.equal(values.has(expectedSelected),true,
+ "native metacompiler did not denote the mapped object-tree sequence");
+assert.equal(values.has(b.R),true,"empty native ExactSequence must denote R");
+assert.equal(values.has(expectedRootPosition),true,
+ "singleton [R] must remain nonempty");
+console.log(JSON.stringify({
+ status:"NATIVE_FORMAL_JSON_SEQUENCE_BRIDGE_PASS",
+ scope:"explicit O/C basis mapping; selected sequence, empty, root-position",
+ actualCompiler:"compileV015DirectJsonSourceAnet + denoteV015ResolvedSourceAnet",
+ upstreamPinned:"c64b7e21340c6add248c8f380f3fef1292616ac6",
+ totalObjectTreeGraphEquivalence:"NOT_PROVED",
+ arbitraryStringAtomMapping:"NOT_PROVED",
+ wholeRuleSetGammaReplay:"NOT_EXECUTED"
+}));
+
 console.log(JSON.stringify({
  status:"NATIVE_CELL_SHAPE_DIFFERENTIAL_PASS",
  scope:"structural sequence shape + opaque position identity + root-as-value",

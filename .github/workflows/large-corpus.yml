@@ -1,0 +1,77 @@
+name: Full 60-book Russian corpus and TOP100
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - corpus/large-books-v1.json
+      - src/corpus-top-report-v1.mjs
+      - src/numeric-corpus-loader-v1.mjs
+      - scripts/build-large-corpus.mjs
+      - .github/workflows/large-corpus.yml
+  push:
+    branches: [main]
+    paths:
+      - corpus/large-books-v1.json
+      - src/corpus-top-report-v1.mjs
+      - src/numeric-corpus-loader-v1.mjs
+      - scripts/build-large-corpus.mjs
+      - .github/workflows/large-corpus.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NODE_OPTIONS: --max-old-space-size=5500
+      CI: "true"
+    steps:
+      - name: Checkout compiler at reviewed Git ref
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Checkout the 60 exact-pinned books, without publishing them
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: d0rj/RusLit
+          ref: 4509680428729da225a73a22008133660f92bb7e
+          path: .sources/ruslit
+          sparse-checkout: |
+            prose
+          persist-credentials: false
+      - name: Use pinned setup-node action and Node 24
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+      - name: Run numeric Link full build, mandatory TOP100 and cold exact replay
+        run: node --expose-gc scripts/build-large-corpus.mjs
+      - name: Verify all required reports exist and have exactly 100 items
+        run: |
+          node --input-type=module -e "
+            import {readFileSync,statSync} from 'node:fs';
+            const top=JSON.parse(readFileSync('reports/top-100-links.json','utf8'));
+            const perf=JSON.parse(readFileSync('reports/large-corpus-performance.json','utf8'));
+            if(top.links.top.length!==100||top.words.classes.length!==3||
+              top.words.classes.some(x=>x.top.length!==100)||
+              perf.books<60||perf.status!=='BUILD_AND_COLD_REPLAY_PASS'||
+              statSync('reports/knowledge-large.sqlite').size<1024)
+              throw Error('Full-corpus gate: missing TOP100 / cold replay / SQLite');
+            console.log('VERIFIED_60_BOOKS_TOP100',JSON.stringify({
+              books:perf.books,sqliteBytes:perf.sqliteVacuumBytes,
+              LinkCount:perf.insertedLinks,topLinks:top.links.top.length}));
+          "
+      - name: Publish numeric SQLite DB and TOP100 evidence (never source books)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: numeric-60-books-sqlite-top100
+          path: |
+            reports/knowledge-large.sqlite
+            reports/top-100-links.json
+            reports/top-100-links.md
+            reports/large-corpus-performance.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 3

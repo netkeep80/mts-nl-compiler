@@ -95,6 +95,7 @@ export function topObservedWords(documents,n=100){
  }
  return {schema:'mts-nl/observed-word-phrase-top100/v1',books:doc,
   note:'Lowercased Unicode word positions, sentence punctuation resets phrases; observation frequencies are not Link weights.',
+  notLinkWeights:true,
   classes:['word','two-words','three-words'].map((name,i)=>({
    name,positions:positions[i],distinct:maps[i].size,
    top:rankTop((function*(map){for(const [id,v] of map)

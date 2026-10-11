@@ -1,0 +1,19 @@
+id: MNC-030
+status: RESEARCH_UNACCEPTED
+normative_language: ru
+requirement: >
+  Одно новое наблюдение может активировать каскад отдельных реакций Γ,
+  каждая использует новое выбранное состояние как snapshot. Изменение
+  весового поля без выбранных Link-фактов не меняет логическую выводимость.
+  Собственные порождённые гипотезы и доказательства не становятся новыми
+  независимыми эмпирическими наблюдениями. Противоположные правила обязаны
+  завершаться лимитом или обнаружением цикла, а не ложным QUIESCENT.
+upstream:
+  repository: netkeep80/anum_docs
+  revision: c64b7e21340c6add248c8f380f3fef1292616ac6
+  gamma_test_side: ts/test/v015-structural-aset-gamma-core-a9a.test.ts
+native_gamma_cascade: PENDING_CI
+weight_semantics: NOT_ACCEPTED
+production_gamma_api: NOT_EXPORTED
+full_native_source_parity: NOT_PROVED
+artifact: tests/upstream-weight-cascade.integration.mjs

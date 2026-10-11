@@ -143,7 +143,9 @@ export function learnObservedPairGrammar(documents,{
   documents:roots,
   diagnostics:diagnosticTopN?{
    adjacentAtCheckpoints:diagnostics,
-   topStructuralLinks:topExpandedDupletLinks(decoded.rows,roots,diagnosticTopN)
+   topStructuralLinks:topExpandedDupletLinks(decoded.rows,roots,diagnosticTopN),
+   topLongLinks:[5,10,20].map(minimumCodepoints=>
+    topExpandedDupletLinks(decoded.rows,roots,diagnosticTopN,{minimumCodepoints}))
   }:null,
   status:"E2_GREEDY_PAIR_GRAMMAR_EXACT_ROUNDTRIP_PASS",
   explanation:"Observed adjacent-symbol grammar oracle; not native Gamma or probabilistic MP"

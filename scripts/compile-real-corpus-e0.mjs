@@ -97,6 +97,8 @@ for(const requestedRounds of [0,32,256,512]) {
   for(const snapshot of trial.diagnostics.adjacentAtCheckpoints)
    console.log("E2_TOP_ADJACENT "+JSON.stringify(snapshot));
   console.log("E2_TOP_STRUCTURAL "+JSON.stringify(trial.diagnostics.topStructuralLinks));
+  for(const item of trial.diagnostics.topLongLinks)
+   console.log("E2_TOP_LONG "+JSON.stringify(item));
   e2TopDuplets=trial.diagnostics;
  }
 }

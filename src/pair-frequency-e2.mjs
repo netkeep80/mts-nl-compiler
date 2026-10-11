@@ -34,8 +34,10 @@ export function topAdjacentCandidates({sequences,counts,profiles,docs,round,topN
 // Unlike above, counts exact repeated occurrences of a physical selected Link
 // in fully expanded final DAG: a hash-consed pair may occur many times even if
 // stored ONCE. This explicitly differs from structural pole-incidence caches.
-export function topExpandedDupletLinks(rows,documents,topN){
+export function topExpandedDupletLinks(rows,documents,topN,{minimumCodepoints=2}={}){
  if(!Number.isSafeInteger(topN)||topN<0||topN>50)fail("bad topN");
+ if(!Number.isSafeInteger(minimumCodepoints)||minimumCodepoints<2)
+  fail("bad minimumCodepoints");
  const byId=new Map(),profiles=new Map();
  for(const r of rows){
   if(byId.has(r.link_id))fail("duplicate Link ID");
@@ -60,11 +62,11 @@ export function topExpandedDupletLinks(rows,documents,topN){
   return n;
  }
  const tally=accumulate(documents.map(x=>x.rootLink));
- const top=rows.filter(r=>r.from_id!==null&&(tally.get(r.link_id)??0)>1)
+ const top=rows.filter(r=>r.from_id!==null&&profiles.get(r.link_id).length>=minimumCodepoints&&(tally.get(r.link_id)??0)>1)
   .sort((a,b)=>(tally.get(b.link_id)??0)-(tally.get(a.link_id)??0)||
      (a.link_id<b.link_id?-1:a.link_id>b.link_id?1:0)).slice(0,topN);
  const distribution=documents.map(d=>({id:d.id,counts:accumulate([d.rootLink])}));
- return {unit:"expanded-occurrences-of-selected-unique-link",top:top.map((r,i)=>({
+ return {unit:"expanded-occurrences-of-selected-unique-link",minimumCodepoints,top:top.map((r,i)=>({
   rank:i+1,linkId:r.link_id,fromId:r.from_id,toId:r.to_id,
   expandedOccurrences:tally.get(r.link_id),expandedCodepoints:profiles.get(r.link_id).length,
   preview:preview(profiles.get(r.link_id)),

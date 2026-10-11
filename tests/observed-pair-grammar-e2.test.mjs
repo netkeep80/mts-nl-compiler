@@ -65,3 +65,11 @@ test("E2 diagnostics deterministic and reject excessive topN",()=>{
  assert.deepEqual(a.diagnostics,b.diagnostics);
  assert.throws(()=>learnObservedPairGrammar(docs,{diagnosticTopN:51}),/diagnostic/);
 });
+
+test("E2 long-structure top N filters out trivial two-character links",()=>{
+ const docs=[d("a","сначала сначала сначала"),d("b","сначала сначала")];
+ const r=learnObservedPairGrammar(docs,{maxRounds:12,diagnosticTopN:10,diagnosticCheckpoints:[0,12]});
+ for(const item of r.diagnostics.topLongLinks)
+  assert.ok(item.top.every(x=>x.expandedCodepoints>=item.minimumCodepoints));
+ assert.deepEqual(r.diagnostics.topLongLinks.map(x=>x.minimumCodepoints),[5,10,20]);
+});

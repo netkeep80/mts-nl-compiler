@@ -11,6 +11,8 @@ on:
       - tests/upstream-formal-v015.integration.mjs
       - tests/upstream-graph-identity.integration.mjs
       - tests/upstream-native-gamma.integration.mjs
+      - tests/upstream-weight-cascade.integration.mjs
+      - requirements/MNC-030.yaml
       - requirements/MNC-028.yaml
       - experiments/native-graph-registry-v0.mjs
       - experiments/NATIVE_GRAPH_REGISTRY.md
@@ -59,3 +61,7 @@ jobs:
         env:
           UPSTREAM_MTS_PATH: upstream/anum_docs
         run: node tests/upstream-native-gamma.integration.mjs
+      - name: Three-generation cascade with weight isolation
+        env:
+          UPSTREAM_MTS_PATH: upstream/anum_docs
+        run: node tests/upstream-weight-cascade.integration.mjs

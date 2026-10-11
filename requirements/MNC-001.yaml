@@ -34,6 +34,10 @@ artifacts:
     relations: [requires, verifies]
   - path: requirements/MNC-024.yaml
     relations: [requires]
+  - path: tests/upstream-formal-v015.integration.mjs
+    relations: [requires, verifies]
+  - path: .github/workflows/formal-bridge.yml
+    relations: [requires, verifies]
   - path: tests/schema.test.mjs
     relations: [requires, verifies]
   - path: tests/dag.test.mjs

@@ -23,3 +23,10 @@
 **NATIVE_METACOMPILER_REPLAY = NOT_EXECUTED.** Для полного verdict нужно независимо проверить actual native semantic ANet (root basis, no extra label atoms, source/semantic identity, exact FORMAL↔JSON common denotation) и replay на upstream `anum_docs` + frozen `amemory`. Никакой фактической совместимости пока не принимаем.
 
 Текущий код — тестовый one-table carrier, не новая принятая семантика. PR остаётся draft, merge по exact SHA только после отдельного решения автора.
+
+
+## Cross-repository native CI (additional research gate)
+
+`.github/workflows/formal-bridge.yml` checks out public `netkeep80/anum_docs` at exact commit `c64b7e21340c6add248c8f380f3fef1292616ac6`, builds the accepted TypeScript source, runs its existing production-FORMAL refinement and Boolean package replay tests, then executes `tests/upstream-formal-v015.integration.mjs` against the **actual native `Memory`, `materializeExactSequence` and `readExactSequence`**. The differential only asserts recursive cell shape, order, identity of *mapped opaque positional values*, empty sequence and root-as-position; no mapping from arbitrary LinkGraph IDs to native accepted MTS handles is asserted.
+
+Even when this job passes, `NATIVE_CELL_SHAPE_DIFFERENTIAL=PASS` does NOT mean `TRANSPORT→NATIVE_METACOMPILER→Γ` end-to-end PASS. The source JSON formats remain distinct, so the latter gate stays `NOT_EXECUTED` until an approved total conversion is specified and executed.

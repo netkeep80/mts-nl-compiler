@@ -1,0 +1,48 @@
+name: Pinned MTS v0.15 native bridge experiment
+
+on:
+  pull_request:
+    paths:
+      - experiments/native-exact-sequence-bridge-v0.mjs
+      - experiments/object-tree-json-v0.mjs
+      - experiments/FORMAL_BRIDGE.md
+      - experiments/fixtures/mama-object-tree.json
+      - tests/native-exact-sequence-bridge.test.mjs
+      - tests/upstream-formal-v015.integration.mjs
+      - requirements/MNC-024.yaml
+      - .github/workflows/formal-bridge.yml
+
+permissions:
+  contents: read
+
+jobs:
+  upstream-native-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: netkeep80/anum_docs
+          ref: c64b7e21340c6add248c8f380f3fef1292616ac6
+          path: upstream/anum_docs
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+      - name: Build EXACT upstream accepted source
+        working-directory: upstream/anum_docs/ts
+        run: |
+          npm ci
+          npm run build --silent
+      - name: Run accepted upstream FORMAL production refinement
+        working-directory: upstream/anum_docs/ts
+        run: node dist/test/v015-formal-production-refinement-f1.test.js
+      - name: Run accepted upstream Boolean package and Γ replay tests
+        working-directory: upstream/anum_docs/ts
+        run: node dist/test/v015-boolean-package-replay-a2.test.js
+      - name: Differential test on actual upstream Memory/ExactSequence
+        env:
+          UPSTREAM_MTS_PATH: upstream/anum_docs
+        run: node tests/upstream-formal-v015.integration.mjs

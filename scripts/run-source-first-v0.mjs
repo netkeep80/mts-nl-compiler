@@ -7,6 +7,9 @@ import {collectSourceWindows,proposeSourceUnits,compareSourceFirst,
   trainSourceFirstPairGrammar,materializeFrozenPairGrammar}
  from '../src/source-first-frequencies-v0.mjs';
 import {compareNumericSourceAnchors} from '../src/source-first-sqlite-v0.mjs';
+import {compareMethodGrid} from '../src/source-first-method-grid-v0.mjs';
+import {compareShapedGrid} from '../src/source-first-tree-shapes-v0.mjs';
+import {verifyShapedNumericCorpus} from '../src/source-first-tree-shapes-sqlite-v0.mjs';
 if(process.argv.length<4)throw Error('sqlite and performance.json required');
 const db=new DatabaseSync(process.argv[2],{readOnly:true});
 const perf=JSON.parse(readFileSync(process.argv[3],'utf8'));
@@ -76,5 +79,20 @@ const report={schema:'mts-nl/W11-source-first-physical-ab/v0',status:'NUMERIC_SQ
     'The separator choice is optimized using only the 48 train documents; the 12 heldout documents are never used to select it.',
     'Physical Link counts and SQLite VACUUM bytes are real for the sample only; full-bit MDL and language semantics are not measured.',
     'Single-scalar after-boundary is a restricted search space: does not yet discover general morphemes, words, phrases, or multiple boundary types.']};
+if(process.env.W12_METHOD_GRID==='1'){
+ const marker=chosen===null?[]:[{scalar:chosen,side:'after'}];
+ const methods=compareMethodGrid(docs,{maxScalarsPerDocument:maxScalars,
+  maxProposals:Number(process.env.W12_PROPOSALS??6),maxRounds:2,minFrequency:16});
+ const shapes=compareShapedGrid(docs,marker,{maxScalarsPerDocument:maxScalars,
+  shapes:['balanced','frequencyGreedy','frequencyQuadratic','frequencyLog','suffix3']});
+ const noBoundary=compareShapedGrid(docs,[],{maxScalarsPerDocument:maxScalars,
+  shapes:['balanced','frequencyQuadratic']});
+ const sql=verifyShapedNumericCorpus(docs,marker,'frequencyQuadratic',{
+  maxScalarsPerDocument:maxScalars});
+ const best=shapes.rankingByTotal.find(x=>x.shape==='frequencyQuadratic');
+ if(sql.physicalLinks!==best.allPhysicalLinks)throw Error('W12 SQLite / train-first graph count disagreement');
+ report.W12={methods,shapes,noBoundary,sql,
+  status:'W12_MATCHED_TRAIN_ONLY_SQLITE_COLD_REPLAY_PASS'};
+}
 if(process.argv[4])writeFileSync(process.argv[4],JSON.stringify(report,null,2)+'\n');
 console.log('W11_PHYSICAL_AB '+JSON.stringify(report));

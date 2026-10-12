@@ -22,6 +22,7 @@ export function auditCorpusFrequencies(documents,loader,{topN=40,maxDistinct=1_5
  const maps=[new Map(),new Map(),new Map()];
  const balanced=[null,new Map(),new Map()];
  let totalScalars=0,totalPairWindows=0,totalTripleWindows=0,balanceEvents=0;
+ const coverage=Array.from({length:7},(_,i)=>({scalars:i+2,sourceWindows:0,nodeEvents:0}));
  for(const doc of documents){
   if(!doc||!Buffer.isBuffer(doc.bytes)||typeof doc.id!=='string'||!doc.id)err('invalid document');
   const s=decoder.decode(doc.bytes);
@@ -29,6 +30,7 @@ export function auditCorpusFrequencies(documents,loader,{topN=40,maxDistinct=1_5
   const chars=[...s],length=chars.length;
   totalScalars+=length;totalPairWindows+=Math.max(0,length-1);
   totalTripleWindows+=Math.max(0,length-2);
+  for(const entry of coverage)entry.sourceWindows+=Math.max(0,length-entry.scalars+1);
   for(let i=0;i<length;i++){
    bump(maps[0],chars[i]);
    if(i+1<length)bump(maps[1],chars[i]+chars[i+1]);
@@ -41,6 +43,7 @@ export function auditCorpusFrequencies(documents,loader,{topN=40,maxDistinct=1_5
    const [start,end]=stack.pop(),n=end-start;
    if(n<=1)continue;
    balanceEvents++;
+   if(n>=2&&n<=8)coverage[n-2].nodeEvents++;
    if(n===2)bump(balanced[1],chars[start]+chars[start+1]);
    if(n===3)bump(balanced[2],chars[start]+chars[start+1]+chars[start+2]);
    const mid=start+Math.floor(n/2);
@@ -108,6 +111,8 @@ export function auditCorpusFrequencies(documents,loader,{topN=40,maxDistinct=1_5
   syllableLikeTop:ranked(rawCandidates,topN).map(x=>({...x,
    balancedTreeOccurrences:balanced[[...x.text].length-1].get(x.text)??0})),
   sampledTopLinkChecks:checks.slice(0,topN),
+  structuralCoverageByLength:coverage.map(x=>({...x,
+   fraction:x.sourceWindows?+(x.nodeEvents/x.sourceWindows).toFixed(8):0})),
   note:'Cyrillic syllable-like filter is posthoc and not phonetic syllabification; TOP1000 Link figures count only observed balanced tree nodes.'};
 }
 export function frequencyAuditMarkdown(a){
@@ -116,6 +121,12 @@ export function frequencyAuditMarkdown(a){
   '; overlapping pairs='+a.sourcePairWindows+'; structural pair events='+a.observedPairEvents+'.','',
   'TOP1000 counts are balanced-tree **node uses**, not all substring occurrences. '+
   'A literal character is the atomic Link terminal; self-equal pair poles do not indicate an atom.',''];
+ lines.push('## Доля окон исходника, доступных как цельный Link','',
+  '| Длина | Все позиционные окна | Узлы сбалансированного дерева | Доля |',
+  '|---:|---:|---:|---:|');
+ for(const x of a.structuralCoverageByLength)lines.push('| '+x.scalars+' | '+x.sourceWindows+
+  ' | '+x.nodeEvents+' | '+(100*x.fraction).toFixed(2)+'% |');
+ lines.push('','Это покрытие **всех позиций**, а не только TOP1000.','');
  const sections=[['Все символы',a.scalarTop],['Буквы',a.lettersTop],
   ['Перекрывающиеся биграммы против сбалансированных узлов',a.bigramTop],
   ['Перекрывающиеся триграммы против сбалансированных узлов',a.trigramTop],

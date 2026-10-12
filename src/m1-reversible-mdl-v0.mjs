@@ -145,6 +145,70 @@ function countPairs(s){
  return [...map.values()].filter(x=>x.count>=2).sort((x,y)=>
   y.count-x.count||x.a-y.a||x.b-y.b);
 }
+/** A2 context-only proposal ranking on current parse, using no character
+ * taxonomy or corpus labels. Both the frequency half and predictive half
+ * are drawn from the *same* disjoint occurrence candidates as A1.
+ * The exact M1L0 bitstream remains the sole commit objective. */
+export function rankM1ContextCandidates(s,{topCandidates=24}={}){
+ if(!Number.isSafeInteger(topCandidates)||topCandidates<1||topCandidates>256)
+  error('invalid context budget');
+ validateState(s);
+ const frequency=countPairs(s),counts=new Map(),pairs=new Map();
+ let transitions=0;
+ const increment=(map,id)=>map.set(id,(map.get(id)??0)+1);
+ for(const tokens of s.parses){
+  for(const x of tokens)increment(counts,x);
+  for(let i=0;i+1<tokens.length;i++){
+   const key=tokens[i]+','+tokens[i+1];
+   if(!pairs.has(key))pairs.set(key,{adjacent:0,preceding:new Map(),following:new Map()});
+   const item=pairs.get(key);item.adjacent++;transitions++;
+   if(i>0)increment(item.preceding,tokens[i-1]);
+   if(i+2<tokens.length)increment(item.following,tokens[i+2]);
+  }
+ }
+ const entropy=hist=>{
+  let n=0,h=0;for(const c of hist.values())n+=c;
+  if(!n)return 0;
+  for(const c of hist.values()){const p=c/n;h-=p*Math.log2(p);}
+  return h;
+ };
+ const ranked=frequency.map(c=>{
+  const p=pairs.get(c.a+','+c.b);
+  const pmi=Math.log2((p.adjacent+0.5)*(transitions+1)/
+   ((counts.get(c.a)+0.5)*(counts.get(c.b)+0.5)));
+  const flankEntropy=entropy(p.preceding)+entropy(p.following);
+  // PMI: predictive lift relative to independent tokens. External flank
+  // diversity rewards reuse across contexts instead of one frozen phrase.
+  // Both are proposal heuristics, not an invented bit saving or a boundary.
+  const score=c.count*Math.max(0,pmi)+
+   0.5*Math.log2(1+c.count)*flankEntropy;
+  return {...c,contextPmi:+pmi.toFixed(6),
+   contextFlankEntropy:+flankEntropy.toFixed(6),
+   contextProposalScore:+score.toFixed(6)};
+ }).sort((a,b)=>b.contextProposalScore-a.contextProposalScore||
+   b.count-a.count||a.a-b.a||a.b-b.b);
+ // Fixed matched evaluation budget. Reserve half for the strongest raw
+ // frequency witnesses and half for context witnesses not already present.
+ // No early exclusion based on spaces/punctuation/Unicode categories.
+ const frequencyQuota=Math.ceil(topCandidates/2),out=[],used=new Set();
+ const add=(c,origin)=>{
+  const key=c.a+','+c.b;
+  if(used.has(key))return false;
+  out.push({...c,proposalOrigin:origin});used.add(key);return true;
+ };
+ const rankByKey=new Map(ranked.map(x=>[x.a+','+x.b,x]));
+ for(const c of frequency.slice(0,frequencyQuota))
+  add(rankByKey.get(c.a+','+c.b),'frequency');
+ let contextCount=0;
+ for(const c of ranked){
+  if(contextCount>=topCandidates-frequencyQuota)break;
+  if(add(c,'context'))contextCount++;
+ }
+ // Complete selection if list has many duplicate candidates across queues.
+ for(const c of frequency){if(out.length>=topCandidates)break;
+  add(rankByKey.get(c.a+','+c.b),'frequency-fill');}
+ return out;
+}
 function merge(s,a,b){
  const id=s.atoms.length+s.rules.length;
  const parses=s.parses.map(tokens=>{
@@ -208,14 +272,16 @@ function checkExact(s,original){
 /** Deterministic bounded training, no heldout input or labels accepted.
  * A0: most frequent adjacent pair, A1: full transmitted-byte minimum.
  * Optional exact frozen-code reparse and last-rule split probes.
- * A2/A3 (contexts/classes/slots) are NOT implemented in this milestone. */
+ * A2: context-conditioned proposal shortlist under the identical M1L0 coder.
+ * A3 (classes/slots) is NOT implemented in this milestone. */
 export function trainM1(documents,{mode='A1',maxRules=64,topCandidates=24,improveParses=true}={}){
- if(!['A0','A1'].includes(mode)||!Number.isSafeInteger(maxRules)||maxRules<0||maxRules>MAX_RULES||
+ if(!['A0','A1','A2'].includes(mode)||!Number.isSafeInteger(maxRules)||maxRules<0||maxRules>MAX_RULES||
  !Number.isSafeInteger(topCandidates)||topCandidates<1||topCandidates>256||typeof improveParses!=='boolean')error('training options');
  const original=validInput(documents);let state=initialState(original),wire=checkExact(state,original);
  const beforeBits=8*wire.length,history=[];
  for(let epoch=0;epoch<maxRules;epoch++){
-  const candidates=countPairs(state).slice(0,topCandidates);
+  const candidates=mode==='A2'?
+   rankM1ContextCandidates(state,{topCandidates}):countPairs(state).slice(0,topCandidates);
   if(!candidates.length)break;
   let best=null;
   for(const c of candidates){
@@ -229,11 +295,13 @@ export function trainM1(documents,{mode='A1',maxRules=64,topCandidates=24,improv
   if(!best)break;
   state=best.trial;wire=best.wire;
   history.push({operation:'merge',pair:[best.c.a,best.c.b],
-   nonoverlapOccurrences:best.c.count,deltaBits:best.delta,actualTotalBits:wire.length*8});
+   nonoverlapOccurrences:best.c.count,deltaBits:best.delta,actualTotalBits:wire.length*8,
+   ...(mode==='A2'?{proposalOrigin:best.c.proposalOrigin,
+     contextPmi:best.c.contextPmi,contextProposalScore:best.c.contextProposalScore}:{})});
  }
  if(improveParses){
   // A0 stays pure frequency-only, avoiding mixing algorithms in the ablation.
-  if(mode==='A1'){
+  if(mode==='A1'||mode==='A2'){
    let changed=true;
    while(changed){
     changed=false;
@@ -258,8 +326,9 @@ export function trainM1(documents,{mode='A1',maxRules=64,topCandidates=24,improv
   rules:state.rules.length,trainingDocuments:original.length,
   originalBytes:original.reduce((n,d)=>n+d.bytes.length,0),history,
   exactReplay:'PASS',boundaryKnowledge:'NONE',
-  implemented:['A0 frequency baseline','A1 exact ULEB bit-cost grammar'],
-  notImplemented:['A2 predictive contexts','A3 classes and slots','SQLite Link materialization']};
+  implemented:['A0 frequency baseline','A1 exact ULEB bit-cost grammar',
+   'A2 alphabet-blind PMI and context-flank diversity proposal with unchanged M1L0 codec'],
+  notImplemented:['A3 classes and slots','context-trained entropy codec','SQLite Link materialization']};
 }
 /** Independently encode heldout with a frozen grammar; DOES NOT mutate it.
  * Encoding of the original, learned alphabet and grammar are only train-based.

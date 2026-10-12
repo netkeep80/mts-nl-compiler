@@ -1,0 +1,37 @@
+{
+  "schema": "mts-nl/W17R1/indexed-runtime-benchmark/v0",
+  "status": "ARCHIVE_ONLY_60_EXACT_DOCUMENT_SHA_PASS",
+  "sqliteOpened": false,
+  "readOnly": true,
+  "nodeCount": 1951822,
+  "atomCount": 194,
+  "bookCount": 60,
+  "fullShaVerifiedBooks": 60,
+  "searchCrossesDupletBoundaries": true,
+  "probeDocumentIndices": [
+    0,
+    7,
+    19,
+    44,
+    59
+  ],
+  "loadAndShaVerifySeconds": 8.195,
+  "1000RangeSlicesSeconds": 0.013,
+  "20FullDocumentFindSeconds": 0.4,
+  "maxRssKb": 188288,
+  "sourceScalars": 11017443,
+  "notes": [
+    "Time/RSS from one laboratory Linux environment, not Windows",
+    "Full Sha verification is an opt-in load option",
+    "Runtime is O(graph links) RAM; gigabyte packages need paged/chunked implementation",
+    "Benchmark values may vary across runs; measurements are not Windows/installer gates"
+  ],
+  "baselineW17ColdShaVerify": {
+    "seconds": 7.16,
+    "maxRssKb": 144712,
+    "status": "COLD_LINK_ONLY_60_DOCUMENT_REPLAY_PASS",
+    "sameArchive": true,
+    "method": "baseline W17 w17_link_archive.py --verify"
+  },
+  "comparison": "Indexed startup is slower and more memory intensive with complete SHA replay, but enables addressable reads/search without repeated whole-document decoding"
+}

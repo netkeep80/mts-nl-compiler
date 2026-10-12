@@ -1,7 +1,17 @@
 {
   "schema": "mts-nl/w16-science-corpus-candidates/v0",
   "status": "CANDIDATES_NOT_YET_IMPORTED_OR_REDISTRIBUTION_APPROVED",
-  "focus": ["математическая логика", "отношения и основания", "теория категорий", "теория типов", "вычислимость", "формальные языки"],
+  "focus": [
+    "математическая логика",
+    "отношения и основания",
+    "теория категорий",
+    "теория типов",
+    "вычислимость",
+    "формальные языки",
+    "лингвистическая семантика",
+    "прагматика",
+    "композиционность"
+  ],
   "pinRule": "source exact commit/tag + origin byte SHA256 + declared extraction format + per-work attribution + license evidence, no unreviewed content in public installer",
   "candidates": [
     {
@@ -12,7 +22,12 @@
       "license": "CC-BY-4.0",
       "licenseEvidence": "https://openlogicproject.org/olp-license/",
       "format": "LaTeX source",
-      "topics": ["first-order logic", "formal foundations", "theory of proof", "set theory"],
+      "topics": [
+        "first-order logic",
+        "formal foundations",
+        "theory of proof",
+        "set theory"
+      ],
       "status": "LICENSE_IDENTIFIED_PIN_AND_PER_WORK_REVIEW_REQUIRED"
     },
     {
@@ -23,7 +38,12 @@
       "license": "CC-BY-4.0",
       "licenseEvidence": "https://plfa.github.io/plfa/",
       "format": "literate Agda / Markdown",
-      "topics": ["proofs as programs", "type theory", "operational semantics", "normalization"],
+      "topics": [
+        "proofs as programs",
+        "type theory",
+        "operational semantics",
+        "normalization"
+      ],
       "status": "LICENSE_IDENTIFIED_PIN_AND_PER_WORK_REVIEW_REQUIRED"
     },
     {
@@ -34,7 +54,11 @@
       "license": "CC-BY-4.0",
       "licenseEvidence": "https://slc.openlogicproject.org/",
       "format": "LaTeX + Open Logic included dependencies",
-      "topics": ["set theory", "first-order logic", "computability"],
+      "topics": [
+        "set theory",
+        "first-order logic",
+        "computability"
+      ],
       "note": "Deduplicate shared sections against olp-core; otherwise train/heldout contamination.",
       "status": "LICENSE_IDENTIFIED_PIN_AND_DEDUP_REQUIRED"
     },
@@ -46,7 +70,11 @@
       "license": "CC-BY-4.0",
       "licenseEvidence": "https://builds.openlogicproject.org/courses/set-theory/",
       "format": "LaTeX / PDF",
-      "topics": ["set theory", "ZFC", "foundations"],
+      "topics": [
+        "set theory",
+        "ZFC",
+        "foundations"
+      ],
       "note": "Review dependencies and shared OLP text before corpus merge.",
       "status": "LICENSE_IDENTIFIED_PIN_AND_DEDUP_REQUIRED"
     },
@@ -58,7 +86,11 @@
       "license": "CC-BY-4.0 (confirm edition and contributors)",
       "licenseEvidence": "https://openlogicproject.org/olp-license/",
       "format": "LaTeX / PDF",
-      "topics": ["computability", "Gödel", "lambda calculus"],
+      "topics": [
+        "computability",
+        "Gödel",
+        "lambda calculus"
+      ],
       "status": "EDITION_AND_LICENSE_REVIEW_REQUIRED"
     },
     {
@@ -69,7 +101,12 @@
       "license": "CC-BY-SA-3.0",
       "licenseEvidence": "https://github.com/HoTT/book",
       "format": "LaTeX",
-      "topics": ["type theory", "identity", "homotopy", "univalent foundations"],
+      "topics": [
+        "type theory",
+        "identity",
+        "homotopy",
+        "univalent foundations"
+      ],
       "status": "SHAREALIKE_LICENSE_REVIEW_REQUIRED"
     },
     {
@@ -80,7 +117,12 @@
       "license": "CC-BY-SA-4.0 (PDF and TeX, scripts differ)",
       "licenseEvidence": "https://github.com/hmemcpy/milewski-ctfp-pdf",
       "format": "LaTeX",
-      "topics": ["categories", "functors", "composition", "monads"],
+      "topics": [
+        "categories",
+        "functors",
+        "composition",
+        "monads"
+      ],
       "status": "SHAREALIKE_LICENSE_REVIEW_REQUIRED"
     },
     {
@@ -91,9 +133,62 @@
       "license": "CC-BY-SA-4.0",
       "licenseEvidence": "https://discrete.openmathbooks.org/dmoi3.html",
       "format": "HTML / LaTeX",
-      "topics": ["relations", "graphs", "discrete structures", "proofs"],
+      "topics": [
+        "relations",
+        "graphs",
+        "discrete structures",
+        "proofs"
+      ],
       "note": "Do NOT confuse 3rd edition CC-BY-SA with 4th edition CC-BY-NC-SA.",
       "status": "SHAREALIKE_LICENSE_REVIEW_REQUIRED"
+    },
+    {
+      "id": "langsci-kroeger-2018",
+      "title": "Analyzing Meaning: An Introduction to Semantics and Pragmatics (2018, 1st ed.)",
+      "authors": "Paul R. Kroeger",
+      "source": "https://langsci-press.org/index.php/LangSci-Press/catalog/book/144",
+      "license": "CC-BY-4.0 (2018 edition only; 2022 3rd CC-BY-SA-4.0)",
+      "licenseEvidence": "https://langsci-press.org/index.php/LangSci-Press/catalog/book/144",
+      "format": "LaTeX source on GitHub / PDF",
+      "topics": [
+        "formal semantics",
+        "meaning",
+        "morphemes",
+        "pragmatics"
+      ],
+      "status": "LICENSE_IDENTIFIED_PIN_AND_PER_WORK_REVIEW_REQUIRED"
+    },
+    {
+      "id": "langsci-formal-semantics-2019",
+      "title": "Curso de semântica formal",
+      "authors": "Marcelo Ferreira",
+      "source": "https://langsci-press.org/catalog/book/200",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://langsci-press.org/catalog/book/200",
+      "format": "PDF, review availability of source",
+      "topics": [
+        "formal semantics",
+        "logic",
+        "compositionality",
+        "modality"
+      ],
+      "status": "LICENSE_IDENTIFIED_SOURCE_FORMAT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "langsci-communication-content",
+      "title": "Communication and Content",
+      "authors": "Prashant Parikh",
+      "source": "https://langsci-press.org/catalog/book/248",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://langsci-press.org/catalog/book/248",
+      "format": "PDF, review source format",
+      "topics": [
+        "pragmatics",
+        "game theory",
+        "situations",
+        "meaning"
+      ],
+      "status": "LICENSE_IDENTIFIED_SOURCE_FORMAT_REVIEW_REQUIRED"
     }
   ],
   "exclusions": [

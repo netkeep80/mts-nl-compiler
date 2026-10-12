@@ -128,35 +128,59 @@ test('W10 atomic TOP counts all source glyphs exactly even when parent Link is r
  }finally{db.close();}
 });
 
-test('W10 tree reproduces SQLite pole identities and exact balanced grouping',()=>{
+test('W10 binary grouping spells actual balanced DAG with only parentheses',()=>{
  const db=newNumericLinkDb();
  try{
   const loader=new CountedNumericCorpusLoader(db);
   const value='a ,␠';
-  const r=loader.appendBook(Buffer.from(value),{id:'tree'});
+  const result=loader.appendBook(Buffer.from(value),{id:'tree'});
   loader.appendBook(Buffer.from(value),{id:'tree-repeat'});
   const top=loader.topLinks(100);
-  const root=top.top.find(x=>x.id===r.rootLinkId);
+  const root=top.top.find(x=>x.id===result.rootLinkId);
   assert.ok(root);
   assert.equal(root.expandedCodepoints,[...value].length);
-  assert.equal(root.binaryTree.startsWith('#'+root.id+'('),true);
+  assert.equal(root.binaryTree,'(a␠)(,\\␠)'.replace('\\\\','\\'));
   assert.equal(root.treeTruncated,false);
-  assert.ok(root.binaryTree.includes('⟦␠⟧'));
-  assert.ok(root.binaryTree.includes('⟦,⟧'));
-  assert.equal(/#[0-9]+\(/.test(root.binaryTree),true);
-  assert.equal(root.visiblePreview,'⟦a␠,␠␠⟧');
+  assert.equal(root.visiblePreview,'⟦a␠,␠⟧');
   assert.equal(root.escapedPreview,JSON.stringify(value));
-  const rows=new Map(readNumericLinks(db).map(x=>[x.link_id,x]));
-  const decodeTree=id=>{
-   const x=rows.get(id);
-   if(x.from_id===null)return '⟦'+(x.string===' '?'␠':x.string)+'⟧';
-   return '#'+id.toString()+'('+decodeTree(x.from_id)+','+decodeTree(x.to_id)+')';
-  };
-  assert.equal(root.binaryTree,decodeTree(BigInt(root.id)));
+  assert.equal(root.fromId.length>0,true);
+  assert.equal(root.toId.length>0,true);
   const md=topRankedMarkdown(top,topObservedWords([{id:'tree',source:value}],5),loader.topAtoms());
-  assert.match(md,/Physical binary tree/);
-  assert.match(md,/⟦a␠,␠␠⟧/);
+  assert.match(md,/Binary grouping/);
+  assert.match(md,/⟦a␠,␠⟧/);
   assert.match(md,/Atom Link ID/);
+ }finally{db.close();}
+});
+
+test('W10 requested мама sample and sentence show actual parenthesis topology not linguistic word hints',()=>{
+ const db=newNumericLinkDb();
+ try{
+  const loader=new CountedNumericCorpusLoader(db);
+  const samples=[
+   {source:'мама',expected:'(ма)(ма)'},
+   {source:'мопед не мой',expected:'((м(оп))(е(д␠)))((н(е␠))(м(ой)))'}
+  ];
+  for(const {source,expected} of samples){
+   const first=loader.appendBook(Buffer.from(source),{id:source});
+   loader.appendBook(Buffer.from(source),{id:source+'-duplicate'});
+   const tree=loader.topLinks(100).top.find(x=>x.id===first.rootLinkId);
+   assert.ok(tree);
+   assert.equal(tree.binaryTree,expected);
+   assert.equal(tree.escapedPreview,JSON.stringify(source));
+  }
+ }finally{db.close();}
+});
+
+test('W10 literal parentheses and glyph-looking atoms cannot impersonate a structural boundary',()=>{
+ const db=newNumericLinkDb();
+ try{
+  const loader=new CountedNumericCorpusLoader(db);
+  const text='(␠)';
+  const a=loader.appendBook(Buffer.from(text),{id:'1'});
+  loader.appendBook(Buffer.from(text),{id:'2'});
+  const found=loader.topLinks().top.find(x=>x.id===a.rootLinkId);
+  assert.equal(found.binaryTree,'\\(('+'\\␠'+'\\))');
+  assert.equal(found.escapedPreview,JSON.stringify(text));
  }finally{db.close();}
 });
 
@@ -176,7 +200,7 @@ test('W10 whitespace and boundary markers are diagnostic and unambiguous',()=>{
   const pair=loader.topLinks().top.find(x=>x.preview==='  ');
   assert.equal(pair.fromId,atom.id);
   assert.equal(pair.toId,atom.id);
-  assert.equal(pair.binaryTree,'#'+pair.id+'(⟦␠⟧,⟦␠⟧)');
+  assert.equal(pair.binaryTree,'␠␠');
   assert.equal(pair.visiblePreview,'⟦␠␠⟧');
   assert.equal(atom.count,4);
   assert.equal(pair.count,2);

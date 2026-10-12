@@ -2,14 +2,36 @@
 // W15F1 progressive grammar/roots are always read-only; XZ transport is injected.
 // Source docs, rules, weights, and logical inferences are NOT manufactured here.
 import {createHash} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {readFileSync,statSync} from 'node:fs';
 import {brotliDecompressSync} from 'node:zlib';
 
 const MAGIC=Buffer.from('W15F1\0','binary');
 const MAX_WIRE=64_000_000,MAX_LINKS=10_000_000,MAX_SCALARS=100_000_000;
+const MAX_ARCHIVE=100_000_000;
 const fail=s=>{throw new Error('W17_NODE_ARCHIVE: '+s);};
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const isSafe=n=>Number.isSafeInteger(n)&&n>=0;
+function readBoundedArchive(input){
+  if(Buffer.isBuffer(input)){
+    if(input.length>MAX_ARCHIVE)fail('ZIP input exceeds archive byte budget');
+    return input;
+  }
+  // Reject oversized files before allocating their contents.
+  if(statSync(input).size>MAX_ARCHIVE)fail('ZIP input exceeds archive byte budget');
+  const data=readFileSync(input);
+  if(data.length>MAX_ARCHIVE)fail('ZIP input exceeds archive byte budget');
+  return data;
+}
+const CRC_TABLE=Uint32Array.from({length:256},(_,index)=>{
+  let value=index;
+  for(let k=0;k<8;k++)value=(value>>>1)^((value&1)?0xedb88320:0);
+  return value>>>0;
+});
+function crc32(data){
+  let value=0xffffffff;
+  for(const byte of data)value=(value>>>8)^CRC_TABLE[(value^byte)&255];
+  return (value^0xffffffff)>>>0;
+}
 function readU(buf,state){
  let n=0,scale=1,bytes=0,last=0;
  do{
@@ -102,7 +124,7 @@ export class FrozenLinkAseti {
  static fromWire(wire,options){return new FrozenLinkAseti(wire,options);}
  static fromBrotliExperiment(archive,{expectedArchiveSHA256,verifyDocuments=true}={}){
   // Alternative portable research transport only. W17 XZ is not silently replaced.
-  const buf=Buffer.isBuffer(archive)?archive:readFileSync(archive);
+  const buf=readBoundedArchive(archive);
   if(expectedArchiveSHA256&&sha(buf)!==expectedArchiveSHA256)fail('archive digest differs from external pin');
   const members=readZipStored(buf,['manifest.json','links.w15f1.br']);
   const manifest=members.get('manifest.json');
@@ -134,7 +156,7 @@ export class FrozenLinkAseti {
   * The caller may additionally supply the independently pinned whole ZIP SHA. */
  static fromArchive(archive,{decompressXZ,expectedArchiveSHA256,verifyDocuments=true}={}){
   if(typeof decompressXZ!=='function')fail('XZ decompressor capability required, no hidden OS/SQLite/Python fallback');
-  const buf=Buffer.isBuffer(archive)?archive:readFileSync(archive);
+  const buf=readBoundedArchive(archive);
   if(expectedArchiveSHA256&&sha(buf)!==expectedArchiveSHA256)fail('archive digest differs from external pin');
   const members=readZipStored(buf);
   const manifestBytes=members.get('manifest.json');
@@ -210,22 +232,27 @@ function readZipStored(data,expectedNames=['manifest.json','links.w15f1.xz']){
  const count=data.readUInt16LE(eocd+10),total=data.readUInt16LE(eocd+8);
  if(count!==2||total!==2)fail('exactly two members required');
  let offset=data.readUInt32LE(eocd+16);const size=data.readUInt32LE(eocd+12);
+ let expectedLocalOffset=0;
  if(offset+size!==eocd)fail('ZIP central directory range');
  const result=new Map();
  for(let i=0;i<count;i++){
   if(offset+46>eocd||data.readUInt32LE(offset)!==0x02014b50)fail('ZIP central record');
   const flags=data.readUInt16LE(offset+8),method=data.readUInt16LE(offset+10),length=data.readUInt32LE(offset+24),packed=data.readUInt32LE(offset+20);
+  const centralCRC=data.readUInt32LE(offset+16);
   const nameLength=data.readUInt16LE(offset+28),extra=data.readUInt16LE(offset+30),comment=data.readUInt16LE(offset+32),local=data.readUInt32LE(offset+42);
   const name=data.subarray(offset+46,offset+46+nameLength).toString('utf8');
   if(flags!==0||method!==0||length!==packed||result.has(name)||!expectedNames.includes(name)||nameLength>256||length>MAX_WIRE*2||extra||comment)fail('ZIP member type/size/name');
-  if(local+30>data.length||data.readUInt32LE(local)!==0x04034b50||data.readUInt16LE(local+6)!==0||data.readUInt16LE(local+8)!==0)fail('ZIP local header');
+  if(local!==expectedLocalOffset||local+30>data.length||data.readUInt32LE(local)!==0x04034b50||data.readUInt16LE(local+6)!==0||data.readUInt16LE(local+8)!==0)fail('ZIP local header/order');
   const n=data.readUInt16LE(local+26),ex=data.readUInt16LE(local+28);
   if(data.subarray(local+30,local+30+n).toString('utf8')!==name||ex!==0)fail('ZIP local member mismatch');
   const start=local+30+n,stop=start+length;
-  if(stop>data.length||stop>data.readUInt32LE(eocd+16)||length!==data.readUInt32LE(local+22))fail('ZIP member bounds');
-  result.set(name,data.subarray(start,stop));
+  if(stop>data.length||stop>data.readUInt32LE(eocd+16)||length!==data.readUInt32LE(local+22)||length!==data.readUInt32LE(local+18))fail('ZIP member bounds');
+  const payload=data.subarray(start,stop);
+  if(centralCRC!==data.readUInt32LE(local+14)||centralCRC!==crc32(payload))fail('ZIP CRC mismatch');
+  expectedLocalOffset=stop;
+  result.set(name,payload);
   offset+=46+nameLength+extra+comment;
  }
- if(offset!==eocd||!expectedNames.every(name=>result.has(name)))fail('ZIP member integrity');
+ if(offset!==eocd||expectedLocalOffset!==data.readUInt32LE(eocd+16)||!expectedNames.every(name=>result.has(name)))fail('ZIP member integrity');
  return result;
 }

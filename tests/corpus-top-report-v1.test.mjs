@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {newNumericLinkDb,readNumericLinks} from '../src/numeric-link-store-v1.mjs';
-import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
+import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown,visibleLinkText}
  from '../src/corpus-top-report-v1.mjs';
 
 test('TOP ranks expanded source occurrences, not unique SQL rows or pole counts',()=>{
@@ -97,4 +97,86 @@ test('TOP1000 word unigram bigram trigram rank cap is enforced',()=>{
  const report=topObservedWords([{id:'stress',source:words}],1000);
  assert.deepEqual(report.classes.map(x=>x.top.length),[1000,1000,1000]);
  assert.throws(()=>topObservedWords([{id:'stress',source:words}],1001),/invalid top rank/);
+});
+
+test('W10 atomic TOP counts all source glyphs exactly even when parent Link is reused',()=>{
+ const db=newNumericLinkDb();
+ try{
+  const loader=new CountedNumericCorpusLoader(db);
+  const docs=[' , а, ', 'а, а '];
+  for(const [i,value] of docs.entries())loader.appendBook(Buffer.from(value),{id:'atom-'+i});
+  loader.finalize();
+  const atoms=loader.topAtoms(1000);
+  const expected=new Map();
+  for(const ch of docs.flatMap(s=>[...s]))expected.set(ch,(expected.get(ch)??0)+1);
+  const byChar=new Map(atoms.top.map(x=>[x.text,x]));
+  assert.equal(atoms.denominatorAtomicOccurrences,docs.reduce((n,s)=>n+[...s].length,0));
+  assert.equal(atoms.top.reduce((n,x)=>n+x.count,0),atoms.denominatorAtomicOccurrences);
+  for(const [ch,n] of expected){
+   assert.equal(byChar.get(ch).count,n);
+   const physical=readNumericLinks(db).find(x=>x.link_id===BigInt(byChar.get(ch).id));
+   assert.equal(physical.from_id,null);
+   assert.equal(physical.to_id,null);
+   assert.equal(physical.string,ch);
+  }
+  assert.equal(byChar.get(' ').visible,'⟦␠⟧');
+  assert.equal(byChar.get(',').visible,'⟦,⟧');
+  assert.equal(byChar.get(' ').escaped,'" "');
+  assert.match(topRankedMarkdown(loader.topLinks(100),topObservedWords([{id:'x',source:docs[0]}],3),atoms),
+   /Source atomic Link frequency/);
+  assert.equal(atoms.top[0].count>=atoms.top.at(-1).count,true);
+ }finally{db.close();}
+});
+
+test('W10 tree reproduces SQLite pole identities and exact balanced grouping',()=>{
+ const db=newNumericLinkDb();
+ try{
+  const loader=new CountedNumericCorpusLoader(db);
+  const value='a ,␠';
+  const r=loader.appendBook(Buffer.from(value),{id:'tree'});
+  const top=loader.topLinks(100);
+  const root=top.top.find(x=>x.id===r.rootLinkId);
+  assert.ok(root);
+  assert.equal(root.expandedCodepoints,[...value].length);
+  assert.equal(root.binaryTree.startsWith('#'+root.id+'('),true);
+  assert.equal(root.treeTruncated,false);
+  assert.ok(root.binaryTree.includes('⟦␠⟧'));
+  assert.ok(root.binaryTree.includes('⟦,⟧'));
+  assert.match(root.binaryTree,/#\\d+\(/);
+  assert.equal(root.visiblePreview,'⟦a␠,␠␠⟧');
+  assert.equal(root.escapedPreview,JSON.stringify(value));
+  const rows=new Map(readNumericLinks(db).map(x=>[x.link_id,x]));
+  const decodeTree=id=>{
+   const x=rows.get(id);
+   if(x.from_id===null)return '⟦'+(x.string===' '?'␠':x.string)+'⟧';
+   return '#'+id.toString()+'('+decodeTree(x.from_id)+','+decodeTree(x.to_id)+')';
+  };
+  assert.equal(root.binaryTree,decodeTree(BigInt(root.id)));
+  const md=topRankedMarkdown(top,topObservedWords([{id:'tree',source:value}],5),loader.topAtoms());
+  assert.match(md,/Physical binary tree/);
+  assert.match(md,/⟦a␠,␠␠⟧/);
+  assert.match(md,/Atom Link ID/);
+ }finally{db.close();}
+});
+
+test('W10 whitespace and boundary markers are diagnostic and unambiguous',()=>{
+ assert.equal(visibleLinkText(', '),'⟦,␠⟧');
+ assert.equal(visibleLinkText(' о'),'⟦␠о⟧');
+ assert.equal(visibleLinkText('о '),'⟦о␠⟧');
+ assert.equal(visibleLinkText('\r\n'),'⟦␍␊⟧');
+ assert.equal(visibleLinkText('\t\u00a0\ufeff'),'⟦␉⍽⟨BOM⟩⟧');
+ assert.equal(visibleLinkText(''),'⟦⟧');
+ const db=newNumericLinkDb();
+ try{
+  const loader=new CountedNumericCorpusLoader(db);
+  loader.appendBook(Buffer.from('  '),{id:'double-space'});
+  const atom=loader.topAtoms().top.find(x=>x.text===' ');
+  const pair=loader.topLinks().top.find(x=>x.preview==='  ');
+  assert.equal(pair.fromId,atom.id);
+  assert.equal(pair.toId,atom.id);
+  assert.equal(pair.binaryTree,'#'+pair.id+'(⟦␠⟧,⟦␠⟧)');
+  assert.equal(pair.visiblePreview,'⟦␠␠⟧');
+  assert.equal(atom.count,2);
+  assert.equal(pair.count,1);
+ }finally{db.close();}
 });

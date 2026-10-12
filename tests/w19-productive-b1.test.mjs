@@ -61,6 +61,16 @@ test('W19 B1 same training cannot distinguish two worlds with opposite semantic 
  }
  assert.equal(fixture.negativeWorld.oppositeTruthLabelsForHeldout,true);
 });
+test('W19 B1 adversarial continuous-stream control: full-surface split cannot infer invisible word boundaries',()=>{
+ const stream=train.join(''); // 95 scalars, no separators or document boundaries inside
+ assert.equal(exactScalars(stream).length,95);
+ assert.throws(()=>trainProductiveSlots([stream]),/invalid training budget/,
+   'The learner requires at least two complete input surfaces; it is not a streaming segmenter');
+ const raw=trainProductiveSlots([stream,stream],{maxSurfaceScalars:128});
+ assert.equal(raw.status,'UNKNOWN_NO_PRODUCTIVE_SLOT');
+ assert.deepEqual(raw.propose(),[]);
+ // Correct: a positive B1 result must not be extrapolated to this hidden-boundary task.
+});
 test('W19 B1 zero-claim n-gram baselines score heldout without modifying training',()=>{
  for(const order of [0,1,2,3]){
   const n=trainCharBaseline(train,{order});

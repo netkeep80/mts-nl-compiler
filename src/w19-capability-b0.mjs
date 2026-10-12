@@ -26,23 +26,26 @@ export class ContextLinkGraph{
     if(!['left','balanced'].includes(shape))fail('invalid Link grouping');
     this.shape=shape;this.nodes=[];this.atoms=new Map();this.pairs=new Map();
   }
-  atom(c){
+  atom(c,create=true){
     if(this.atoms.has(c))return this.atoms.get(c);
+    if(!create)return null;
     const id=this.nodes.length;this.atoms.set(c,id);
     this.nodes.push(Object.freeze({kind:'atom',scalar:c}));return id;
   }
-  pair(l,r){
+  pair(l,r,create=true){
+    if(l===null||r===null)return null;
     const key=l+','+r;
     if(this.pairs.has(key))return this.pairs.get(key);
+    if(!create)return null;
     const id=this.nodes.length;this.pairs.set(key,id);
     this.nodes.push(Object.freeze({kind:'pair',from:l,to:r}));return id;
   }
-  encode(chars){
+  encode(chars,{create=true}={}){
     if(!chars.length)return -1;
     const build=(lo,hi)=>{
-      if(hi-lo===1)return this.atom(chars[lo]);
+      if(hi-lo===1)return this.atom(chars[lo],create);
       const cut=this.shape==='left'?hi-1:lo+Math.floor((hi-lo)/2);
-      return this.pair(build(lo,cut),build(cut,hi));
+      return this.pair(build(lo,cut),build(cut,hi),create);
     };
     return build(0,chars.length);
   }
@@ -70,13 +73,13 @@ export function trainContextPredictor(documents,{order=2,alpha=0.5,representatio
   for(const arr of training)for(const c of arr)seen.add(c);
   if(!seen.size)fail('empty training alphabet');
   const vocabulary=[...seen].sort(scalarOrder),V=vocabulary.length;
-  const key=(ctx)=>graph?String(graph.encode(ctx)):JSON.stringify(ctx);
+  const key=(ctx,create)=>graph?graph.encode(ctx,{create}):JSON.stringify(ctx);
   let observationEvents=0;
   for(const arr of training){
     observationEvents+=arr.length;
     for(let i=0;i<arr.length;i++){
       for(let k=0;k<=Math.min(order,i);k++){
-        const context=arr.slice(i-k,i),bucket=tables[k],identity=key(context);
+        const context=arr.slice(i-k,i),bucket=tables[k],identity=key(context,true);
         let row=bucket.get(identity);
         if(!row){row={events:0,counts:new Map()};bucket.set(identity,row);}
         row.events++;row.counts.set(arr[i],(row.counts.get(arr[i])??0)+1);
@@ -87,7 +90,7 @@ export function trainContextPredictor(documents,{order=2,alpha=0.5,representatio
     const chars=scalars(context);
     for(let k=Math.min(order,chars.length);k>=0;k--){
       const ctx=chars.slice(chars.length-k);
-      const row=tables[k].get(key(ctx));
+      const row=tables[k].get(key(ctx,false));
       if(!row)continue;
       const denominator=row.events+alpha*V;
       const distribution=vocabulary.map(scalar=>({scalar,probability:((row.counts.get(scalar)??0)+alpha)/denominator}));

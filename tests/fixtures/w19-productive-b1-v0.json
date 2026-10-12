@@ -1,0 +1,135 @@
+{
+  "schema": "mts-nl/W19B1/productive-blind-synthetic/v0",
+  "status": "SYNTHETIC_UNREVIEWED_NOT_HUMAN_GOLD",
+  "purpose": "Test whether surface-only substrings support unseen combinations; not morphological or semantic inference",
+  "generation": {
+    "roots": [
+      "бла",
+      "вре",
+      "гри",
+      "дро",
+      "жру",
+      "клы"
+    ],
+    "suffixes": [
+      "та",
+      "ме",
+      "си",
+      "по"
+    ],
+    "trainCells": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        4,
+        0
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ]
+    ],
+    "heldoutCells": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "splitRule": "(rootIndex + 2*suffixIndex) mod 5 == 0",
+    "disclosure": "fixture generator knows latent split; the learner sees only concatenated surface strings with DOCUMENT boundaries"
+  },
+  "negativeWorld": {
+    "identicalTrain": true,
+    "oppositeTruthLabelsForHeldout": true,
+    "argument": "Given identical training observations, no deterministic learner can distinguish whether missing combinations are licit or forbidden; do not claim semantic validity"
+  },
+  "notes": [
+    "No whitespace or token boundary in each observed surface",
+    "Each document contains exactly one constructed surface: document boundary is GIVEN, not learned",
+    "Train and withheld cells disjoint; all components appear in training",
+    "Positive withheld are synthetic, not human semantic gold",
+    "Equal-length candidates only when comparing character n-gram whole-form log scores"
+  ]
+}

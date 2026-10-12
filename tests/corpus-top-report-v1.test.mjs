@@ -134,6 +134,7 @@ test('W10 tree reproduces SQLite pole identities and exact balanced grouping',()
   const loader=new CountedNumericCorpusLoader(db);
   const value='a ,␠';
   const r=loader.appendBook(Buffer.from(value),{id:'tree'});
+  loader.appendBook(Buffer.from(value),{id:'tree-repeat'});
   const top=loader.topLinks(100);
   const root=top.top.find(x=>x.id===r.rootLinkId);
   assert.ok(root);
@@ -170,13 +171,14 @@ test('W10 whitespace and boundary markers are diagnostic and unambiguous',()=>{
  try{
   const loader=new CountedNumericCorpusLoader(db);
   loader.appendBook(Buffer.from('  '),{id:'double-space'});
+  loader.appendBook(Buffer.from('  '),{id:'double-space-repeat'});
   const atom=loader.topAtoms().top.find(x=>x.text===' ');
   const pair=loader.topLinks().top.find(x=>x.preview==='  ');
   assert.equal(pair.fromId,atom.id);
   assert.equal(pair.toId,atom.id);
   assert.equal(pair.binaryTree,'#'+pair.id+'(⟦␠⟧,⟦␠⟧)');
   assert.equal(pair.visiblePreview,'⟦␠␠⟧');
-  assert.equal(atom.count,2);
-  assert.equal(pair.count,1);
+  assert.equal(atom.count,4);
+  assert.equal(pair.count,2);
  }finally{db.close();}
 });

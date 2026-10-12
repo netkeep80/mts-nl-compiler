@@ -143,7 +143,7 @@ test('W10 tree reproduces SQLite pole identities and exact balanced grouping',()
   assert.equal(root.treeTruncated,false);
   assert.ok(root.binaryTree.includes('⟦␠⟧'));
   assert.ok(root.binaryTree.includes('⟦,⟧'));
-  assert.match(root.binaryTree,/#\\d+\(/);
+  assert.equal(/#[0-9]+\(/.test(root.binaryTree),true);
   assert.equal(root.visiblePreview,'⟦a␠,␠␠⟧');
   assert.equal(root.escapedPreview,JSON.stringify(value));
   const rows=new Map(readNumericLinks(db).map(x=>[x.link_id,x]));

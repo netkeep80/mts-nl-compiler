@@ -10,6 +10,14 @@ export function visibleLinkText(text){
   c==='\u200b'?'⟨ZWSP⟩':c;
  return '⟦'+[...text].map(show).join('')+'⟧';
 }
+// A compact *display* alphabet: literal parentheses, backslash or a marker
+// in source must not impersonate structural grouping or whitespace.
+const treeGlyph=c=>{
+ const specials={' ':'␠','\n':'␊','\r':'␍','\t':'␉','\u00a0':'⍽','\ufeff':'⟨BOM⟩','\u200b':'⟨ZWSP⟩'};
+ if(Object.hasOwn(specials,c))return specials[c];
+ if(c==='('||c===')'||c==='\\'||c==='␠'||c==='␊'||c==='␍'||c==='␉'||c==='⍽'||c==='⟨BOM⟩'||c==='⟨ZWSP⟩')return '\\'+c;
+ return c;
+};
 const escapedJson=s=>JSON.stringify(s);
 const escapedMd=s=>String(s).replaceAll('|','\\|').replaceAll('\n','\\n').replaceAll('\r','\\r');
 function rankTop(entries,n=1000,numericIds=false){
@@ -96,24 +104,25 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
    }
    memo.set(id,v);active.delete(id);return v;
   };
-  // Iterative real SQLite pole traversal: show *actual* grouping, including
-  // sub-Link IDs. Source spelling cannot reveal this binary structure.
+  // Minimal parenthesis-only spelling of the ACTUAL stored binary tree.
+  // Every non-root pair is grouped as "(LEFT RIGHT)" (no separator).
+  // The one outermost pair is omitted: мама -> (ма)(ма).
+  // Root and pole IDs remain in dedicated table columns, not inside text.
   const tree=(root,maxNodes=2048)=>{
-   const out=[],stack=[{id:root,stage:0}],active=new Set();
+   const out=[],stack=[{id:root,stage:0,root:true}],active=new Set();
    let count=0;
    while(stack.length){
     const x=stack.pop();
-    if(x.stage===1){active.delete(x.id);out.push(')');continue;}
-    if(x.stage===2){out.push(',');continue;}
+    if(x.stage===1){active.delete(x.id);if(!x.root)out.push(')');continue;}
     const r=q.get(x.id);
     if(!r)error('missing tree Link '+x.id);
-    if(r.from_id===null){out.push(visibleLinkText(r.string));continue;}
+    if(r.from_id===null){out.push([...r.string].map(treeGlyph).join(''));continue;}
     if(active.has(x.id))error('cyclic tree Link');
     if(++count>maxNodes)return {text:'⟨TREE_LIMIT_EXCEEDED⟩',truncated:true};
     active.add(x.id);
-    out.push('#'+formatLinkId(x.id)+'(');
-    stack.push({id:x.id,stage:1},{id:r.to_id,stage:0},
-     {stage:2},{id:r.from_id,stage:0});
+    if(!x.root)out.push('(');
+    stack.push({id:x.id,stage:1,root:x.root},
+     {id:r.to_id,stage:0,root:false},{id:r.from_id,stage:0,root:false});
    }
    return {text:out.join(''),truncated:false};
   };
@@ -187,9 +196,10 @@ export function topRankedMarkdown(links,words,atoms=null){
  }
  out.push('## Observed binary Link nodes','',
   'Pair ID is in the Link column; From/To are direct physical numeric pole IDs. '+
-  'Binary tree syntax: `#ID(left,right)` shows every composed Link and its actual grouping; '+
-  'leaves are escaped source scalars. This tree does not imply a learned word or syllable.','',
-  '| Rank | Link ID | From / To | Node occurrences | Books | Scalars | Bounded text ⟦start…end⟧ | Exact JSON | Physical binary tree |',
+  'Tree syntax: parenthesized binary pairs, root outer brackets omitted (мама → (ма)(ма)); '+
+  'leaves are exact source scalars, with spaces shown as ␠ and literal parentheses escaped. ' +
+  'The original numeric IDs remain in Link ID and From/To columns.','',
+  '| Rank | Link ID | From / To | Node occurrences | Books | Scalars | Bounded text ⟦start…end⟧ | Exact JSON | Binary grouping |',
   '|---:|---:|---|---:|---:|---:|---|---|---|');
  for(const x of links.top)out.push('| '+x.rank+' | '+x.id+' | '+x.fromId+' / '+x.toId+' | '+
   x.count+' | '+x.documents+' | '+x.expandedCodepoints+' | '+escapedMd(x.visiblePreview??visibleLinkText(x.preview))+

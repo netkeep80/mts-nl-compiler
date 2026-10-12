@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {mkdtempSync,rmSync,readFileSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,rmSync,readFileSync,writeFileSync,truncateSync} from 'node:fs';
 import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {tmpdir} from 'node:os';
 import {FrozenLinkAseti} from '../src/w17-native-link-runtime-v0.mjs';
 import {packBrotliExperiment} from '../src/w17-brotli-experiment-v0.mjs';
@@ -58,6 +59,47 @@ function packStored(members){
   tail.writeUInt32LE(directory.length,12);tail.writeUInt32LE(cursor,16);
   return Buffer.concat([...chunks,directory,tail]);
 }
+test('W17N0 transport-independent XZ injection: exact immutable roots, SHA and Unicode',()=>{
+ // This tests the Node archive contract without relying on an OS xz executable.
+ // Decompression is explicitly injected; this is NOT a test of the XZ codec.
+ const plain=buildTestW15(),payload=Buffer.from('synthetic compressed bytes');
+ const sha=b=>createHash('sha256').update(b).digest('hex');
+ const books=['мама','мама 🚀'];
+ const manifest={schema:'mts-nl/archived-link-aseti/v1',serialization:'W15F1-progressive',payload:'links.w15f1.xz',
+  payloadBytes:payload.length,payloadSha256:sha(payload),wireBytes:plain.length,wireSha256:sha(plain),
+  nodeCount:8,documentCount:2,documents:books.map((str,index)=>({
+   index,id:'fixture-'+index,bytes:Buffer.byteLength(str),scalars:[...str].length,sha256:sha(Buffer.from(str))
+  }))};
+ const archive=packStored([['manifest.json',Buffer.from(JSON.stringify(manifest))],['links.w15f1.xz',payload]]);
+ let calls=0;
+ const decompressXZ=(received,maxBytes)=>{
+  calls++;assert.deepEqual(received,payload);assert.equal(maxBytes,plain.length);return plain;
+ };
+ const graph=FrozenLinkAseti.fromArchive(archive,{decompressXZ,expectedArchiveSHA256:sha(archive)});
+ assert.equal(calls,1);assert.deepEqual(graph.roots,[5,7]);
+ assert.equal(graph.verifyDocumentDigests().verified,2);
+ assert.equal(graph.slice(1,3,6),'а 🚀');assert.deepEqual(graph.find(1,'а 🚀'),[3]);
+ assert.throws(()=>FrozenLinkAseti.fromArchive(archive,{decompressXZ:()=>Buffer.from('corrupt')}),/decompressed stream SHA/);
+});
+
+test('W17N0 portable ZIP enforces CRC, local sizes, and bounded archive file IO',()=>{
+ const wire=buildTestW15(),{archive}=packBrotliExperiment(wire);
+ const tampered=Buffer.from(archive);
+ tampered[30+Buffer.byteLength('manifest.json')+5]^=1;
+ assert.throws(()=>FrozenLinkAseti.fromBrotliExperiment(tampered),/ZIP CRC mismatch/);
+ const tamperedCentral=Buffer.from(archive),dirOffset=archive.readUInt32LE(archive.length-6);
+ tamperedCentral[dirOffset+16]^=1;
+ assert.throws(()=>FrozenLinkAseti.fromBrotliExperiment(tamperedCentral),/ZIP CRC mismatch/);
+ const tamperedLocal=Buffer.from(archive);tamperedLocal[18]^=1;
+ assert.throws(()=>FrozenLinkAseti.fromBrotliExperiment(tamperedLocal),/ZIP member bounds/);
+ const dir=mkdtempSync(join(tmpdir(),'w17-archive-bounds-'));
+ try{
+  const path=join(dir,'oversized archived aseti.zip');
+  writeFileSync(path,Buffer.alloc(0));truncateSync(path,100_000_001);
+  assert.throws(()=>FrozenLinkAseti.fromBrotliExperiment(path),/archive byte budget/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
 test('W17N0 real ZIP/XZ adapter: exact source SHA, member exclusion, strict tamper refusal',t=>{
   const plain=buildTestW15();
   const zipped=spawnSync('xz',['-6','--format=xz','--compress','--stdout'],{input:plain,maxBuffer:1e6});
@@ -103,8 +145,8 @@ test('W17B0 all-Node Brotli research archive exact, deterministic, bounded, no X
  assert.equal(graph.nodeCount,8);assert.equal(graph.verifyDocumentDigests().verified,2);
  const dir=mkdtempSync(join(tmpdir(),'w17-node-cli-'));
  try{
-  const path=join(dir,'test.zip');writeFileSync(path,first.archive);
-  const r=spawnSync(process.execPath,[new URL('../scripts/w17_native_query.mjs',import.meta.url).pathname,
+  const path=join(dir,'архив W17 with spaces.zip');writeFileSync(path,first.archive);
+  const r=spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/w17_native_query.mjs',import.meta.url)),
    '--archive',path,'--brotli-experimental','--verify-all','--document','1','--slice','3:6'],
    {encoding:'utf8',timeout:20000});
   assert.equal(r.status,0,r.stderr);

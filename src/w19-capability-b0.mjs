@@ -99,7 +99,7 @@ export function trainContextPredictor(documents,{order=2,alpha=0.5,representatio
     }
     fail('unigram row missing');
   }
-  function evaluate(documentsToScore,{topK=3}={}){
+  function evaluate(documentsToScore,{topK=Math.min(3,V)}={}){
     if(!Array.isArray(documentsToScore)||!Number.isInteger(topK)||topK<1||topK>V)fail('evaluation documents/topK');
     let events=0,scored=0,top1Hits=0,topKHits=0,totalBits=0,backoffs=0;
     for(const text of documentsToScore){

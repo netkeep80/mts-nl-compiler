@@ -16,3 +16,13 @@ for(const [title,script] of [
   assert.match(p.stdout,/W14_.*_SELF_TEST_PASS/);
  });
 }
+
+test('W14 raw Unicode source postcompression baselines are reversible',t=>{
+ const file=fileURLToPath(new URL('../scripts/w14_raw_codec_baselines.py',import.meta.url));
+ const p=spawnSync('python3',[file,'--self-test'],{
+  encoding:'utf8',timeout:20000,maxBuffer:1024*1024});
+ if(p.error?.code==='ENOENT'){t.skip('Python not installed');return;}
+ assert.equal(p.error,undefined,p.error?.message);
+ assert.equal(p.status,0,p.stderr);
+ assert.match(p.stdout,/W14_RAW_CODEC_SELF_TEST_PASS/);
+});

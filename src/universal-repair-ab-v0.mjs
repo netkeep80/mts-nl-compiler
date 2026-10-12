@@ -4,6 +4,7 @@ import {NUMERIC_LINK_SCHEMA_V1} from './numeric-link-store-v1.mjs';
 import {coldNumericCorpusReplay} from './numeric-corpus-loader-v1.mjs';
 import {trainUniversalRepair,summarizeRepairGrammar,UniversalRepairNumericLoader}
  from './universal-repair-numeric-v0.mjs';
+import {trainMultiscaleRepair} from './multiscale-repair-numeric-v0.mjs';
 
 const fail=s=>{throw Error('UNIVERSAL_AB: '+s);};
 const now=()=>process.hrtime.bigint(),ms=t=>+(Number(now()-t)/1e6).toFixed(3);
@@ -22,7 +23,12 @@ export function compareUniversalRepairCorpus(documents,baseline,options={}){
  const train=documents.filter((d,i)=>i%5!==4);
  const heldout=documents.filter((d,i)=>i%5===4);
  if(!train.length||!heldout.length)fail('empty training or held-out partition');
- const grammar=trainUniversalRepair(train,options);
+ const {algorithm='greedy',...trainingOptions}=options;
+ if(algorithm!=='greedy'&&algorithm!=='multiscale')
+  fail('unsupported training algorithm');
+ const grammar=algorithm==='multiscale'?
+  trainMultiscaleRepair(train,trainingOptions):
+  trainUniversalRepair(train,trainingOptions);
  if(!grammar.rules.length)fail('no learned repeated binary structures');
  const db=new DatabaseSync(':memory:');
  const schemaAt=now();db.exec(NUMERIC_LINK_SCHEMA_V1);const schemaMs=ms(schemaAt);
@@ -69,6 +75,7 @@ export function compareUniversalRepairCorpus(documents,baseline,options={}){
   }
   return {
    schema:'mts-nl/universal-repair-corpus-ab/v0',
+   algorithm,
    status:'UNIVERSAL_NUMERIC_COLD_REPLAY_PASS',
    caveat:'Re-Pair-like bounded sampled training; not globally minimal grammar, timings fixed order',
    sourceBytes,books:documents.length,

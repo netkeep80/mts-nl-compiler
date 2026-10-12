@@ -1,0 +1,129 @@
+{
+  "schema": "mts-nl/w16-60-book-pack-compression-bench/v0",
+  "status": "RESTORE_ALL_SHA_PASS",
+  "sourceBooks": 60,
+  "originalSourceBytes": 19701816,
+  "sourceLinkRows": 1951822,
+  "fullSqliteBytes": 83890176,
+  "w15LinkWireBytes": 9723277,
+  "budgetBytes": 100000000,
+  "reservedInstallerBytes": 10000000,
+  "formats": [
+    {
+      "name": "w13_sqlite",
+      "mode": "raw",
+      "bytes": 83890176,
+      "fullRestoreHashVerified": null
+    },
+    {
+      "name": "w13_sqlite",
+      "mode": "zstd-3",
+      "bytes": 38902278,
+      "seconds": 0.541,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w13_sqlite",
+      "mode": "zstd-9",
+      "bytes": 31901745,
+      "seconds": 1.638,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w13_sqlite",
+      "mode": "zstd-19",
+      "bytes": 28490145,
+      "seconds": 16.968,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w13_sqlite",
+      "mode": "xz-6",
+      "bytes": 20721708,
+      "seconds": 14.646,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w13_sqlite",
+      "mode": "bz2-9",
+      "bytes": 35401853,
+      "seconds": 7.358,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w13_sqlite",
+      "mode": "gzip-9",
+      "bytes": 37130419,
+      "seconds": 40.439,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "raw",
+      "bytes": 9723277,
+      "fullRestoreHashVerified": null
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "zstd-3",
+      "bytes": 9203328,
+      "seconds": 0.072,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "zstd-9",
+      "bytes": 9304052,
+      "seconds": 0.1,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "zstd-19",
+      "bytes": 9065194,
+      "seconds": 2.804,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "xz-6",
+      "bytes": 8104260,
+      "seconds": 4.156,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "bz2-9",
+      "bytes": 9487855,
+      "seconds": 1.249,
+      "fullRestoreHashVerified": true
+    },
+    {
+      "name": "w15_progressive",
+      "mode": "gzip-9",
+      "bytes": 9189169,
+      "seconds": 0.453,
+      "fullRestoreHashVerified": true
+    }
+  ],
+  "package": {
+    "archiveBytes": 20704765,
+    "sqliteBytes": 83890176,
+    "remainingWithinBudgetBytes": 69295235,
+    "reservedInstallerBytes": 10000000,
+    "archiveSHA256": "f4773a7fe4bfccfa0f8fbd72331c488c8fbd9bc48ad6e4115b663559d5edea65",
+    "verifiedSources": 60
+  },
+  "restore": {
+    "status": "RESTORE_SHA_AND_ALL_ROOTS_PASS",
+    "sqliteBytes": 83890176,
+    "documents": 60,
+    "sqliteSHA256": "58962eb54496b7f695c61f4d4597f258acdae69ca18349cff4065e030cfb1f35"
+  },
+  "notes": [
+    "Data-only research package; no actual Windows EXE bytes measured",
+    "Do not redistribute before per-work licensing audit",
+    "xz-6 measured through xz CLI differs from Python stdlib lzma XZ-stream; source SQLite SHA equal",
+    "No additional scientific books were ingested in this benchmark"
+  ]
+}

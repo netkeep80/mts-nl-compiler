@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {encodeM1State,decodeM1Bytes,trainM1,scoreM1Frozen}
+import {encodeM1State,decodeM1Bytes,trainM1,scoreM1Frozen,rankM1ContextCandidates}
  from '../src/m1-reversible-mdl-v0.mjs';
 const d=(id,text)=>({id,bytes:Buffer.from(text,'utf8')});
 
@@ -130,4 +130,72 @@ test('M1 five-seed blinded morphology-like A0/A1 protocol reports actual bits wi
    heldoutBpsA1:h1.heldoutBitsPerScalar});
  }
  console.log('M1_FIVE_SEED_A0_A1',JSON.stringify(runs));
+});
+
+
+test('M1 A2 context proposal introduces a rare predictive pair alongside frequent pairs at matched budget',()=>{
+ // Each document supplies an exact pair. No assumed word boundaries, no labels.
+ const parses=[
+  ...Array.from({length:40},()=>[0,1]),
+  ...Array.from({length:60},()=>[0,2]),
+  ...Array.from({length:60},()=>[3,1]),
+  ...Array.from({length:18},()=>[4,5])];
+ const s={atoms:[65,66,67,68,69,70],rules:[],parses,
+  sourceByteLengths:parses.map(()=>2)};
+ const rank=rankM1ContextCandidates(s,{topCandidates:2});
+ assert.equal(rank.length,2,'A1 and A2 evaluate the same number of candidate trials');
+ assert.equal(rank[0].proposalOrigin,'frequency');
+ assert.deepEqual([rank[1].a,rank[1].b],[4,5],
+  'conditional PMI should expose distinctive low-frequency pair');
+ assert.equal(rank[1].proposalOrigin,'context');
+ assert.ok(rank[1].contextPmi>rank[0].contextPmi);
+ assert.throws(()=>rankM1ContextCandidates(s,{topCandidates:0}),/budget/);
+});
+
+test('M1 A2 is alphabet-blind under bijective scalar renaming (including whitespace)',()=>{
+ const base=[d('a','ab ab ab cab ab abc cab ab ab '),
+  d('b','cab ab cab ab ab cab')];
+ const swap=s=>s.replaceAll(' ','~'); // Both codepoints have the same ULEB cost.
+ const renamed=base.map(x=>d(x.id,swap(x.bytes.toString('utf8'))));
+ const a=trainM1(base,{mode:'A2',maxRules:18,topCandidates:4});
+ const b=trainM1(renamed,{mode:'A2',maxRules:18,topCandidates:4});
+ assert.equal(a.totalBits,b.totalBits);
+ assert.deepEqual(a.state.rules,b.state.rules);
+ assert.deepEqual(a.state.parses,b.state.parses);
+ assert.ok(a.history.every(h=>h.deltaBits<0));
+ assert.equal(a.exactReplay,'PASS');
+ assert.equal(b.exactReplay,'PASS');
+ assert.deepEqual(decodeM1Bytes(a.wire).documents,base.map(x=>x.bytes));
+ assert.deepEqual(decodeM1Bytes(b.wire).documents,renamed.map(x=>x.bytes));
+});
+
+test('M1 A2 reuses identical codec and frozen heldout, reports negative result without posthoc claims',()=>{
+ const roots=['xak','zem','pil','ruf','gon','tes','naq','vor'],suffixes=['a','o','i','u'];
+ const rows=[];
+ for(let seed=1;seed<=5;seed++){
+  let rng=seed;
+  const rand=()=>{rng=(Math.imul(1664525,rng)+1013904223)>>>0;return rng/4294967296;};
+  const exposed=[],withheld=[];
+  for(let i=0;i<roots.length;i++)for(let j=0;j<suffixes.length;j++){
+   const form=roots[i]+suffixes[j];
+   if((i+2*j+seed)%7===0)withheld.push(form);else exposed.push(form);
+  }
+  const values=[];for(let k=0;k<560;k++)values.push(exposed[Math.floor(rand()*exposed.length)]);
+  const corpus=[d('train',values.join(''))],hidden=[d('blind',withheld.join('').repeat(5))];
+  const a1=trainM1(corpus,{mode:'A1',maxRules:35,topCandidates:24});
+  const a2=trainM1(corpus,{mode:'A2',maxRules:35,topCandidates:24});
+  const before=Buffer.from(a2.wire),history=JSON.stringify(a2.history);
+  const frozen=scoreM1Frozen(a2,hidden),baseline=scoreM1Frozen(a1,hidden);
+  assert.equal(a2.totalBits,8*a2.wire.length);
+  assert.equal(a2.exactReplay,'PASS');
+  assert.equal(frozen.noTrainingOnHeldout,true);
+  assert.equal(frozen.status,'FROZEN_GRAMMAR_REPLAY_PASS');
+  assert.deepEqual(a2.wire,before);
+  assert.equal(JSON.stringify(a2.history),history);
+  rows.push({seed,trainA1Bits:a1.totalBits,trainA2Bits:a2.totalBits,
+   heldoutBpsA1:baseline.heldoutBitsPerScalar,
+   heldoutBpsA2:frozen.heldoutBitsPerScalar,
+   contextAccepted:a2.history.filter(h=>h.proposalOrigin==='context').length});
+ }
+ console.log('M1_FIVE_SEED_A1_A2',JSON.stringify(rows));
 });

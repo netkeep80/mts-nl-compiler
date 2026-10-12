@@ -21,8 +21,15 @@ export function shapeSplitIndex(cp,start,end,shape,frequencies=new Map()){
     shape==='frequencyQuadratic'?len*len:len;
    return f*weight;
   };
+  // Only flanks of length <=8 can score positively when n>16; among
+  // all zero-score inner cuts, the best balance term is at the midpoint.
+  // Thus this shortlist is exactly equivalent to examining every cut.
+  const offsets=n<=17?Array.from({length:n-1},(_,i)=>i+1):
+   [...new Set([...Array.from({length:8},(_,i)=>i+1),
+    Math.floor(n/2),Math.ceil(n/2),...Array.from({length:8},(_,i)=>n-8+i)])].sort((a,b)=>a-b);
   let best=-Infinity;
-  for(let m=start+1;m<end;m++){
+  for(const offset of offsets){
+   const m=start+offset;
    const v=score(start,m)+score(m,end)-0.1*Math.abs((m-start)-(end-m));
    if(v>best){best=v;cut=m;}
   }

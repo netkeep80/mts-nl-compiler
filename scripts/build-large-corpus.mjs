@@ -9,6 +9,7 @@ import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
 import {compareWordAlignedCorpus} from '../src/word-aligned-ab-v1.mjs';
 import {compareUniversalRepairCorpus} from '../src/universal-repair-ab-v0.mjs';
+import {compareFrontierWindows} from '../src/frontier-window-ab-v0.mjs';
 const tick=()=>process.hrtime.bigint();
 const ms=from=>+(Number(tick()-from)/1e6).toFixed(3);
 const manifest=JSON.parse(readFileSync(new URL('../corpus/large-books-v1.json',import.meta.url),'utf8'));
@@ -181,6 +182,26 @@ console.log('UNIVERSAL_REPAIR_AB_SUMMARY '+JSON.stringify({
  sizeVsWordAligned:universal.comparison.universalToWordAlignedSizeRatio,
  coldStatus:universal.numericGraph.coldStatus
 }));
+
+const frontier=compareFrontierWindows(documents,perf,{
+  windows:[4,5,6],maxCodepointsPerBook:16384,
+  maxSelectedPhrases:384,minOccurrences:3
+});
+if(frontier.status!=='ALL_WINDOWS_60_BOOK_EXACT_REPLAY_PASS'||
+  frontier.variants.length!==3||
+  frontier.variants.some(v=>v.numericGraph.coldStatus!=='EXACT_NUMERIC_SQLITE_REPLAY_PASS'))
+ throw Error('Frontier window A/B/C must cold replay all 60 books');
+perf.frontierWindows=frontier;
+console.log('FRONTIER_WINDOW_456_SUMMARY '+JSON.stringify(frontier.variants.map(v=>({
+  window:v.window,trees:v.grammar.candidateBinaryTreesEvaluated,
+  uniqueWindows:v.grammar.uniqueWindowParses,
+  physicalLinks:v.numericGraph.physicalLinks,
+  sqliteBytes:v.numericGraph.sqliteVacuumBytes,
+  trainingMs:v.grammar.trainingMs,
+  loadMs:v.numericGraph.insertMs,
+  trainCoverage:v.coverage.train.rate,
+  heldoutCoverage:v.coverage.heldout.rate
+}))));
 
 // Reopen TOP links for output from in-memory record retained in the build.
 // The reports are emitted ONLY after all validation has completed.

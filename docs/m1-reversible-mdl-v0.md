@@ -135,3 +135,4 @@ occurrence-specific bindings и независимым сериализован�
 Обновлённый формат должен иметь новый magic/version, чтобы не объявлять
 обратную совместимость там, где её нет. Затем проверить скрытые комбинации
 `root×affix` и paired-world null-sources; без этого не заявлять морфологию.
+**CI/gov evidence:** M1.2 expands the draft from M1.1 to 694 net new lines. The pull-request research budget is now explicitly 860 lines (repository shared cap 4000); the original 530-line intent correctly blocked the earlier workflow event. A new event is required after editing PR metadata, since rerunning a historical event reuses its original PR payload.

@@ -95,7 +95,7 @@ export function trainProductiveSlots(forms,{minDegree=2,maxSurfaceScalars=64}={}
       if(observed.has(keyOf([p,s])))continue;
       out.push({surface:p+s,prefix:p,suffix:s,score:score(p,s),status:'UNSEEN_STRUCTURAL_CANDIDATE'});
     }
-    out.sort((a,b)=>b.score-a.score||a.surface.localeCompare(b.surface,'und'));
+    out.sort((a,b)=>b.score-a.score||(a.surface<b.surface?-1:a.surface>b.surface?1:0));
     return out;
   }
   return Object.freeze({status:'PRODUCTIVE_STRUCTURAL_HYPOTHESIS',trainingDocuments:forms.length,

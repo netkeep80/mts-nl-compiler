@@ -7,6 +7,8 @@ import {resolve} from 'node:path';
 import {NUMERIC_LINK_SCHEMA_V1} from '../src/numeric-link-store-v1.mjs';
 import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
+import {auditCorpusFrequencies,frequencyAuditMarkdown}
+ from '../src/corpus-frequency-audit-v0.mjs';
 import {compareWordAlignedCorpus} from '../src/word-aligned-ab-v1.mjs';
 import {compareUniversalRepairCorpus} from '../src/universal-repair-ab-v0.mjs';
 const tick=()=>process.hrtime.bigint();
@@ -22,13 +24,15 @@ const databasePath=resolve('reports/knowledge-large.sqlite');
 const reportJson=resolve('reports/top-1000-links.json');
 const reportMd=resolve('reports/top-1000-links.md');
 const perfPath=resolve('reports/large-corpus-performance.json');
+const auditJson=resolve('reports/frequency-audit.json');
+const auditMd=resolve('reports/frequency-audit.md');
 // Never allow stale artifacts from a previous successful build to survive failure.
-for(const file of [databasePath,reportJson,reportMd,perfPath])
+for(const file of [databasePath,reportJson,reportMd,perfPath,auditJson,auditMd])
  if(existsSync(file))rmSync(file,{force:true});
 const db=new DatabaseSync(':memory:');
 let loader;
 const documents=[],measurements=[];
-let perf,top;
+let perf,top,atoms,frequencyAudit;
 try{
  const begin=tick();
  db.exec(NUMERIC_LINK_SCHEMA_V1);
@@ -54,6 +58,12 @@ try{
  const final=loader.finalize();
  const finishMs=ms(finalizeStart);
  top=loader.topLinks(1000);
+ atoms=loader.topAtoms(1000);
+ if(atoms.denominatorAtomicOccurrences!==measurements.reduce((n,x)=>n+x.codepoints,0))
+  throw Error('Observed atomic frequency does not conserve source scalars');
+ frequencyAudit=auditCorpusFrequencies(documents,loader,{topN:100});
+ if(frequencyAudit.status!=='SOURCE_ATOM_TREE_CONSERVATION_PASS')
+  throw Error('Independent frequency audit failed');
  if(top.top.length!==1000)throw Error('TOP-1000 links missing/underfilled');
  if(top.denominatorPairEvents!==measurements.reduce((n,x)=>n+Math.max(0,x.codepoints-1),0))
   throw Error('Observed pair event count inconsistent with sources');
@@ -184,15 +194,21 @@ console.log('UNIVERSAL_REPAIR_AB_SUMMARY '+JSON.stringify({
 
 // Reopen TOP links for output from in-memory record retained in the build.
 // The reports are emitted ONLY after all validation has completed.
-if(!top)throw Error('TOP1000 unavailable after loader close');
+if(!top||!atoms||!frequencyAudit)throw Error('TOP1000/atoms/frequency audit unavailable');
 writeFileSync(reportJson,JSON.stringify({schema:'mts-nl/full-corpus-top1000/v2',
  corpus:{books:perf.books,sourceBytes:perf.sourceBytes,insertedLinks:perf.insertedLinks},
- links:top,words},null,2)+'\n');
-writeFileSync(reportMd,topRankedMarkdown(top,words));
+ links:top,atoms,words},null,2)+'\n');
+writeFileSync(reportMd,topRankedMarkdown(top,words,atoms));
+writeFileSync(auditJson,JSON.stringify(frequencyAudit,null,2)+'\n');
+writeFileSync(auditMd,frequencyAuditMarkdown(frequencyAudit));
+perf.frequencyAudit={status:frequencyAudit.status,sourceScalars:frequencyAudit.sourceScalars,
+ sourcePairWindows:frequencyAudit.sourcePairWindows,checkedAtoms:frequencyAudit.checkedAtoms,
+ checkedTopLinkNodes:frequencyAudit.checkedTopLinkNodes};
 writeFileSync(perfPath,JSON.stringify(perf,null,2)+'\n');
 console.log('LARGE_CORPUS_TOP1000_ROWS '+JSON.stringify(top.top));
 console.log('LARGE_CORPUS_TOP1000 '+JSON.stringify({
  links:top.top.length,words:words.classes[0].top.length,
  bigrams:words.classes[1].top.length,trigrams:words.classes[2].top.length,
- mostObservedLink:top.top[0],topReport:reportMd,
+ mostObservedLink:top.top[0],mostObservedAtom:atoms.top[0],topReport:reportMd,
+ frequencyAuditReport:auditMd,
  wordPhraseFrequencyMs:wordStatsMs}));

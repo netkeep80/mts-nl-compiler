@@ -70,3 +70,15 @@ test('W12 full ablation frozen train grammar and cold physical SQLite exactly ma
   assert.ok(sql.vacuumBytes>0);
  }
 });
+test('W12 bounded long-window split shortlist is exactly equivalent to exhaustive split',()=>{
+ const cp=[...'abcdefghijklmnopqrstuvwxyz0123456789'];
+ const frequencies=new Map([['ab',100],['01234567',50],['xy',30],['34',20],['mnop',100]]);
+ const score=(s)=>{if(s.length<2||s.length>8)return 0;
+  return Math.log2(1+(frequencies.get(s)??0))*s.length*s.length;};
+ let exactCut=1,exactScore=-Infinity;
+ for(let k=1;k<cp.length;k++){
+  const left=cp.slice(0,k),right=cp.slice(k),v=score(left.join(''))+score(right.join(''))-0.1*Math.abs(left.length-right.length);
+  if(v>exactScore){exactCut=k;exactScore=v;}
+ }
+ assert.equal(shapeSplitIndex(cp,0,cp.length,'frequencyQuadratic',frequencies),exactCut);
+});

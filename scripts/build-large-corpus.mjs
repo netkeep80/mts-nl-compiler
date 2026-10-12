@@ -197,8 +197,8 @@ console.log('UNIVERSAL_REPAIR_AB_SUMMARY '+JSON.stringify({
 if(!top||!atoms||!frequencyAudit)throw Error('TOP1000/atoms/frequency audit unavailable');
 writeFileSync(reportJson,JSON.stringify({schema:'mts-nl/full-corpus-top1000/v2',
  corpus:{books:perf.books,sourceBytes:perf.sourceBytes,insertedLinks:perf.insertedLinks},
- links:top,atoms,words},null,2)+'\n');
-writeFileSync(reportMd,topRankedMarkdown(top,words,atoms));
+ links:top,atoms,words,frequencyAudit},null,2)+'\n');
+writeFileSync(reportMd,topRankedMarkdown(top,words,atoms)+'\n'+frequencyAuditMarkdown(frequencyAudit));
 writeFileSync(auditJson,JSON.stringify(frequencyAudit,null,2)+'\n');
 writeFileSync(auditMd,frequencyAuditMarkdown(frequencyAudit));
 perf.frequencyAudit={status:frequencyAudit.status,sourceScalars:frequencyAudit.sourceScalars,

@@ -14,6 +14,10 @@ const results=kinds.map(representation=>{
   vocabularySize:model.vocabulary.length,graph:model.graph?.stats??null,
   heldout:model.evaluate(fixture.heldout),pairProbes:model.comparePairs(fixture.pairs)};
 });
+const unigramToTrigramBaselines=[0,1,2,3].map(order=>{
+ const model=trainContextPredictor(fixture.train,{order,alpha:0.5,representation:'raw'});
+ return {order,observationEvents:model.observationEvents,heldout:model.evaluate(fixture.heldout)};
+});
 const raw=results[0];
 for(const other of results.slice(1)){
  if(other.trainingDigest!==raw.trainingDigest
@@ -32,6 +36,10 @@ const report={
  split:{trainDocuments:fixture.train.length,heldoutDocuments:fixture.heldout.length,
    pairCount:fixture.pairs.length,goldIndependent:false},
  results,
+ unigramToTrigramBaselines,
+ validControlsAnomalyWarning:results[0].pairProbes.filter(p=>
+    ['both-valid-modal-contrast','rare-but-grammatically-valid'].includes(p.goldKind)
+    &&p.status==='STATISTICAL_ONLY'&&p.deltaBitsPerScalar>0).length,
  equality:{rawVsLinkLeft:true,rawVsLinkBalanced:true},
  warnings:[
   'Observation events are original source positions, not from_uses/to_uses or generated predictions',

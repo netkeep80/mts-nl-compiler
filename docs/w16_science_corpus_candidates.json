@@ -1,0 +1,111 @@
+{
+  "schema": "mts-nl/w16-science-corpus-candidates/v0",
+  "status": "CANDIDATES_NOT_YET_IMPORTED_OR_REDISTRIBUTION_APPROVED",
+  "focus": ["математическая логика", "отношения и основания", "теория категорий", "теория типов", "вычислимость", "формальные языки"],
+  "pinRule": "source exact commit/tag + origin byte SHA256 + declared extraction format + per-work attribution + license evidence, no unreviewed content in public installer",
+  "candidates": [
+    {
+      "id": "olp-core",
+      "title": "The Open Logic Text",
+      "authors": "The Open Logic Project",
+      "source": "https://github.com/OpenLogicProject/OpenLogic",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://openlogicproject.org/olp-license/",
+      "format": "LaTeX source",
+      "topics": ["first-order logic", "formal foundations", "theory of proof", "set theory"],
+      "status": "LICENSE_IDENTIFIED_PIN_AND_PER_WORK_REVIEW_REQUIRED"
+    },
+    {
+      "id": "plfa",
+      "title": "Programming Language Foundations in Agda",
+      "authors": "Philip Wadler; Wen Kokke; Jeremy Siek",
+      "source": "https://github.com/plfa/plfa.github.io",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://plfa.github.io/plfa/",
+      "format": "literate Agda / Markdown",
+      "topics": ["proofs as programs", "type theory", "operational semantics", "normalization"],
+      "status": "LICENSE_IDENTIFIED_PIN_AND_PER_WORK_REVIEW_REQUIRED"
+    },
+    {
+      "id": "olp-slc",
+      "title": "Sets, Logic, Computation",
+      "authors": "Richard Zach",
+      "source": "https://slc.openlogicproject.org/",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://slc.openlogicproject.org/",
+      "format": "LaTeX + Open Logic included dependencies",
+      "topics": ["set theory", "first-order logic", "computability"],
+      "note": "Deduplicate shared sections against olp-core; otherwise train/heldout contamination.",
+      "status": "LICENSE_IDENTIFIED_PIN_AND_DEDUP_REQUIRED"
+    },
+    {
+      "id": "olp-sets",
+      "title": "Set Theory: An Open Introduction",
+      "authors": "Tim Button",
+      "source": "https://builds.openlogicproject.org/courses/set-theory/",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://builds.openlogicproject.org/courses/set-theory/",
+      "format": "LaTeX / PDF",
+      "topics": ["set theory", "ZFC", "foundations"],
+      "note": "Review dependencies and shared OLP text before corpus merge.",
+      "status": "LICENSE_IDENTIFIED_PIN_AND_DEDUP_REQUIRED"
+    },
+    {
+      "id": "olp-incompleteness",
+      "title": "Incompleteness and Computability",
+      "authors": "Richard Zach and contributors",
+      "source": "https://ic.openlogicproject.org/",
+      "license": "CC-BY-4.0 (confirm edition and contributors)",
+      "licenseEvidence": "https://openlogicproject.org/olp-license/",
+      "format": "LaTeX / PDF",
+      "topics": ["computability", "Gödel", "lambda calculus"],
+      "status": "EDITION_AND_LICENSE_REVIEW_REQUIRED"
+    },
+    {
+      "id": "hott-book",
+      "title": "Homotopy Type Theory: Univalent Foundations of Mathematics",
+      "authors": "The Univalent Foundations Program",
+      "source": "https://github.com/HoTT/book",
+      "license": "CC-BY-SA-3.0",
+      "licenseEvidence": "https://github.com/HoTT/book",
+      "format": "LaTeX",
+      "topics": ["type theory", "identity", "homotopy", "univalent foundations"],
+      "status": "SHAREALIKE_LICENSE_REVIEW_REQUIRED"
+    },
+    {
+      "id": "category-programmers",
+      "title": "Category Theory for Programmers",
+      "authors": "Bartosz Milewski",
+      "source": "https://github.com/hmemcpy/milewski-ctfp-pdf",
+      "license": "CC-BY-SA-4.0 (PDF and TeX, scripts differ)",
+      "licenseEvidence": "https://github.com/hmemcpy/milewski-ctfp-pdf",
+      "format": "LaTeX",
+      "topics": ["categories", "functors", "composition", "monads"],
+      "status": "SHAREALIKE_LICENSE_REVIEW_REQUIRED"
+    },
+    {
+      "id": "discrete-levin-3",
+      "title": "Discrete Mathematics: An Open Introduction (3rd edition)",
+      "authors": "Oscar Levin",
+      "source": "https://discrete.openmathbooks.org/dmoi3.html",
+      "license": "CC-BY-SA-4.0",
+      "licenseEvidence": "https://discrete.openmathbooks.org/dmoi3.html",
+      "format": "HTML / LaTeX",
+      "topics": ["relations", "graphs", "discrete structures", "proofs"],
+      "note": "Do NOT confuse 3rd edition CC-BY-SA with 4th edition CC-BY-NC-SA.",
+      "status": "SHAREALIKE_LICENSE_REVIEW_REQUIRED"
+    }
+  ],
+  "exclusions": [
+    {
+      "name": "OpenStax Contemporary Mathematics",
+      "why": "CC BY-NC-SA and source terms explicitly restrict ingestion into LLM/generative-AI offerings without written permission; excludes automated research distribution pending review",
+      "url": "https://openstax.org/books/contemporary-mathematics/pages/preface"
+    },
+    {
+      "name": "Project Gutenberg bulk download",
+      "why": "Copyright status is jurisdiction-dependent; site disallows direct automated bulk scraping; use mirrors and per-work review",
+      "url": "https://www.gutenberg.org/policy/terms_of_use.html"
+    }
+  ]
+}

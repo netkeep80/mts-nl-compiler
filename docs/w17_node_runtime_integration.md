@@ -41,7 +41,7 @@ node scripts/w17_native_query.mjs --archive w17-aseti-60-research.zip --document
 
 1. Портативная XZ-декомпрессия в дистрибутиве для Windows 10/11, независимый fuzz/truncation/oversized-stream test и контроль точных расхода RAM/CPU/места.
 2. Отдельная API-граница read-only frozen Link knowledge и mutable рабочей асети Γ. Не путать локальный ordinal W15 с физическими integer64 SQLite ID, доказательствами или контекстными ролями.
-3. Аналогичные full 60-book и split heldout reproducibility gate на Node 24, затем clean-install offline Windows test. Границы из W18 large packset — в будущем; **не создавал их сейчас**.
+3. Linux CI на Node 24 подтверждает синтетические тесты кодека и runtime; отдельно остаются **full 60-book и split heldout reproducibility на Node 24**, а также запуск на Windows, затем clean-install offline Windows test. Границы из W18 large packset — в будущем.
 4. Публичная поставка запрещена без отдельного per-book rights review и фиксированного package digest.
 
 ## W17B0 — эксперимент автономной Node-упаковки с Brotli (НЕ смена канона)
@@ -67,3 +67,10 @@ W17B0 сам по себе воспроизводим: SHA-256 ZIP `c588984acf3a
 ```bash
 node scripts/w17_native_query.mjs --brotli-experimental --archive research-brotli.zip --list --verify-all
 ```
+## W17P1 — защищённое чтение архива и переносимые тесты (13.10.2026)
+
+После независимого аудита PR #89 добавлены проверки CRC32 **обоих членов ZIP** с согласованием локального и центрального заголовка, контроль отсутствия промежутков/перекрытий в ZIP_STORED и ограничение входного файла архива до 100 000 000 байт **до чтения содержимого**. Это валидация корректности контейнера и защита от случайных повреждений, **не** криптографическое доказательство происхождения (для него по-прежнему необходим внешний доверенный SHA pin). Для упакованного потока W15F1 сохраняются отдельные SHA и лимит декодирования.
+
+Кроссплатформенный CLI integration-test исправлен: путь к скрипту теперь получается через `fileURLToPath(new URL(...))`, а тестовый путь к ZIP включает кириллицу и пробелы. Появились независимый от системной команды `xz` тест явной инъекции распаковщика (только контракт Node API, **не** проверка XZ-декодера) и отрицательные случаи ZIP CRC/размеров/лимита загрузки.
+
+**Фактическая проверка после изменения:** Ubuntu GitHub Actions, Node.js **24.21.0**, **161 тест PASS / 0 FAIL**, [run #38321539810](https://github.com/netkeep80/mts-nl-compiler/actions/runs/38321539810), коммит `75b75cea9e71417731c751309c15231988f5e32f`. Это не Windows CI, не результат испытаний реального Windows 10/11, не независимый full 60-book Node24 benchmark и не результат repo-guard для stacked PR #89. Workflow `.github/workflows/ci.yml` сейчас только `ubuntu-latest`; добавление обязательной Windows матрицы требует отдельного авторизованного governance изменения. Никаких изменений в `main` или MTS v0.15 не делалось.

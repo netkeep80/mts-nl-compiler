@@ -3,6 +3,7 @@
 // Source docs, rules, weights, and logical inferences are NOT manufactured here.
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
+import {brotliDecompressSync} from 'node:zlib';
 
 const MAGIC=Buffer.from('W15F1\0','binary');
 const MAX_WIRE=64_000_000,MAX_LINKS=10_000_000,MAX_SCALARS=100_000_000;
@@ -99,6 +100,35 @@ export class FrozenLinkAseti {
   Object.freeze(this);
  }
  static fromWire(wire,options){return new FrozenLinkAseti(wire,options);}
+ static fromBrotliExperiment(archive,{expectedArchiveSHA256,verifyDocuments=true}={}){
+  // Alternative portable research transport only. W17 XZ is not silently replaced.
+  const buf=Buffer.isBuffer(archive)?archive:readFileSync(archive);
+  if(expectedArchiveSHA256&&sha(buf)!==expectedArchiveSHA256)fail('archive digest differs from external pin');
+  const members=readZipStored(buf,['manifest.json','links.w15f1.br']);
+  const manifest=members.get('manifest.json');
+  if(manifest.length>2_000_000)fail('oversized document manifest');
+  const meta=JSON.parse(manifest.toString('utf8'));
+  if(meta.schema!=='mts-nl/archived-link-aseti/brotli-experiment/v0'||meta.serialization!=='W15F1-progressive'||meta.payload!=='links.w15f1.br'||meta.archiveCodec!=='brotli-6')fail('experimental Brotli package identity');
+  const n=meta.wireBytes;
+  if(!isSafe(n)||n>MAX_WIRE||!n)fail('decompressed resource budget');
+  const packed=members.get('links.w15f1.br');
+  if(packed.length!==meta.payloadBytes||sha(packed)!==meta.payloadSha256)fail('Brotli payload checksum');
+  let wire;
+  try{wire=brotliDecompressSync(packed,{maxOutputLength:n+1});}catch{fail('Brotli payload corrupt or over budget');}
+  if(wire.length!==n||sha(wire)!==meta.wireSha256)fail('Brotli decoded SHA');
+  const graph=new FrozenLinkAseti(wire);
+  graph.#attachManifest(meta,verifyDocuments);
+  return graph;
+ }
+ #attachManifest(meta,verifyDocuments){
+  if(meta.nodeCount!==this.nodeCount||meta.documentCount!==this.documentCount||!Array.isArray(meta.documents)||meta.documents.length!==this.documentCount)fail('manifest count mismatch');
+  const docs=meta.documents.map((doc,i)=>{
+   if(!doc||doc.bytes!==this.#lengths[i].bytes||doc.scalars!==this.#lengths[i].scalars||typeof doc.sha256!=='string'||!/^[a-f0-9]{64}$/.test(doc.sha256))fail('manifest document metadata');
+   return Object.freeze({...doc});
+  });
+  this.#docs=Object.freeze(docs);
+  if(verifyDocuments)this.verifyDocumentDigests();
+ }
  /** Archive is ZIP_STORED(manifest.json, XZ(W15F1)). Decompression is deliberately
   * a required explicit host capability until a portable XZ decoder is bundled.
   * The caller may additionally supply the independently pinned whole ZIP SHA. */
@@ -117,13 +147,7 @@ export class FrozenLinkAseti {
   const wire=decompressXZ(compressed,meta.wireBytes);
   if(!Buffer.isBuffer(wire)||wire.length!==meta.wireBytes||sha(wire)!==meta.wireSha256)fail('decompressed stream SHA/size mismatch');
   const graph=new FrozenLinkAseti(wire);
-  if(meta.nodeCount!==graph.nodeCount||meta.documentCount!==graph.documentCount||!Array.isArray(meta.documents)||meta.documents.length!==graph.documentCount)fail('manifest count mismatch');
-  const docs=meta.documents.map((doc,i)=>{
-   if(!doc||doc.bytes!==graph.#lengths[i].bytes||doc.scalars!==graph.#lengths[i].scalars||typeof doc.sha256!=='string'||!/^[a-f0-9]{64}$/.test(doc.sha256))fail('manifest document metadata');
-   return Object.freeze({...doc});
-  });
-  graph.#docs=Object.freeze(docs);
-  if(verifyDocuments)graph.verifyDocumentDigests();
+  graph.#attachManifest(meta,verifyDocuments);
   return graph;
  }
  get documents(){return this.#docs??this.#lengths;}
@@ -178,7 +202,7 @@ export class FrozenLinkAseti {
   return {verified:this.documentCount,wireSha256:this.wireSha256};
  }
 }
-function readZipStored(data){
+function readZipStored(data,expectedNames=['manifest.json','links.w15f1.xz']){
  if(!Buffer.isBuffer(data)||data.length<22)fail('invalid ZIP');
  let eocd=-1;const min=Math.max(0,data.length-65557);
  for(let i=data.length-22;i>=min;i--)if(data.readUInt32LE(i)===0x06054b50&&i+22+data.readUInt16LE(i+20)===data.length){eocd=i;break;}
@@ -193,7 +217,7 @@ function readZipStored(data){
   const flags=data.readUInt16LE(offset+8),method=data.readUInt16LE(offset+10),length=data.readUInt32LE(offset+24),packed=data.readUInt32LE(offset+20);
   const nameLength=data.readUInt16LE(offset+28),extra=data.readUInt16LE(offset+30),comment=data.readUInt16LE(offset+32),local=data.readUInt32LE(offset+42);
   const name=data.subarray(offset+46,offset+46+nameLength).toString('utf8');
-  if(flags!==0||method!==0||length!==packed||result.has(name)||!['manifest.json','links.w15f1.xz'].includes(name)||nameLength>256||length>MAX_WIRE*2||extra||comment)fail('ZIP member type/size/name');
+  if(flags!==0||method!==0||length!==packed||result.has(name)||!expectedNames.includes(name)||nameLength>256||length>MAX_WIRE*2||extra||comment)fail('ZIP member type/size/name');
   if(local+30>data.length||data.readUInt32LE(local)!==0x04034b50||data.readUInt16LE(local+6)!==0||data.readUInt16LE(local+8)!==0)fail('ZIP local header');
   const n=data.readUInt16LE(local+26),ex=data.readUInt16LE(local+28);
   if(data.subarray(local+30,local+30+n).toString('utf8')!==name||ex!==0)fail('ZIP local member mismatch');
@@ -202,6 +226,6 @@ function readZipStored(data){
   result.set(name,data.subarray(start,stop));
   offset+=46+nameLength+extra+comment;
  }
- if(offset!==eocd||!result.has('manifest.json')||!result.has('links.w15f1.xz'))fail('ZIP member integrity');
+ if(offset!==eocd||!expectedNames.every(name=>result.has(name)))fail('ZIP member integrity');
  return result;
 }

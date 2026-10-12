@@ -8,6 +8,7 @@ import {NUMERIC_LINK_SCHEMA_V1} from '../src/numeric-link-store-v1.mjs';
 import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
 import {compareWordAlignedCorpus} from '../src/word-aligned-ab-v1.mjs';
+import {compareUniversalRepairCorpus} from '../src/universal-repair-ab-v0.mjs';
 const tick=()=>process.hrtime.bigint();
 const ms=from=>+(Number(tick()-from)/1e6).toFixed(3);
 const manifest=JSON.parse(readFileSync(new URL('../corpus/large-books-v1.json',import.meta.url),'utf8'));
@@ -156,6 +157,31 @@ console.log('WORD_ALIGNED_AB_SUMMARY '+JSON.stringify({
  ratios:wordAlignedAB.measuredRatios,
  coldStatus:wordAlignedAB.wordAligned.coldReadOnlyStatus
 }));
+
+const universal=compareUniversalRepairCorpus(documents,perf,{
+ maxCodepointsPerBook:16384,maxRules:96,maxRuleCodepoints:64,minOccurrences:3
+});
+if(universal.status!=='UNIVERSAL_NUMERIC_COLD_REPLAY_PASS'||
+ universal.books!==manifest.books.length||
+ universal.split.train.length!==48||universal.split.heldout.length!==12)
+ throw Error('Universal pair-based grammar fails full exact cold replay or held-out split');
+perf.universalRepairAB=universal;
+console.log('UNIVERSAL_REPAIR_AB_SUMMARY '+JSON.stringify({
+ books:universal.books,train:universal.split.train.length,
+ heldout:universal.split.heldout.length,
+ ruleCount:universal.grammar.ruleCount,
+ rulesWithAtLeastSixChars:universal.grammar.topRules.filter(r=>r.expandedCodepoints>=6).length,
+ universalLinks:universal.numericGraph.physicalLinks,
+ universalSqliteBytes:universal.numericGraph.sqliteVacuumBytes,
+ universalInsertMs:universal.numericGraph.insertWallMs,
+ trainCoverage:universal.coverage.train.coverageRate,
+ heldoutCoverage:universal.coverage.heldout.coverageRate,
+ selectedHistogram:universal.selectedLengthHistogram,
+ sizeVsBalanced:universal.comparison.universalToBalancedSizeRatio,
+ sizeVsWordAligned:universal.comparison.universalToWordAlignedSizeRatio,
+ coldStatus:universal.numericGraph.coldStatus
+}));
+
 // Reopen TOP links for output from in-memory record retained in the build.
 // The reports are emitted ONLY after all validation has completed.
 if(!top)throw Error('TOP1000 unavailable after loader close');

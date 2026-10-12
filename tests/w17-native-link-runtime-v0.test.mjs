@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {mkdtempSync,rmSync,readFileSync} from 'node:fs';
+import {mkdtempSync,rmSync,readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {FrozenLinkAseti} from '../src/w17-native-link-runtime-v0.mjs';
+import {packBrotliExperiment} from '../src/w17-brotli-experiment-v0.mjs';
 
 const appendU=(out,n)=>{while(n>=128){out.push((n&127)|128);n=Math.floor(n/128);}out.push(n);};
 function buildTestW15(){
@@ -91,4 +92,34 @@ test('W17N0 real ZIP/XZ adapter: exact source SHA, member exclusion, strict tamp
     members[0],['links.w15f1.xz',Buffer.from('tamper')]
   ]),{decompressXZ}),/compressed payload SHA/);
 
+});
+
+test('W17B0 all-Node Brotli research archive exact, deterministic, bounded, no XZ/SQLite',()=>{
+ const wire=buildTestW15();
+ const first=packBrotliExperiment(wire),second=packBrotliExperiment(wire);
+ assert.equal(first.sha256,second.sha256);
+ assert.deepEqual(first.archive,second.archive);
+ const graph=FrozenLinkAseti.fromBrotliExperiment(first.archive,{expectedArchiveSHA256:first.sha256});
+ assert.equal(graph.nodeCount,8);assert.equal(graph.verifyDocumentDigests().verified,2);
+ const dir=mkdtempSync(join(tmpdir(),'w17-node-cli-'));
+ try{
+  const path=join(dir,'test.zip');writeFileSync(path,first.archive);
+  const r=spawnSync(process.execPath,[new URL('../scripts/w17_native_query.mjs',import.meta.url).pathname,
+   '--archive',path,'--brotli-experimental','--verify-all','--document','1','--slice','3:6'],
+   {encoding:'utf8',timeout:20000});
+  assert.equal(r.status,0,r.stderr);
+  const out=JSON.parse(r.stdout);
+  assert.equal(out.slice,'а 🚀');assert.equal(out.externalXZTransport,false);
+  assert.equal(out.sqliteRequired,false);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+
+ assert.equal(graph.slice(1),'мама 🚀');assert.deepEqual(graph.find(1,'а 🚀'),[3]);
+ assert.throws(()=>packBrotliExperiment(wire,{sourceDocuments:[{id:'a'}]}),/witness count/);
+ assert.throws(()=>packBrotliExperiment(wire,{sourceDocuments:[
+  {sha256:'bad',bytes:8,scalars:4},{sha256:'bad',bytes:13,scalars:6}
+ ]}),/source witness SHA/);
+ assert.throws(()=>FrozenLinkAseti.fromArchive(first.archive,{decompressXZ:x=>x}),/ZIP member type/);
+ assert.throws(()=>FrozenLinkAseti.fromBrotliExperiment(first.archive,{expectedArchiveSHA256:'a'.repeat(64)}),/external pin/);
+ const modified=Buffer.from(first.archive);modified[58]^=1;
+ assert.throws(()=>FrozenLinkAseti.fromBrotliExperiment(modified),/invalid|checksum|manifest|ZIP|wire|Brotli/);
 });

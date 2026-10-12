@@ -91,3 +91,16 @@ test('W10 no cross-document ngram windows, no linguistic hints, Cyrillic posthoc
   assert.equal(a.syllableLikeTop.some(x=>x.text==='су'),false);
  });
 });
+test('W10 inserting one prefix changes balanced graph despite retaining an identical substring',()=>{
+ const docs=[doc('same','abcd'),doc('shifted','xabcd')];
+ run(docs,({loader})=>{
+  const r=auditCorpusFrequencies(docs,loader,{topN:30});
+  const ab=r.bigramTop.find(x=>x.text==='ab');
+  assert.equal(ab.count,2,'identical ab occurs twice in the source');
+  assert.equal(ab.balancedTreeOccurrences,1,
+   'xabcd right subtree groups b and cd, losing materialized ab');
+  const bc=r.bigramTop.find(x=>x.text==='bc');
+  assert.equal(bc.count,2);
+  assert.equal(bc.balancedTreeOccurrences,0);
+ });
+});

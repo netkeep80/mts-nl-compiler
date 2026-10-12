@@ -1,0 +1,94 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {mkdtempSync,rmSync,readFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {FrozenLinkAseti} from '../src/w17-native-link-runtime-v0.mjs';
+
+const appendU=(out,n)=>{while(n>=128){out.push((n&127)|128);n=Math.floor(n/128);}out.push(n);};
+function buildTestW15(){
+ const atoms=[...'ма🚀 '].map(c=>c.codePointAt(0)),pairs=[[0,1],[4,4],[5,3],[6,2]];
+ const out=[...Buffer.from('W15F1\0'),3];appendU(out,atoms.length);for(const cp of atoms)appendU(out,cp);
+ appendU(out,pairs.length);appendU(out,2);
+ function bits(fields){let v=0,n=0;for(const [x,w] of fields){for(let j=w-1;j>=0;j--){v=(v<<1)|((x>>>j)&1);n++;if(n===8){out.push(v);v=n=0;}}}if(n)out.push(v<<(8-n));}
+ bits(pairs.flatMap(([a,b],i)=>{const w=Math.max(1,Math.ceil(Math.log2(atoms.length+i)));return [[a,w],[b,w]];}));
+ bits([[5,3],[7,3]]);
+ for(const len of [[8,4],[13,6]])for(const n of len)appendU(out,n);
+ return Buffer.from(out);
+}
+test('W17N0 Node-native W15 progressive Link graph exact Unicode + search with no Python/SQL',()=>{
+ const plain=buildTestW15();const g=FrozenLinkAseti.fromWire(plain);
+ assert.equal(g.nodeCount,8);assert.equal(g.atomCount,4);
+ assert.equal(g.slice(0),'мама');assert.equal(g.slice(1),'мама 🚀');
+ assert.equal(g.slice(1,1,4),'ама');assert.equal(g.slice(1,4,6),' 🚀');
+ assert.deepEqual(g.find(1,'ма'),[0,2]);assert.deepEqual(g.find(1,'а 🚀'),[3]);
+ assert.deepEqual(g.link(4),{index:4,kind:'pair',from:0,to:1,scalars:2});
+ assert.throws(()=>g.slice(0,0,10),/range/);
+ assert.throws(()=>g.find(0,''),/search/);
+ assert.throws(()=>g.link(-1),/unknown/);
+ assert.throws(()=>FrozenLinkAseti.fromWire(plain.subarray(0,-1)),/truncated/);
+ assert.throws(()=>FrozenLinkAseti.fromWire(Buffer.from('sqlite')),/canonical W15/);
+ const noncanonical=Buffer.from(plain);noncanonical[0]^=1;
+ assert.throws(()=>FrozenLinkAseti.fromWire(noncanonical),/canonical W15/);
+});
+test('W17N0 Node archive adapter rejects missing XZ capability (never silently opens SQLite)',()=>{
+ assert.throws(()=>FrozenLinkAseti.fromArchive(Buffer.from('not zip')),/XZ decompressor capability required/);
+});
+
+function packStored(members){
+  // Standards-conformant ZIP with exactly two STORE entries; generated only
+  // in synthetic test and never used as a production installer writer.
+  const chunks=[],central=[];let cursor=0;
+  const crc32=data=>{let crc=0xffffffff;for(const v of data){crc^=v;for(let j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;};
+  for(const [name,payload] of members){
+    const utf=Buffer.from(name);const crc=crc32(payload);
+    const local=Buffer.alloc(30);local.writeUInt32LE(0x04034b50,0);local.writeUInt16LE(20,4);
+    local.writeUInt32LE(crc,14);local.writeUInt32LE(payload.length,18);local.writeUInt32LE(payload.length,22);local.writeUInt16LE(utf.length,26);
+    chunks.push(local,utf,payload);
+    const dir=Buffer.alloc(46);dir.writeUInt32LE(0x02014b50,0);dir.writeUInt16LE(20,4);dir.writeUInt16LE(20,6);
+    dir.writeUInt32LE(crc,16);dir.writeUInt32LE(payload.length,20);dir.writeUInt32LE(payload.length,24);
+    dir.writeUInt16LE(utf.length,28);dir.writeUInt32LE(cursor,42);central.push(dir,utf);
+    cursor+=local.length+utf.length+payload.length;
+  }
+  const directory=Buffer.concat(central),tail=Buffer.alloc(22);
+  tail.writeUInt32LE(0x06054b50,0);tail.writeUInt16LE(members.length,8);tail.writeUInt16LE(members.length,10);
+  tail.writeUInt32LE(directory.length,12);tail.writeUInt32LE(cursor,16);
+  return Buffer.concat([...chunks,directory,tail]);
+}
+test('W17N0 real ZIP/XZ adapter: exact source SHA, member exclusion, strict tamper refusal',t=>{
+  const plain=buildTestW15();
+  const zipped=spawnSync('xz',['-6','--format=xz','--compress','--stdout'],{input:plain,maxBuffer:1e6});
+  if(zipped.error?.code==='ENOENT'){t.skip('optional OS xz for transport integration fixture');return;}
+  assert.equal(zipped.status,0,zipped.stderr?.toString());
+  const sha=b=>createHash('sha256').update(b).digest('hex');
+  const documents=['мама','мама 🚀'];
+  const manifest={schema:'mts-nl/archived-link-aseti/v1',serialization:'W15F1-progressive',payload:'links.w15f1.xz',
+    payloadBytes:zipped.stdout.length,payloadSha256:sha(zipped.stdout),wireBytes:plain.length,wireSha256:sha(plain),
+    nodeCount:8,documentCount:2,documents:documents.map((s,i)=>({index:i,id:'book'+i,scalars:[...s].length,
+      bytes:Buffer.byteLength(s),sha256:sha(Buffer.from(s))}))};
+  const members=[['manifest.json',Buffer.from(JSON.stringify(manifest))],['links.w15f1.xz',zipped.stdout]];
+  const archive=packStored(members);
+  const decompressXZ=(data,limit)=>{
+    const r=spawnSync('xz',['--format=xz','--decompress','--stdout'],{input:data,maxBuffer:limit+100});
+    if(r.status!==0)throw Error('xz failure');
+    return r.stdout;
+  };
+  const graph=FrozenLinkAseti.fromArchive(archive,{decompressXZ,expectedArchiveSHA256:sha(archive)});
+  assert.equal(graph.verifyDocumentDigests().verified,2);
+  assert.equal(graph.slice(1,2,6),'ма 🚀');
+  assert.deepEqual(graph.find(1,'мама'),[0]);
+  assert.throws(()=>FrozenLinkAseti.fromArchive(archive,{decompressXZ,expectedArchiveSHA256:'0'.repeat(64)}),/external pin/);
+  const forged={...manifest,documents:manifest.documents.map(d=>({...d,sha256:'0'.repeat(64)}))};
+  assert.throws(()=>FrozenLinkAseti.fromArchive(packStored([
+    ['manifest.json',Buffer.from(JSON.stringify(forged))],members[1]
+  ]),{decompressXZ}),/document SHA/);
+  assert.throws(()=>FrozenLinkAseti.fromArchive(packStored([
+    members[0],['unapproved.sqlite',zipped.stdout]
+  ]),{decompressXZ}),/ZIP member type/);
+  assert.throws(()=>FrozenLinkAseti.fromArchive(packStored([
+    members[0],['links.w15f1.xz',Buffer.from('tamper')]
+  ]),{decompressXZ}),/compressed payload SHA/);
+
+});

@@ -107,7 +107,7 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
     if(x.stage===2){out.push(',');continue;}
     const r=q.get(x.id);
     if(!r)error('missing tree Link '+x.id);
-    if(r.from_id===null){out.push(visibleLinkText(r.string).slice(1,-1));continue;}
+    if(r.from_id===null){out.push(visibleLinkText(r.string));continue;}
     if(active.has(x.id))error('cyclic tree Link');
     if(++count>maxNodes)return {text:'⟨TREE_LIMIT_EXCEEDED⟩',truncated:true};
     active.add(x.id);

@@ -182,6 +182,33 @@ console.log('UNIVERSAL_REPAIR_AB_SUMMARY '+JSON.stringify({
  coldStatus:universal.numericGraph.coldStatus
 }));
 
+
+const multiscale=compareUniversalRepairCorpus(documents,perf,{
+ algorithm:'multiscale',maxCodepointsPerBook:16384,
+ maxLevels:10,maxRulesPerLevel:256,maxRuleCodepoints:128,minOccurrences:3
+});
+if(multiscale.status!=='UNIVERSAL_NUMERIC_COLD_REPLAY_PASS'||
+ multiscale.books!==60||multiscale.split.train.length!==48||
+ multiscale.split.heldout.length!==12)
+ throw Error('Multiscale universal grammar failed train/heldout cold replay');
+perf.multiscaleRepairAB=multiscale;
+console.log('MULTISCALE_REPAIR_AB_SUMMARY '+JSON.stringify({
+ books:multiscale.books,trained:multiscale.split.train.length,
+ heldout:multiscale.split.heldout.length,
+ rules:multiscale.grammar.ruleCount,
+ levels:multiscale.grammar.parameters.maxLevels,
+ learnedLongRulesInTop50:multiscale.grammar.topRules.filter(r=>r.expandedCodepoints>=6).length,
+ learnedLinks:multiscale.numericGraph.physicalLinks,
+ learnedSqliteBytes:multiscale.numericGraph.sqliteVacuumBytes,
+ insertWallMs:multiscale.numericGraph.insertWallMs,
+ trainCoverage:multiscale.coverage.train.coverageRate,
+ heldoutCoverage:multiscale.coverage.heldout.coverageRate,
+ histogram:multiscale.selectedLengthHistogram,
+ ratioVsBalanced:multiscale.comparison.universalToBalancedSizeRatio,
+ ratioVsWordAligned:multiscale.comparison.universalToWordAlignedSizeRatio,
+ coldStatus:multiscale.numericGraph.coldStatus
+}));
+
 // Reopen TOP links for output from in-memory record retained in the build.
 // The reports are emitted ONLY after all validation has completed.
 if(!top)throw Error('TOP1000 unavailable after loader close');

@@ -45,6 +45,11 @@ test('W10 overlapping source bigrams != observed balanced-tree Link node events'
   assert.equal(row.count,4,'three overlapping windows in aaaa, one in aa');
   assert.equal(row.balancedTreeOccurrences,3,'two balanced nodes from aaaa, one from aa');
   assert.equal(row.sampledTop1000LinkOccurrences,3);
+  const coverage=new Map(a.structuralCoverageByLength.map(x=>[x.scalars,x]));
+  assert.deepEqual(coverage.get(2),{scalars:2,sourceWindows:4,nodeEvents:3,fraction:0.75});
+  assert.deepEqual(coverage.get(3),{scalars:3,sourceWindows:2,nodeEvents:0,fraction:0});
+  assert.deepEqual(coverage.get(4),{scalars:4,sourceWindows:1,nodeEvents:1,fraction:1});
+  assert.match(frequencyAuditMarkdown(a),/Доля окон исходника/);
   const atom=readNumericLinks(db).find(x=>x.from_id===null);
   const selfPolePair=readNumericLinks(db).find(x=>x.from_id===atom.link_id&&x.to_id===atom.link_id);
   assert.ok(selfPolePair,'equal poles create a composite aa Link');

@@ -77,6 +77,10 @@ test('W19 B0: standalone report deterministic, labels unreviewed, distinct sourc
  assert.equal(report.split.goldIndependent,false);
  assert.equal(report.split.heldoutDocuments,4);
  assert.equal(report.results[0].pairProbes.length,6);
+ assert.deepEqual(report.unigramToTrigramBaselines.map(x=>x.order),[0,1,2,3]);
+ assert.deepEqual(report.unigramToTrigramBaselines[3].heldout,report.results[0].heldout);
+ assert.equal(report.validControlsAnomalyWarning,2);
+
  assert.ok(report.results.every(r=>r.heldout.scored>0));
  assert.ok(report.results[0].pairProbes.some(p=>p.goldKind==='both-valid-modal-contrast'));
  assert.ok(report.results[0].pairProbes.some(p=>p.goldKind==='rare-but-grammatically-valid'));
@@ -84,5 +88,8 @@ test('W19 B0: standalone report deterministic, labels unreviewed, distinct sourc
   observationEvents:report.results[0].observationEvents,
   heldout:report.results[0].heldout,
   pairStatuses:report.results[0].pairProbes.map(p=>({id:p.id,status:p.status,delta:p.deltaBitsPerScalar})),
-  equality:report.equality}));
+  equality:report.equality,
+  baselines:report.unigramToTrigramBaselines.map(x=>({order:x.order,
+    bitsPerScoredScalar:x.heldout.bitsPerScoredScalar,top1Accuracy:x.heldout.top1Accuracy})),
+  validControlsAnomalyWarning:report.validControlsAnomalyWarning}));
 });

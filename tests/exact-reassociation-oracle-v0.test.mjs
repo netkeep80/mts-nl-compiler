@@ -125,3 +125,40 @@ test('oracle handles six nonword leaves, duplicate physical pairs without assert
     'EXACT_NUMERIC_SQLITE_REPLAY_PASS');
  }finally{f.db.close();}
 });
+
+
+test('all frontier widths 4/5/6 demonstrate strictly smaller reachable DAG with real SQLite reuse',()=>{
+ const alphabet=['α','🧿','∅','ζ','🌌','⟐'];
+ for(const width of [4,5,6]){
+  const db=newNumericLinkDb();
+  try{
+   const atom=db.prepare('INSERT INTO links(string,weight) VALUES(?,NULL)');
+   const pair=db.prepare('INSERT INTO links(from_id,to_id,string,weight) VALUES(?,?,NULL,NULL)');
+   atom.setReadBigInts(true);pair.setReadBigInts(true);
+   const chars=alphabet.slice(0,width);
+   const leaves=chars.map(x=>atom.run(x).lastInsertRowid);
+   let old=leaves[0];
+   for(const leaf of leaves.slice(1))old=pair.run(old,leaf).lastInsertRowid;
+   const pinned=pair.run(leaves[width-2],leaves[width-1]).lastInsertRowid;
+   rebuildNumericCounters(db);
+   const input={oldRoot:String(old),frontier:leaves.map(String),retainedRoots:[String(pinned)]};
+   const plan=planExactReassociation(db,input);
+   assert.equal(plan.evaluatedTrees,exactFrontierShapes(width).length);
+   assert.equal(plan.improve,true,'width '+width+' must find retained physical reuse');
+   assert.equal(plan.selected.reachableDelta,-1);
+   assert.equal(plan.selected.newPhysicalRows,1);
+   const oldPhysical=readNumericLinks(db).length;
+   const applied=materializeImprovingReassociation(db,input);
+   assert.equal(applied.insertedPhysicalRows,1);
+   assert.equal(readNumericLinks(db).length,oldPhysical+1);
+   const expected=Buffer.from(chars.join(''),'utf8');
+   const roots=[
+    {id:'new'+width,rootLinkId:applied.rootLinkId,bytes:expected},
+    {id:'old'+width,rootLinkId:String(old),bytes:expected},
+    {id:'pinned'+width,rootLinkId:String(pinned),
+      bytes:Buffer.from(chars.slice(-2).join(''),'utf8')}
+   ];
+   assert.equal(coldNumericCorpusReplay(db,roots).status,'EXACT_NUMERIC_SQLITE_REPLAY_PASS');
+  }finally{db.close();}
+ }
+});

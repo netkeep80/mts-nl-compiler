@@ -23,6 +23,15 @@
   "notes": [
     "Time/RSS from one laboratory Linux environment, not Windows",
     "Full Sha verification is an opt-in load option",
-    "Runtime is O(graph links) RAM; gigabyte packages need paged/chunked implementation"
-  ]
+    "Runtime is O(graph links) RAM; gigabyte packages need paged/chunked implementation",
+    "Benchmark values may vary across runs; measurements are not Windows/installer gates"
+  ],
+  "baselineW17ColdShaVerify": {
+    "seconds": 7.16,
+    "maxRssKb": 144712,
+    "status": "COLD_LINK_ONLY_60_DOCUMENT_REPLAY_PASS",
+    "sameArchive": true,
+    "method": "baseline W17 w17_link_archive.py --verify"
+  },
+  "comparison": "Indexed startup is slower and more memory intensive with complete SHA replay, but enables addressable reads/search without repeated whole-document decoding"
 }

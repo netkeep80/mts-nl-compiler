@@ -113,8 +113,7 @@ function makeFresh(documents,targetId,targetTree){
   w.loader.finalize();
   const evidence=physicalEvidence(db,roots);
   if(evidence.inactiveTotal!==0)fail('fresh corpus has dead Links');
-  return {evidence,roots:roots.map(x=>({id:x.id,rootLinkId:x.rootLinkId})),
-   cold:()=>coldNumericCorpusReplay(db,roots)};
+  return {evidence,roots:roots.map(x=>({id:x.id,rootLinkId:x.rootLinkId}))};
  }finally{db.close();}
 }
 function retainedReplacement(documents,targetId,baselineTree,revisedTree){

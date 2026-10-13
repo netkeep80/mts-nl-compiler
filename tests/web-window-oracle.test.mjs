@@ -121,7 +121,8 @@ test('W22: browser window front updates width, slider and visible grounded optim
  assert.equal(get('window-output').hidden,false);
  assert.ok(get('window-metrics').children.length>=6);
  assert.ok(get('window-ranked').children[0].tag==='table');
- assert.ok(get('window-position').textContent.includes('8'));
+ assert.equal(get('window-offset').value,String([...get('source').value].length-8));
+ assert.ok(get('window-position').textContent.includes(' из '));
  assert.equal(get('window-next').disabled,true);
  handlers.get('window-prev:click')();
  assert.equal(get('window-next').disabled,false);

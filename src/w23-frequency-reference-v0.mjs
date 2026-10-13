@@ -10,6 +10,10 @@ const validText=text=>typeof text==='string'&&
  ![...text].some(ch=>{const cp=ch.codePointAt(0);return cp>=0xD800&&cp<=0xDFFF;});
 const pairIdKey=(left,right)=>left+','+right;
 const canonicalPairKey=(left,right)=>JSON.stringify([left.canonical,right.canonical]);
+const frequencySnapshot=counts=>[...counts.values()]
+ .map(x=>({leftToken:x.leftToken,rightToken:x.rightToken,frequency:x.frequency,
+  canonical:x.canonical,length:x.length,expanded:x.expanded}))
+ .sort((a,b)=>cmp(a.canonical,b.canonical));
 
 export const linksPlatformAuditPin=Object.freeze({
  repository:'linksplatform/Data.Doublets.Sequences',
@@ -18,8 +22,6 @@ export const linksPlatformAuditPin=Object.freeze({
  cpp:'cpp/Platform.Data.Doublets.Sequences/Converters/CompressingConverter.h'
 });
 
-// Exact logical predicate from pinned C# UpdateMaxDoublet, represented with the
-// C# precedence made explicit: && binds more tightly than ||.
 export function linksPlatformCSharpUpdateMaxPredicate({
  frequency,maxFrequency,minFrequency=1,source,target,bestSource=0,bestTarget=0
 }){
@@ -45,12 +47,12 @@ export function simulatePinnedCSharpFreshSelection(candidates,{minFrequency=1}={
 }
 
 export function compressFrequencyReference(documents,{
- minOccurrences=2,maxRounds=256,maxExpansionScalars=256
+ minOccurrences=2,maxRounds=256,maxExpansionScalars=256,includeTrace=false
 }={}){
  if(!Array.isArray(documents)||!Number.isSafeInteger(minOccurrences)||minOccurrences<2||
   !Number.isSafeInteger(maxRounds)||maxRounds<0||maxRounds>4096||
-  !Number.isSafeInteger(maxExpansionScalars)||maxExpansionScalars<2||maxExpansionScalars>4096)
-  fail('invalid parameters');
+  !Number.isSafeInteger(maxExpansionScalars)||maxExpansionScalars<2||maxExpansionScalars>4096||
+  typeof includeTrace!=='boolean')fail('invalid parameters');
  const ids=new Set();
  for(const d of documents){
   if(!d||typeof d.id!=='string'||!d.id||ids.has(d.id)||!validText(d.text))
@@ -82,7 +84,7 @@ export function compressFrequencyReference(documents,{
   return {token,created:true};
  };
  let sequences=documents.map(d=>[...d.text].map(atom));
- const rules=[];
+ const rules=[],trace=[];
  let fullScanAdjacentInspections=0,rankedCandidatesExamined=0;
  for(let round=0;round<maxRounds;round++){
   const counts=new Map();
@@ -104,7 +106,7 @@ export function compressFrequencyReference(documents,{
    rankedCandidatesExamined++;
    const rewritten=[];let used=0;
    const existingToken=pairs.get(candidate.identity);
-   const replacementToken=existingToken??nextToken; // dry-run handle only
+   const replacementToken=existingToken??nextToken;
    for(const seq of sequences){
     const out=[];
     for(let i=0;i<seq.length;i++){
@@ -116,16 +118,25 @@ export function compressFrequencyReference(documents,{
    }
    if(used>=minOccurrences){chosen=candidate;replacements=used;nextSequences=rewritten;break;}
   }
-  if(!chosen)break;
+  const before=includeTrace?{
+   round:round+1,sequences:sequences.map(seq=>seq.slice()),
+   pairFrequencies:frequencySnapshot(counts),
+   chosen:chosen?{leftToken:chosen.leftToken,rightToken:chosen.rightToken,
+    frequency:chosen.frequency,canonical:chosen.canonical,length:chosen.length,
+    expanded:chosen.expanded,nonOverlappingReplacements:replacements}:null
+  }:null;
+  if(!chosen){if(includeTrace)trace.push({...before,afterSequences:before.sequences});break;}
   const plannedReplacement=pairs.get(chosen.identity)??nextToken;
   const made=pair(chosen.leftToken,chosen.rightToken);
   if(made.token!==plannedReplacement)fail('dry-run replacement token disagrees with pair reuse');
-  // The dry-run used either the already existing token or exactly nextToken before creation.
   sequences=nextSequences;
-  rules.push(Object.freeze({round:round+1,token:made.token,createdAbstractPair:made.created,
+  const rule=Object.freeze({round:round+1,token:made.token,createdAbstractPair:made.created,
    leftToken:chosen.leftToken,rightToken:chosen.rightToken,
    canonical:chosen.canonical,expanded:chosen.expanded,length:chosen.length,
-   adjacentFrequency:chosen.frequency,nonOverlappingReplacements:replacements}));
+   adjacentFrequency:chosen.frequency,nonOverlappingReplacements:replacements});
+  rules.push(rule);
+  if(includeTrace)trace.push({...before,replacementToken:made.token,
+   createdAbstractPair:made.created,afterSequences:sequences.map(seq=>seq.slice())});
  }
  const decodeToken=token=>{
   const term=terms.get(token);if(!term)fail('unknown token during replay');return term.expanded;
@@ -141,6 +152,7 @@ export function compressFrequencyReference(documents,{
    utf8Bytes:Buffer.byteLength(d.text),finalTokens:sequences[i].length})),
   rules,ruleCount:rules.length,abstractAtoms:atoms.size,abstractPairs:pairs.size,
   fullScanAdjacentInspections,rankedCandidatesExamined,
-  finalSequences:sequences.map(seq=>seq.slice()),replay
+  finalSequences:sequences.map(seq=>seq.slice()),replay,
+  ...(includeTrace?{trace}:null)
  });
 }

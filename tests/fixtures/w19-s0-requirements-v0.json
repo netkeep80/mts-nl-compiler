@@ -1,0 +1,1402 @@
+{
+  "schema": "mts-nl/W19S0/provisional-requirements/v0",
+  "status": "SYNTHETIC_PROVISIONAL_NOT_INDEPENDENT_GOLD",
+  "baseMain": "cba8ee4baa9724ae124da68c469f20c35c8789c7",
+  "purpose": "Boundary experiment between exact structure, explicit contextual definitions and unsupported semantic interpretation",
+  "examples": [
+    {
+      "id": "S01",
+      "family": "modality-negation",
+      "text": "Система должна сохранить документ.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "SAVE",
+          "object": "DOCUMENT",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "modal": {
+            "surface": "должна",
+            "startUtf8": 15,
+            "endUtf8": 27
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 28,
+            "endUtf8": 46
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 47,
+            "endUtf8": 63
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "tpl.requirement"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S02",
+      "family": "modality-negation",
+      "text": "Система не должна сохранить документ.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "SAVE",
+          "object": "DOCUMENT",
+          "modality": "MUST",
+          "polarity": "NEGATED",
+          "negationScope": "MODAL_ACTION"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "negation": {
+            "surface": "не",
+            "startUtf8": 15,
+            "endUtf8": 19
+          },
+          "modal": {
+            "surface": "должна",
+            "startUtf8": 20,
+            "endUtf8": 32
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 33,
+            "endUtf8": 51
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 52,
+            "endUtf8": 68
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.neg.lower"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S03",
+      "family": "role-order",
+      "text": "Оператор должен сохранить документ.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "OPERATOR",
+          "action": "SAVE",
+          "object": "DOCUMENT",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Оператор",
+            "startUtf8": 0,
+            "endUtf8": 16
+          },
+          "modal": {
+            "surface": "должен",
+            "startUtf8": 17,
+            "endUtf8": 29
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 30,
+            "endUtf8": 48
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 49,
+            "endUtf8": 65
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.operator.nom"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S04",
+      "family": "role-order",
+      "text": "Документ должен сохранить оператор.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "DOCUMENT",
+          "action": "SAVE",
+          "object": "OPERATOR",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [
+          "Семантически необычно, но S0 не использует мировое знание для перестановки ролей."
+        ],
+        "spans": {
+          "subject": {
+            "surface": "Документ",
+            "startUtf8": 0,
+            "endUtf8": 16
+          },
+          "modal": {
+            "surface": "должен",
+            "startUtf8": 17,
+            "endUtf8": 29
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 30,
+            "endUtf8": 48
+          },
+          "object": {
+            "surface": "оператор",
+            "startUtf8": 49,
+            "endUtf8": 65
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "tpl.requirement"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S05",
+      "family": "quantifier-scope",
+      "text": "Каждый запрос может быть отменён.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "QUANTIFIED_ACTION",
+          "subject": "REQUEST",
+          "action": "CANCEL",
+          "modality": "MAY",
+          "quantifier": "EVERY",
+          "polarity": "POSITIVE",
+          "voice": "PASSIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "quantifier": {
+            "surface": "Каждый",
+            "startUtf8": 0,
+            "endUtf8": 12
+          },
+          "subject": {
+            "surface": "запрос",
+            "startUtf8": 13,
+            "endUtf8": 25
+          },
+          "modal": {
+            "surface": "может",
+            "startUtf8": 26,
+            "endUtf8": 36
+          },
+          "action": {
+            "surface": "отменён",
+            "startUtf8": 46,
+            "endUtf8": 60
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "tpl.quantified.passive"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S06",
+      "family": "quantifier-scope",
+      "text": "Не каждый запрос может быть отменён.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "QUANTIFIED_ACTION",
+          "subject": "REQUEST",
+          "action": "CANCEL",
+          "modality": "MAY",
+          "quantifier": "EVERY",
+          "polarity": "NEGATED",
+          "negationScope": "QUANTIFIER",
+          "quantifierNegated": true,
+          "voice": "PASSIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "negation": {
+            "surface": "Не",
+            "startUtf8": 0,
+            "endUtf8": 4
+          },
+          "quantifier": {
+            "surface": "каждый",
+            "startUtf8": 5,
+            "endUtf8": 17
+          },
+          "subject": {
+            "surface": "запрос",
+            "startUtf8": 18,
+            "endUtf8": 30
+          },
+          "modal": {
+            "surface": "может",
+            "startUtf8": 31,
+            "endUtf8": 41
+          },
+          "action": {
+            "surface": "отменён",
+            "startUtf8": 51,
+            "endUtf8": 65
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.neg.upper"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S07",
+      "family": "quantifier-scope",
+      "text": "Каждый запрос не может быть отменён.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "QUANTIFIED_ACTION",
+          "subject": "REQUEST",
+          "action": "CANCEL",
+          "modality": "MAY",
+          "quantifier": "EVERY",
+          "polarity": "NEGATED",
+          "negationScope": "MODALITY",
+          "modalityNegated": true,
+          "voice": "PASSIVE"
+        },
+        "ambiguities": [
+          "Русская формулировка допускает прагматические чтения; S0 проверяет только явно заданный scope-шаблон."
+        ],
+        "spans": {
+          "quantifier": {
+            "surface": "Каждый",
+            "startUtf8": 0,
+            "endUtf8": 12
+          },
+          "subject": {
+            "surface": "запрос",
+            "startUtf8": 13,
+            "endUtf8": 25
+          },
+          "negation": {
+            "surface": "не",
+            "startUtf8": 26,
+            "endUtf8": 30
+          },
+          "modal": {
+            "surface": "может",
+            "startUtf8": 31,
+            "endUtf8": 41
+          },
+          "action": {
+            "surface": "отменён",
+            "startUtf8": 51,
+            "endUtf8": 65
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "tpl.quantified.negated_modality"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S08",
+      "family": "temporal",
+      "text": "Система сохраняет документ после проверки.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "TEMPORAL_ACTION",
+          "subject": "SYSTEM",
+          "action": "SAVE",
+          "object": "DOCUMENT",
+          "temporal": "AFTER",
+          "event": "CHECK"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "action": {
+            "surface": "сохраняет",
+            "startUtf8": 15,
+            "endUtf8": 33
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 34,
+            "endUtf8": 50
+          },
+          "temporal": {
+            "surface": "после",
+            "startUtf8": 51,
+            "endUtf8": 61
+          },
+          "event": {
+            "surface": "проверки",
+            "startUtf8": 62,
+            "endUtf8": 78
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.after"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S09",
+      "family": "temporal",
+      "text": "Система сохраняет документ до проверки.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "TEMPORAL_ACTION",
+          "subject": "SYSTEM",
+          "action": "SAVE",
+          "object": "DOCUMENT",
+          "temporal": "BEFORE",
+          "event": "CHECK"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "action": {
+            "surface": "сохраняет",
+            "startUtf8": 15,
+            "endUtf8": 33
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 34,
+            "endUtf8": 50
+          },
+          "temporal": {
+            "surface": "до",
+            "startUtf8": 34,
+            "endUtf8": 38
+          },
+          "event": {
+            "surface": "проверки",
+            "startUtf8": 56,
+            "endUtf8": 72
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.before"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S10",
+      "family": "condition",
+      "text": "Если подпись действительна, документ принимается.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "CONDITION_SUFFICIENT_FOR_ACTION",
+          "conditionSubject": "SIGNATURE",
+          "conditionPredicate": "VALID",
+          "consequentSubject": "DOCUMENT",
+          "consequentAction": "ACCEPT"
+        },
+        "ambiguities": [],
+        "spans": {
+          "conditionSubject": {
+            "surface": "подпись",
+            "startUtf8": 9,
+            "endUtf8": 23
+          },
+          "conditionPredicate": {
+            "surface": "действительна",
+            "startUtf8": 24,
+            "endUtf8": 50
+          },
+          "consequentSubject": {
+            "surface": "документ",
+            "startUtf8": 52,
+            "endUtf8": 68
+          },
+          "consequentAction": {
+            "surface": "принимается",
+            "startUtf8": 69,
+            "endUtf8": 91
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "tpl.if_then"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S11",
+      "family": "condition",
+      "text": "Документ принимается только если подпись действительна.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIRES_CONDITION",
+          "subject": "DOCUMENT",
+          "action": "ACCEPT",
+          "conditionSubject": "SIGNATURE",
+          "conditionPredicate": "VALID"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Документ",
+            "startUtf8": 0,
+            "endUtf8": 16
+          },
+          "action": {
+            "surface": "принимается",
+            "startUtf8": 17,
+            "endUtf8": 39
+          },
+          "connective": {
+            "surface": "только если",
+            "startUtf8": 40,
+            "endUtf8": 61
+          },
+          "conditionSubject": {
+            "surface": "подпись",
+            "startUtf8": 62,
+            "endUtf8": 76
+          },
+          "conditionPredicate": {
+            "surface": "действительна",
+            "startUtf8": 77,
+            "endUtf8": 103
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.only_if"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S12",
+      "family": "condition",
+      "text": "Если подпись недействительна, документ отклоняется.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "CONDITION_SUFFICIENT_FOR_ACTION",
+          "conditionSubject": "SIGNATURE",
+          "conditionPredicate": "INVALID",
+          "consequentSubject": "DOCUMENT",
+          "consequentAction": "REJECT"
+        },
+        "ambiguities": [],
+        "spans": {
+          "conditionSubject": {
+            "surface": "подпись",
+            "startUtf8": 9,
+            "endUtf8": 23
+          },
+          "conditionPredicate": {
+            "surface": "недействительна",
+            "startUtf8": 24,
+            "endUtf8": 54
+          },
+          "consequentSubject": {
+            "surface": "документ",
+            "startUtf8": 56,
+            "endUtf8": 72
+          },
+          "consequentAction": {
+            "surface": "отклоняется",
+            "startUtf8": 73,
+            "endUtf8": 95
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.invalid"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S13",
+      "family": "modality",
+      "text": "Система может удалить запись.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "DELETE",
+          "object": "RECORD",
+          "modality": "MAY",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "modal": {
+            "surface": "может",
+            "startUtf8": 15,
+            "endUtf8": 25
+          },
+          "action": {
+            "surface": "удалить",
+            "startUtf8": 26,
+            "endUtf8": 40
+          },
+          "object": {
+            "surface": "запись",
+            "startUtf8": 41,
+            "endUtf8": 53
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.may"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S14",
+      "family": "modality",
+      "text": "Система должна удалить запись.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "DELETE",
+          "object": "RECORD",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "modal": {
+            "surface": "должна",
+            "startUtf8": 15,
+            "endUtf8": 27
+          },
+          "action": {
+            "surface": "удалить",
+            "startUtf8": 28,
+            "endUtf8": 42
+          },
+          "object": {
+            "surface": "запись",
+            "startUtf8": 43,
+            "endUtf8": 55
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.must.f"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S15",
+      "family": "modality",
+      "text": "Системе запрещено удалять журнал.",
+      "contextId": "general",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "DELETE",
+          "object": "LOG",
+          "modality": "PROHIBITED",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Системе",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "modal": {
+            "surface": "запрещено",
+            "startUtf8": 15,
+            "endUtf8": 33
+          },
+          "action": {
+            "surface": "удалять",
+            "startUtf8": 34,
+            "endUtf8": 48
+          },
+          "object": {
+            "surface": "журнал",
+            "startUtf8": 49,
+            "endUtf8": 61
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "removeDefinitionIds": [
+          "lx.prohibited"
+        ],
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S16",
+      "family": "context-homonym",
+      "text": "Система должна сохранить ключ.",
+      "contextId": "security",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "SAVE",
+          "object": "CRYPTO_KEY",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 28,
+            "endUtf8": 46
+          },
+          "object": {
+            "surface": "ключ",
+            "startUtf8": 47,
+            "endUtf8": 55
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "contextOverride": null,
+        "expectedStatus": "AMBIGUOUS"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S17",
+      "family": "context-homonym",
+      "text": "Система должна сохранить ключ.",
+      "contextId": "database",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "SYSTEM",
+          "action": "SAVE",
+          "object": "DATABASE_KEY",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 28,
+            "endUtf8": 46
+          },
+          "object": {
+            "surface": "ключ",
+            "startUtf8": 47,
+            "endUtf8": 55
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "contextOverride": null,
+        "expectedStatus": "AMBIGUOUS"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S18",
+      "family": "context-homonym",
+      "text": "Система должна сохранить ключ.",
+      "contextId": null,
+      "provisional": {
+        "status": "AMBIGUOUS",
+        "relation": null,
+        "ambiguities": [
+          "ключ → CRYPTO_KEY в security; ключ → DATABASE_KEY в database"
+        ],
+        "spans": {
+          "object": {
+            "surface": "ключ",
+            "startUtf8": 47,
+            "endUtf8": 55
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "contextOverride": "security",
+        "expectedStatus": "PROPOSED"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S19",
+      "family": "context-homonym",
+      "text": "Оператор должен открыть банк.",
+      "contextId": "finance",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "OPERATOR",
+          "action": "OPEN",
+          "object": "FINANCIAL_BANK",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [],
+        "spans": {
+          "subject": {
+            "surface": "Оператор",
+            "startUtf8": 0,
+            "endUtf8": 16
+          },
+          "action": {
+            "surface": "открыть",
+            "startUtf8": 30,
+            "endUtf8": 44
+          },
+          "object": {
+            "surface": "банк",
+            "startUtf8": 45,
+            "endUtf8": 53
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "contextOverride": null,
+        "expectedStatus": "AMBIGUOUS"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S20",
+      "family": "context-homonym",
+      "text": "Оператор должен открыть банк.",
+      "contextId": "geography",
+      "provisional": {
+        "status": "PROPOSED",
+        "relation": {
+          "relation": "ACTION_REQUIREMENT",
+          "subject": "OPERATOR",
+          "action": "OPEN",
+          "object": "RIVER_BANK",
+          "modality": "MUST",
+          "polarity": "POSITIVE"
+        },
+        "ambiguities": [
+          "Мировое знание не проверяется; смысл задаётся только контекстным определением."
+        ],
+        "spans": {
+          "subject": {
+            "surface": "Оператор",
+            "startUtf8": 0,
+            "endUtf8": 16
+          },
+          "action": {
+            "surface": "открыть",
+            "startUtf8": 30,
+            "endUtf8": 44
+          },
+          "object": {
+            "surface": "банк",
+            "startUtf8": 45,
+            "endUtf8": 53
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "contextOverride": null,
+        "expectedStatus": "AMBIGUOUS"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S21",
+      "family": "context-homonym",
+      "text": "Оператор должен открыть банк.",
+      "contextId": null,
+      "provisional": {
+        "status": "AMBIGUOUS",
+        "relation": null,
+        "ambiguities": [
+          "банк → FINANCIAL_BANK или RIVER_BANK при отсутствующем контексте"
+        ],
+        "spans": {
+          "object": {
+            "surface": "банк",
+            "startUtf8": 45,
+            "endUtf8": 53
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "contextOverride": "finance",
+        "expectedStatus": "PROPOSED"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S22",
+      "family": "unsupported-rare-valid",
+      "text": "Системе надлежит сохранить документ.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "Редкая корректная модальная конструкция; определения 'надлежит' нет."
+        ],
+        "spans": {
+          "subject": {
+            "surface": "Системе",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "unknownModal": {
+            "surface": "надлежит",
+            "startUtf8": 15,
+            "endUtf8": 31
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 32,
+            "endUtf8": 50
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 51,
+            "endUtf8": 67
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S23",
+      "family": "unsupported-definition",
+      "text": "Система обязана архивировать документ.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "В pack нет определений 'обязана' и 'архивировать'."
+        ],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "unknownModal": {
+            "surface": "обязана",
+            "startUtf8": 15,
+            "endUtf8": 29
+          },
+          "unknownAction": {
+            "surface": "архивировать",
+            "startUtf8": 30,
+            "endUtf8": 54
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 55,
+            "endUtf8": 71
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S24",
+      "family": "underspecified-condition",
+      "text": "При необходимости система сохраняет документ.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "Не задано, что именно образует условие 'необходимости' и кто его устанавливает."
+        ],
+        "spans": {
+          "condition": {
+            "surface": "При необходимости",
+            "startUtf8": 0,
+            "endUtf8": 33
+          },
+          "subject": {
+            "surface": "система",
+            "startUtf8": 34,
+            "endUtf8": 48
+          },
+          "action": {
+            "surface": "сохраняет",
+            "startUtf8": 49,
+            "endUtf8": 67
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 68,
+            "endUtf8": 84
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S25",
+      "family": "unsupported-word-order",
+      "text": "Документ система должна сохранить.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "Инверсия корректна в контексте, но шаблон S0 не имеет основания назначить объект без отдельного определения."
+        ],
+        "spans": {
+          "document": {
+            "surface": "Документ",
+            "startUtf8": 0,
+            "endUtf8": 16
+          },
+          "system": {
+            "surface": "система",
+            "startUtf8": 17,
+            "endUtf8": 31
+          },
+          "modal": {
+            "surface": "должна",
+            "startUtf8": 32,
+            "endUtf8": 44
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 45,
+            "endUtf8": 63
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S26",
+      "family": "unsupported-word-order",
+      "text": "Сохранить документ должна система.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "Фокусная инверсия не определена в S0."
+        ],
+        "spans": {
+          "action": {
+            "surface": "Сохранить",
+            "startUtf8": 0,
+            "endUtf8": 18
+          },
+          "document": {
+            "surface": "документ",
+            "startUtf8": 19,
+            "endUtf8": 35
+          },
+          "modal": {
+            "surface": "должна",
+            "startUtf8": 36,
+            "endUtf8": 48
+          },
+          "system": {
+            "surface": "система",
+            "startUtf8": 49,
+            "endUtf8": 63
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S27",
+      "family": "unknown-event",
+      "text": "Система должна сохранить документ после верификации.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "TEMPORAL AFTER наблюдаем, но EVENT 'верификации' не определён; частичный смысл не повышается до PROPOSED."
+        ],
+        "spans": {
+          "subject": {
+            "surface": "Система",
+            "startUtf8": 0,
+            "endUtf8": 14
+          },
+          "action": {
+            "surface": "сохранить",
+            "startUtf8": 28,
+            "endUtf8": 46
+          },
+          "object": {
+            "surface": "документ",
+            "startUtf8": 47,
+            "endUtf8": 63
+          },
+          "temporal": {
+            "surface": "после",
+            "startUtf8": 64,
+            "endUtf8": 74
+          },
+          "unknownEvent": {
+            "surface": "верификации",
+            "startUtf8": 75,
+            "endUtf8": 97
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    },
+    {
+      "id": "S28",
+      "family": "unsupported-composition",
+      "text": "Если подпись действительна, документ принимается после проверки.",
+      "contextId": "general",
+      "provisional": {
+        "status": "UNKNOWN",
+        "relation": null,
+        "ambiguities": [
+          "S0 умеет IF и TEMPORAL отдельно, но не имеет определения их композиции в одном требовании."
+        ],
+        "spans": {
+          "conditionSubject": {
+            "surface": "подпись",
+            "startUtf8": 9,
+            "endUtf8": 23
+          },
+          "conditionPredicate": {
+            "surface": "действительна",
+            "startUtf8": 24,
+            "endUtf8": 50
+          },
+          "consequentSubject": {
+            "surface": "документ",
+            "startUtf8": 52,
+            "endUtf8": 68
+          },
+          "consequentAction": {
+            "surface": "принимается",
+            "startUtf8": 69,
+            "endUtf8": 91
+          },
+          "temporal": {
+            "surface": "после",
+            "startUtf8": 92,
+            "endUtf8": 102
+          },
+          "event": {
+            "surface": "проверки",
+            "startUtf8": 103,
+            "endUtf8": 119
+          }
+        },
+        "review": "PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD"
+      },
+      "control": {
+        "expectedStatus": "UNKNOWN"
+      },
+      "provenance": {
+        "source": "synthetic-controlled W19-S0",
+        "authoredFor": "issue #91",
+        "independentHumanReview": "NOT_PERFORMED"
+      }
+    }
+  ],
+  "metricPolicy": {
+    "semanticPrecisionRecallAccuracy": "NOT_SCORED_UNTIL_INDEPENDENT_GOLD",
+    "allowedNow": [
+      "status distribution",
+      "abstention distribution",
+      "representation invariance",
+      "definition ablation behavior",
+      "Link-vs-flat exact disagreement count"
+    ]
+  }
+}

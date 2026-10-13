@@ -112,12 +112,10 @@ export class IncrementalPairReplacementAgenda{
   bucket={identity,leftToken,rightToken,canonical:canonicalPairKey(left,right),
    expanded:left.expanded+right.expanded,length:left.length+right.length,
    eligible:left.length+right.length<=this.maxExpansionScalars,
-   occurrences:new Set(),version:0};
+   occurrences:new Set()};
   this.buckets.set(identity,bucket);return bucket;
  }
- schedule(bucket){
-  bucket.version++;this.heap.set(bucket);
- }
+ schedule(bucket){this.heap.set(bucket);}
  addEdge(left,{schedule=true,countOperation=true,touched=null}={}){
   if(!left?.alive||!left.next?.alive)fail('cannot add absent adjacency');
   if(left.edgeKey!==null)fail('adjacency already indexed');
@@ -137,7 +135,7 @@ export class IncrementalPairReplacementAgenda{
   this.schedule(bucket);
  }
  frequencySnapshot(){
-  return [...this.buckets.values()].filter(b=>b.eligible&&b.occurrences.size>0)
+  return [...this.buckets.values()].filter(b=>b.occurrences.size>0)
    .map(b=>({leftToken:b.leftToken,rightToken:b.rightToken,frequency:b.occurrences.size,
     canonical:b.canonical,length:b.length,expanded:b.expanded}))
    .sort((a,b)=>cmp(a.canonical,b.canonical));

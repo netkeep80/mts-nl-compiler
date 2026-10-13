@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {test} from 'node:test';
 import {
   exactUnicodeTokens,prepareLinkDefinitionPack,interpretLink,interpretFlat,
@@ -143,4 +145,36 @@ test('token spans are exact observations, not semantic truth or probability',()=
   const out=runS0Corpus(fixture.examples,pack);
   assert.equal(out.metrics.probabilityMetrics,'NOT_DEFINED');
   assert.ok(!JSON.stringify(out).includes('"probability"'));
+});
+
+
+test('W19-S0 machine protocol is deterministic, complete and explicitly not gold accuracy',()=>{
+  const script=fileURLToPath(new URL('../scripts/w19_semantic_s0.mjs',import.meta.url));
+  const run=spawnSync(process.execPath,[script],{encoding:'utf8',timeout:20000});
+  assert.equal(run.status,0,run.stderr);
+  const line=run.stdout.split('\n').find(x=>x.startsWith('W19S0_REPORT '));
+  assert.ok(line,'missing W19S0_REPORT');
+  const report=JSON.parse(line.slice('W19S0_REPORT '.length));
+  assert.equal(report.status,'RESEARCH_REPLAY_COMPLETE');
+  assert.equal(report.cases.length,28);
+  assert.deepEqual(report.metrics.modeA,{proposed:0,unknown:28});
+  assert.deepEqual(report.metrics.modeB,{proposed:19,ambiguous:2,unknown:7});
+  assert.deepEqual(report.metrics.modeC,{proposed:2,ambiguous:4,unknown:22});
+  assert.equal(report.metrics.linkVsFlatDisagreements,0);
+  assert.equal(report.metrics.binaryizationDisagreements,0);
+  assert.equal(report.metrics.exactReplayFailures,0);
+  assert.deepEqual(report.metrics.provisionalDiagnosticMismatches,[]);
+  assert.equal(report.annotationPolicy.independentGold,false);
+  assert.equal(report.annotationPolicy.engineReceivesProvisionalAnnotation,false);
+  assert.equal(report.annotationPolicy.accuracyMetrics,'NOT_SCORED_NO_INDEPENDENT_GOLD');
+  for(const value of Object.values(report.sourceDigests))assert.match(value,/^[0-9a-f]{64}$/);
+  console.log('W19S0_SUMMARY '+JSON.stringify({
+    corpusSha256:report.sourceDigests.corpusSha256,
+    definitionPackSha256:report.sourceDigests.definitionPackSha256,
+    engineSha256:report.sourceDigests.engineSha256,
+    modeA:report.metrics.modeA,modeB:report.metrics.modeB,modeC:report.metrics.modeC,
+    linkVsFlatDisagreements:report.metrics.linkVsFlatDisagreements,
+    binaryizationDisagreements:report.metrics.binaryizationDisagreements,
+    goldAccuracy:report.annotationPolicy.accuracyMetrics
+  }));
 });

@@ -106,6 +106,7 @@ test('W19 B1 readable observation: human-visible results derive from exact train
  const p=spawnSync(process.execPath,[child],{encoding:'utf8',timeout:20000});
  assert.equal(p.status,0,p.stderr);
  const md=p.stdout;
+ assert.equal(md,readFileSync(new URL('../docs/w19_b1_results.md',import.meta.url),'utf8'),'Published human report must be current with real executed compiler, not edited/stale');
  for(const term of ['# W19-B1 — наблюдаемые результаты','блата','вреси','дроме','жрупо','клыта',
  '5/5','53 Link-узлов','Матрица наблюдений','Контрпримеры']){
   assert.ok(md.includes(term),'missing human evidence: '+term);

@@ -62,6 +62,10 @@ const report={
     definitionPackSha256:sha(raw.definitions),
     engineSha256:sha(raw.engine)
   },
+  sourceHistory:(fixture.corrigenda??[]).map(x=>({
+    id:x.id,caseId:x.caseId,priorCorpusSha256:x.priorCorpusSha256,
+    priorPrHead:x.priorPrHead,previousSpan:x.previousSpan,correctedSpan:x.correctedSpan
+  })),
   priorResearch:{
     B0:'#92: same observations => Link context prediction equals n-gram',
     B1:'#93: structure can propose unseen combinations but semantic licitness is nonidentifiable',
@@ -73,7 +77,9 @@ const report={
     accuracyMetrics:'NOT_SCORED_NO_INDEPENDENT_GOLD',
     provisionalAgreementIsOnlyFixtureConsistency:true
   },
-  metrics:{...run.metrics,provisionalDiagnosticMismatches:provisionalMismatches},
+  metrics:{...run.metrics,
+    provisionalSpanCount:fixture.examples.reduce((n,e)=>n+Object.keys(e.provisional.spans).length,0),
+    provisionalDiagnosticMismatches:provisionalMismatches},
   cases
 };
 console.log('W19S0_REPORT '+JSON.stringify(report));

@@ -1,5 +1,11 @@
 # mts-nl-compiler
 
+## Веб-компилятор Link (W21)
+
+**[Открыть интерактивный компилятор в браузере](https://netkeep80.github.io/mts-nl-compiler/compiler/)** · [эксперимент #97](https://github.com/netkeep80/mts-nl-compiler/issues/97).
+
+Ввод произвольной фразы → числовые Link, бинарная разбивка на дуплеты, частотное выделение повторов Re-Pair, дерево связей, сравнение структурных метрик и проверка точного Unicode replay. Это **локальный браузерный эксперимент**, не полный MTS runtime и не семантический анализатор. Данные не передаются серверу.
+
 ## Наблюдение за тестами — Observatory
 
 **[Открыть Observatory — официальный GitHub Pages](https://netkeep80.github.io/mts-nl-compiler/observatory/)** · [HTML в main](https://github.com/netkeep80/mts-nl-compiler/blob/main/docs/observatory/index.html) · [исходный PR #95](https://github.com/netkeep80/mts-nl-compiler/pull/95).

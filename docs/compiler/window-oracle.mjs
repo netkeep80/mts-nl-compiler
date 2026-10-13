@@ -188,3 +188,25 @@ export function inspectContextualWindow(source,{width=8,offset=null,topN=5}={}){
   }
  };
 }
+
+
+// W22-C: pure tree-construction adapter shared by browser and numeric SQLite
+// experiment; never label these JS arrays as physical Link objects.
+export function contextualCandidateTrees(source,{width=4,offset=0}={}){
+ if(typeof source!=='string'||source.length>256)
+  fail('context source exceeds 128 Unicode scalars');
+ const chars=scalarsOf(source);
+ if(chars.length>128)fail('context source exceeds 128 Unicode scalars');
+ if(!Number.isInteger(width)||width<2||width>8)fail('width must be 2..8');
+ if(!Number.isInteger(offset)||offset<0||offset+width>chars.length)
+  fail('window offset outside input');
+ const prefix=offset?baselineTree(chars.slice(0,offset),'balanced'):null;
+ const suffix=offset+width<chars.length?
+  baselineTree(chars.slice(offset+width),'balanced'):null;
+ return canonicalTrees(chars.slice(offset,offset+width)).map((window,ordinal)=>{
+  let tree=window;
+  if(prefix!==null)tree=[prefix,tree];
+  if(suffix!==null)tree=[tree,suffix];
+  return {ordinal,window,whole:tree,windowPairs:tally(window).uniquePairs};
+ });
+}

@@ -123,8 +123,31 @@ function b1(){
  panel("Отрицательные тесты",controls(e))+'</div>'+
  '<div class="annotation warn">Нельзя сравнивать ранг 12–15 с log₂-score n-грамм как вероятности. Перенос в непрерывную речь и смысловая правильность не доказаны.</div>'+srcLinks("B1");
 }
+function ledgerRows(filter){
+ const entries=db.runHistory.filter(x=>filter==="all"||(filter==="FAIL"?x.status==="FAIL":x.kind===filter));
+ if(!entries.length)return '<tr><td colspan="6">Записи по выбранному фильтру отсутствуют.</td></tr>';
+ return [...entries].reverse().map(x=>'<tr><td><span class="chip '+(x.status==="FAIL"?"negative":"green")+'">'+clean(x.status)+'</span></td>'+
+  '<td>'+clean(x.experiment)+'</td><td>'+clean(x.kind)+'</td>'+
+  '<td>'+clean(x.observedAt.replace("T"," ").replace("Z"," UTC"))+'</td>'+
+  '<td>'+url(x.evidence,"#"+x.runId)+(x.testsTotal===null?"":'<div class="small muted">'+x.testsPassed+"/"+x.testsTotal+" тестов</div>")+'</td>'+
+  '<td>'+clean(x.note)+'</td></tr>').join("");
+}
+function ledgerPanel(){
+ const nFail=db.runHistory.filter(x=>x.status==="FAIL").length;
+ return panel("Реальные запуски CI и repo-guard",
+ '<p class="small muted">'+clean(db.historyDisclosure)+'</p>'+
+ '<div class="links">'+
+ '<button type="button" class="action" data-runfilter="all" aria-pressed="true">Все ('+db.runHistory.length+')</button>'+
+ '<button type="button" class="action" data-runfilter="CI" aria-pressed="false">Node CI</button>'+
+ '<button type="button" class="action" data-runfilter="GUARD" aria-pressed="false">Repo-guard</button>'+
+ '<button type="button" class="action" data-runfilter="FAIL" aria-pressed="false">Отказы ('+nFail+')</button>'+
+ '</div>'+
+ '<div class="tablewrap"><table><thead><tr><th>Статус</th><th>Эксп.</th><th>Тип</th><th>Время</th><th>Доказательство</th><th>Причина / результат</th></tr></thead>'+
+ '<tbody id="runhistory-rows">'+ledgerRows("all")+'</tbody></table></div>');
+}
 function history(){
  return top("История экспериментов и доказательства","История научных этапов с точными ссылками на исходный код, контрольные SHA и результаты проверок. Это зафиксированный снимок, не онлайн-мониторинг.")+
+ ledgerPanel()+
  db.experiments.map(e=>'<section class="time"><div><div class="kicker">'+clean(e.date)+' · '+clean(e.stage)+'</div><h3>'+clean(e.id+" — "+e.title)+'</h3><p>'+clean(e.lead)+'</p><div class="links">'+url(source[e.id].report,"Подробный отчёт")+url(source[e.id].ci,"Тесты CI")+url(source[e.id].guard,"Repo-guard")+'</div>'+
  '<div class="small"><span class="ribbon grey">Draft / не принято</span> · '+e.testsPassed+'/'+e.testsTotal+' tests PASS</div>'+
  '<p class="mono small">Head: '+clean(source[e.id].head)+'</p><p class="mono small">Fixture SHA256: '+clean(source[e.id].fixtureSha256)+'</p></div></section>').join("")+
@@ -144,6 +167,12 @@ document.addEventListener("click",e=>{
  const button=e.target.closest("button");
  if(!button)return;
  if(button.dataset.view)navigate(button.dataset.view);
+ if(button.dataset.runfilter){
+  const filter=button.dataset.runfilter,tbody=document.getElementById("runhistory-rows");
+  if(tbody)tbody.innerHTML=ledgerRows(filter);
+  for(const b of document.querySelectorAll("[data-runfilter]"))
+   b.setAttribute("aria-pressed",String(b.dataset.runfilter===filter));
+ }
  if(button.dataset.case!==undefined)detailB0(Number(button.dataset.case));
 });
 document.addEventListener("input",e=>{

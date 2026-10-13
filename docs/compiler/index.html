@@ -85,8 +85,27 @@ footer{margin-top:25px;font-size:12px;color:#697e87}
 <section class="panel"><h2>Дерево Link</h2><p class="small muted">Свернутый просмотр корня и его полюсов (до шести уровней/120 узлов интерфейса). Развёрнутое восстановление всегда проверяется целиком.</p><div id="tree"></div></section>
 </div>
 </div>
+<section class="panel" id="window-panel" aria-label="Перебор группировки на скользящем фронте">
+<h2>Экспериментальный фронт 2–8 символов · полный перебор</h2>
+<p class="small muted">Выбирается непрерывное окно исходного Unicode-текста. Перебираются **все** бинарные деревья в нём: для 8 символов это 429 вариантов. Сравнение по числу <strong>уникальных внутренних дуплетов</strong>, без знания слов, пробелов и без учёта переиспользования Link из остального текста.</p>
+<div class="control-grid">
+<div><label for="window-width">Ширина окна, Unicode-скаляров</label>
+<select id="window-width"><option value="8">8 · 429 деревьев</option><option value="7">7 · 132 дерева</option><option value="6">6 · 42 дерева</option><option value="5">5 · 14 деревьев</option><option value="4">4 · 5 деревьев</option><option value="3">3 · 2 дерева</option><option value="2">2 · 1 дерево</option></select></div>
+<div><label for="window-offset">Начало окна (смещение скаляров)</label><input id="window-offset" type="range" min="0" max="0" step="1" value="0"></div>
+</div>
+<div class="actions"><button id="window-prev" type="button">← Сдвинуть на 1</button><button id="window-next" type="button">Сдвинуть на 1 →</button>
+<span class="small muted" id="window-position"></span></div>
+<p class="mono" id="window-preview" aria-live="polite"></p>
+<div id="window-error" role="status" aria-live="polite"></div>
+<div id="window-output" hidden>
+<div id="window-metrics" class="metrics"></div>
+<h3>Лучшие найденные варианты (минимум уникальных пар)</h3>
+<div id="window-ranked" class="tablewrap"></div>
+<p class="small muted">Δ = уникальные пары базового дерева − пары предложенного дерева. Положительное Δ — локальная структурная экономия; это <strong>не</strong> гарантия уменьшения общего DAG, размера SQLite или улучшения смысла.</p>
+</div>
+</section>
 <div class="warning"><strong>Что эта страница не делает.</strong> Не понимает смысл предложений, не исправляет грамматику, не выводит правила МТС v0.15, не создаёт persistent Link в SQLite и не доказывает сжатие по байтам. Это проверяемая локальная структура и структурный эксперимент Re-Pair.</div>
 </main>
 <footer>Данные остаются в твоём браузере, никакие фразы никуда не отправляются. Открытый исследовательский код: <a href="https://github.com/netkeep80/mts-nl-compiler/issues/97">W21 #97</a>.</footer>
-</div><script type="module" src="./app.mjs"></script>
+</div><script type="module" src="./app.mjs"></script><script type="module" src="./window-ui.mjs"></script>
 </body></html>

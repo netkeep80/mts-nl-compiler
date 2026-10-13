@@ -1,0 +1,344 @@
+{
+  "schema": "mts-nl/observatory/runs-v1",
+  "asOf": "2026-10-13",
+  "provenance": "Frozen verified source reports from experimental Draft PRs; manual pinned snapshot, NOT live aggregation.",
+  "sources": [
+    {
+      "id": "B0",
+      "pr": 92,
+      "head": "210a547cdaa64915c4229605df5d4360f09431b3",
+      "fixtureSha256": "e10c6adfb9592fc09d5d6623c966950fb7f560c9980c5ab0c4401989cf7e2fce",
+      "markdownBlobSha": "a60ba25603a2a1f72c849cdc4bc0a2408e902908",
+      "report": "https://github.com/netkeep80/mts-nl-compiler/blob/exp/w19-b0-link-context-prediction-baseline/docs/w19_b0_results.md",
+      "ci": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325596646",
+      "guard": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325596614"
+    },
+    {
+      "id": "B1",
+      "pr": 93,
+      "head": "d565cdf2d4988817ffc9578a527057e8efeeaf4d",
+      "fixtureSha256": "d5555fa2ce8e8b94a343610abaaae94662c330d456392e0d16627f250ba85dfe",
+      "markdownBlobSha": "3df891088e6f813e498aaf392edad2c3220180c9",
+      "report": "https://github.com/netkeep80/mts-nl-compiler/blob/exp/w19-b1-productive-slots-heldout-oracle/docs/w19_b1_results.md",
+      "ci": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325370122",
+      "guard": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325487976"
+    }
+  ],
+  "experiments": [
+    {
+      "id": "B0",
+      "date": "2026-10-13",
+      "title": "Предсказание Unicode и анализ фраз",
+      "stage": "P1",
+      "review": "DRAFT_RESEARCH",
+      "evidence": "TESTED_SYNTHETIC",
+      "testsPassed": 158,
+      "testsTotal": 158,
+      "lead": "Link-контексты и обычные n-граммы дают одинаковый прогноз на одинаковых наблюдениях.",
+      "limitation": "Не доказана смысловая диагностика. Положительная неожиданность бывает у корректных требований.",
+      "population": {
+        "train": 10,
+        "holdout": 4,
+        "sourceEvents": 330,
+        "testEvents": 126,
+        "coveragePercent": 100
+      },
+      "headline": {
+        "value": "84,92%",
+        "label": "Top-1 при контексте 3",
+        "supplement": "93,65% top-3; 3,0563 бит/скаляр"
+      },
+      "baselines": [
+        {
+          "order": 0,
+          "bitsPerScalar": 4.535,
+          "top1Percent": 9.52,
+          "top3Percent": 23.81
+        },
+        {
+          "order": 1,
+          "bitsPerScalar": 3.1613,
+          "top1Percent": 49.21,
+          "top3Percent": 78.57
+        },
+        {
+          "order": 2,
+          "bitsPerScalar": 2.9705,
+          "top1Percent": 80.16,
+          "top3Percent": 92.86
+        },
+        {
+          "order": 3,
+          "bitsPerScalar": 3.0563,
+          "top1Percent": 84.92,
+          "top3Percent": 93.65
+        }
+      ],
+      "heldout": [
+        {
+          "id": "H1",
+          "sentence": "Система должна проверять журнал.",
+          "bitsPerScalar": 2.8283,
+          "top1Percent": 90.63,
+          "top3Percent": 96.88,
+          "coveragePercent": 100
+        },
+        {
+          "id": "H2",
+          "sentence": "Система должна сохранять запрос.",
+          "bitsPerScalar": 2.7335,
+          "top1Percent": 87.5,
+          "top3Percent": 96.88,
+          "coveragePercent": 100
+        },
+        {
+          "id": "H3",
+          "sentence": "Система может проверять событие.",
+          "bitsPerScalar": 3.1805,
+          "top1Percent": 87.5,
+          "top3Percent": 90.63,
+          "coveragePercent": 100
+        },
+        {
+          "id": "H4",
+          "sentence": "Каждый запрос содержит запись.",
+          "bitsPerScalar": 3.5115,
+          "top1Percent": 73.33,
+          "top3Percent": 90,
+          "coveragePercent": 100
+        }
+      ],
+      "contrasts": [
+        {
+          "id": "T01",
+          "kind": "Орфографический пропуск",
+          "reference": "Система должна проверять журнал.",
+          "alternative": "Система должна проверять журна.",
+          "deltaBitsPerScalar": 0.0412,
+          "status": "STATISTICAL_ONLY",
+          "control": "UNREVIEWED"
+        },
+        {
+          "id": "T02",
+          "kind": "Грамматический контраст",
+          "reference": "Система должна сохранять запрос.",
+          "alternative": "Система должна сохраняет запрос.",
+          "deltaBitsPerScalar": 0.2004,
+          "status": "STATISTICAL_ONLY",
+          "control": "UNREVIEWED"
+        },
+        {
+          "id": "T03",
+          "kind": "Оба варианта допустимы: модальность",
+          "reference": "Система должна изменять запись.",
+          "alternative": "Система может изменять запись.",
+          "deltaBitsPerScalar": 0.2656,
+          "status": "STATISTICAL_ONLY",
+          "control": "VALID_CONTROL_UNREVIEWED"
+        },
+        {
+          "id": "T04",
+          "kind": "Неверное обращение импликации",
+          "reference": "Из A⇒B и A следует B.",
+          "alternative": "Из A⇒B и B следует A.",
+          "deltaBitsPerScalar": 0.3143,
+          "status": "STATISTICAL_ONLY",
+          "control": "UNREVIEWED"
+        },
+        {
+          "id": "T05",
+          "kind": "Корректная, но редкая формулировка",
+          "reference": "Каждый журнал содержит событие.",
+          "alternative": "При ошибке журнал содержит событие.",
+          "deltaBitsPerScalar": 0.1853,
+          "status": "STATISTICAL_ONLY",
+          "control": "VALID_CONTROL_UNREVIEWED"
+        },
+        {
+          "id": "T06",
+          "kind": "Изменение скобок выражения",
+          "reference": "a+b*c",
+          "alternative": "(a+b)*c",
+          "deltaBitsPerScalar": null,
+          "status": "ABSTAIN_OOV",
+          "control": "UNREVIEWED"
+        }
+      ],
+      "controls": [
+        {
+          "name": "Raw = Link-left = Link-balanced",
+          "result": "PASS",
+          "note": "Нет дополнительной предсказательной информации от одной бинаризации"
+        },
+        {
+          "name": "Order 3 vs order 2",
+          "result": "NEGATIVE",
+          "note": "Top-1 выше, но log-loss хуже (3,0563 > 2,9705 бит/скаляр)"
+        },
+        {
+          "name": "Корректные редкие фразы",
+          "result": "WARNING",
+          "note": "T03 и T05 имеют Δ>0, но это не ошибки"
+        }
+      ]
+    },
+    {
+      "id": "B1",
+      "date": "2026-10-13",
+      "title": "Структурные слоты и скрытые сочетания",
+      "stage": "P2",
+      "review": "DRAFT_RESEARCH",
+      "evidence": "TESTED_SYNTHETIC",
+      "testsPassed": 160,
+      "testsTotal": 160,
+      "lead": "Разрез без внутренней разметки нашёл 6 первых и 4 последних части; выдал 5/5 скрытых комбинаций.",
+      "limitation": "Границы отдельных документов были заданы; непрерывный поток и смысловая допустимость не распознаются.",
+      "population": {
+        "train": 19,
+        "holdout": 5,
+        "sourceEvents": 19,
+        "testEvents": 5,
+        "coveragePercent": 100
+      },
+      "headline": {
+        "value": "5/5",
+        "label": "Скрытых сочетаний",
+        "supplement": "18 атомов + 35 пар = 53 Link-узла"
+      },
+      "split": 3,
+      "linkGraph": {
+        "atoms": 18,
+        "pairs": 35,
+        "total": 53
+      },
+      "roots": [
+        "бла",
+        "вре",
+        "гри",
+        "дро",
+        "жру",
+        "клы"
+      ],
+      "suffixes": [
+        "та",
+        "ме",
+        "си",
+        "по"
+      ],
+      "holdoutCells": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "proposals": [
+        {
+          "id": "P1",
+          "prefix": "вре",
+          "suffix": "си",
+          "surface": "вреси",
+          "rankNotProbability": 15,
+          "ngramLog2": -14.3812,
+          "seenInTrain": false,
+          "hiddenInFixture": true
+        },
+        {
+          "id": "P2",
+          "prefix": "дро",
+          "suffix": "ме",
+          "surface": "дроме",
+          "rankNotProbability": 15,
+          "ngramLog2": -14.3812,
+          "seenInTrain": false,
+          "hiddenInFixture": true
+        },
+        {
+          "id": "P3",
+          "prefix": "жру",
+          "suffix": "по",
+          "surface": "жрупо",
+          "rankNotProbability": 15,
+          "ngramLog2": -14.3812,
+          "seenInTrain": false,
+          "hiddenInFixture": true
+        },
+        {
+          "id": "P4",
+          "prefix": "бла",
+          "suffix": "та",
+          "surface": "блата",
+          "rankNotProbability": 12,
+          "ngramLog2": -14.5638,
+          "seenInTrain": false,
+          "hiddenInFixture": true
+        },
+        {
+          "id": "P5",
+          "prefix": "клы",
+          "suffix": "та",
+          "surface": "клыта",
+          "rankNotProbability": 12,
+          "ngramLog2": -14.5638,
+          "seenInTrain": false,
+          "hiddenInFixture": true
+        }
+      ],
+      "baselines": [
+        {
+          "order": 0,
+          "log2Score": -20.4315
+        },
+        {
+          "order": 1,
+          "log2Score": -15.1077
+        },
+        {
+          "order": 2,
+          "log2Score": -14.4542
+        },
+        {
+          "order": 3,
+          "log2Score": -14.4542
+        }
+      ],
+      "controls": [
+        {
+          "name": "Биекция символов Unicode",
+          "result": "PASS",
+          "note": "Структура и набор предложений инвариантны"
+        },
+        {
+          "name": "Непрерывный поток без границ форм",
+          "result": "UNKNOWN",
+          "note": "Модель не сегментирует склеенный текст"
+        },
+        {
+          "name": "Два мира с противоположными правилами допустимости",
+          "result": "UNIDENTIFIABLE",
+          "note": "Обучающие данные одинаковы, предсказания одинаковы"
+        },
+        {
+          "name": "Новые тестовые данные",
+          "result": "PASS",
+          "note": "Не изменяют обученный Link-граф"
+        }
+      ]
+    }
+  ]
+}

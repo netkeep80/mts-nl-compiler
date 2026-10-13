@@ -29,7 +29,8 @@ class BrowserLinkGraph{
   if(id!==undefined)return id;
   const a=this.nodes[from],b=this.nodes[to];
   id=this.nodes.length;
-  const preview=textPreview(a.preview+b.preview);
+  // A previously truncated left prefix must never acquire characters from the right.
+  const preview=a.length>72?a.preview:textPreview(a.preview+b.preview);
   this.nodes.push(Object.freeze({id,kind:'pair',from,to,length:a.length+b.length,preview}));
   this.pairs.set(key,id);return id;
  }

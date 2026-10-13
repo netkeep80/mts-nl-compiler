@@ -100,3 +100,17 @@ test('W19 B1 exact report deterministic and explicitly refuses semantic generali
  console.log('W19_B1 '+JSON.stringify({fixtureSha256:report.fixtureSha256,model:report.model,
    heldout:report.heldout,baseline:report.ngramBaselines.map(x=>({order:x.order,bits:x.meanLogScoreBits}))}));
 });
+
+test('W19 B1 readable observation: human-visible results derive from exact train and test',()=>{
+ const child=fileURLToPath(new URL('../scripts/w19_b1_readable.mjs',import.meta.url));
+ const p=spawnSync(process.execPath,[child],{encoding:'utf8',timeout:20000});
+ assert.equal(p.status,0,p.stderr);
+ const md=p.stdout;
+ for(const term of ['# W19-B1 — наблюдаемые результаты','блата','вреси','дроме','жрупо','клыта',
+ '5/5','53 Link-узлов','Матрица наблюдений','Контрпримеры']){
+  assert.ok(md.includes(term),'missing human evidence: '+term);
+ }
+ // Markers are machine-readable boundaries in the GitHub Actions log;
+ // the exact same bytes are used to create the checked-in report snapshot.
+ console.log('W19_B1_MARKDOWN_BEGIN\n'+md+'W19_B1_MARKDOWN_END');
+});

@@ -99,6 +99,7 @@ test('W19 B0 readable observation shows actual heldout phrases, every contrast a
  const result=spawnSync(process.execPath,[filename],{encoding:'utf8',timeout:20000});
  assert.equal(result.status,0,result.stderr);
  const md=result.stdout;
+ assert.equal(md,readFileSync(new URL('../docs/w19_b0_results.md',import.meta.url),'utf8'),'Published per-phrase observation must exactly match executable model output');
  for(const required of ['W19-B0 — наблюдаемые результаты','T01','T02','T03','T04','T05','T06',
   'Система должна проверять журнал.','ABSTAIN_OOV','Link контекст, сбалансированная бинаризация']){
   assert.ok(md.includes(required),'missing observable test result: '+required);

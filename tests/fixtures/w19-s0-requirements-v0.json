@@ -486,8 +486,8 @@
           },
           "temporal": {
             "surface": "до",
-            "startUtf8": 34,
-            "endUtf8": 38
+            "startUtf8": 51,
+            "endUtf8": 55
           },
           "event": {
             "surface": "проверки",
@@ -1398,5 +1398,26 @@
       "definition ablation behavior",
       "Link-vs-flat exact disagreement count"
     ]
-  }
+  },
+  "corrigenda": [
+    {
+      "id": "W19-S0-CORRIGENDUM-001",
+      "date": "2026-10-13",
+      "caseId": "S09",
+      "field": "provisional.spans.temporal",
+      "reason": "Previous byte range selected the first two letters of 'документ' instead of the standalone token 'до'. Independent PR #112 review found the defect.",
+      "priorCorpusSha256": "bb3e4229e560032ecfbaed4694e40d4d335d123a3b69fb12bdf6b43eef43de27",
+      "priorPrHead": "591aa567cb8d124c39db539f8f8107987e01693e",
+      "previousSpan": {
+        "surface": "до",
+        "startUtf8": 34,
+        "endUtf8": 38
+      },
+      "correctedSpan": {
+        "surface": "до",
+        "startUtf8": 51,
+        "endUtf8": 55
+      }
+    }
+  ]
 }

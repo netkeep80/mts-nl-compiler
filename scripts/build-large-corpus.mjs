@@ -9,6 +9,7 @@ import {CountedNumericCorpusLoader,topObservedWords,topRankedMarkdown}
  from '../src/corpus-top-report-v1.mjs';
 import {compareWordAlignedCorpus} from '../src/word-aligned-ab-v1.mjs';
 import {compareUniversalRepairCorpus} from '../src/universal-repair-ab-v0.mjs';
+import {runPinnedFrontPilot} from '../src/w22d0-pinned-front-pilot.mjs';
 const tick=()=>process.hrtime.bigint();
 const ms=from=>+(Number(tick()-from)/1e6).toFixed(3);
 const manifest=JSON.parse(readFileSync(new URL('../corpus/large-books-v1.json',import.meta.url),'utf8'));
@@ -180,6 +181,39 @@ console.log('UNIVERSAL_REPAIR_AB_SUMMARY '+JSON.stringify({
  sizeVsBalanced:universal.comparison.universalToBalancedSizeRatio,
  sizeVsWordAligned:universal.comparison.universalToWordAlignedSizeRatio,
  coldStatus:universal.numericGraph.coldStatus
+}));
+
+// W22-D0: strict 48/12 independent evaluation on EXACT pinned 60-book bytes.
+// Only 4 training snippets select a structural window SHAPE. Heldout never tunes.
+// This runs after complete original balanced/word-aligned/W4 baselines and does
+// not reinterpret the full-document W4 metrics as snippet-level comparisons.
+const frontPilot=runPinnedFrontPilot(documents,{
+ sampleScalars:32,offset:8,trainSampleCount:4,widthsToTest:[6,8]
+});
+if(frontPilot.status!=='HELDOUT_PHYSICAL_SQLITE_EXACT_REPLAY'||
+ frontPilot.trainCount!==48||frontPilot.heldoutCount!==12||
+ frontPilot.widths.length!==2||
+ frontPilot.widths[0].candidateCount!==42||
+ frontPilot.widths[1].candidateCount!==429)
+ throw Error('W22-D0 frozen 48/12/6/8 pilot gate not satisfied');
+perf.w22D0=frontPilot;
+console.log('W22D0_60_BOOK_HELDOUT '+JSON.stringify({
+ status:frontPilot.status,books:frontPilot.corpusCount,
+ train:frontPilot.trainCount,heldout:frontPilot.heldoutCount,
+ trainSelectionSamples:frontPilot.trainSelectionSamples,
+ sourceGitCommit:manifest.source.gitCommit,
+ widths:frontPilot.widths.map(w=>({
+  width:w.width,candidates:w.candidateCount,chosenTrainOrdinal:w.selectedOrdinal,
+  balancedOrdinal:w.balancedOrdinal,
+  heldoutPhysicalLinksBalanced:w.heldoutTotals.balanced.physicalLinks,
+  heldoutPhysicalLinksLearned:w.heldoutTotals['train-selected'].physicalLinks,
+  deltaPhysicalLinks:w.heldoutDeltaPhysicalLinks,
+  deltaSqliteBytes:w.heldoutDeltaSqliteBytes,
+  improvedDocs:w.heldoutImprovedDocs,
+  regressedDocs:w.heldoutRegressedDocs,
+  tiedDocs:w.heldoutTiedDocs,
+  trainingWallMs:w.tuningWallMs,heldoutWallMs:w.heldoutWallMs
+ }))
 }));
 
 // Reopen TOP links for output from in-memory record retained in the build.

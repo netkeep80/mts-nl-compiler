@@ -31,7 +31,11 @@ function show(){
  const text=el('source').value;
  const width=Number(el('window-width').value);
  let chars;
- try{chars=scalarsOf(text);}catch(error){
+ try{
+  if(text.length>4096)throw Error('Ограничение: 2048 Unicode-скаляров');
+  chars=scalarsOf(text);
+  if(chars.length>2048)throw Error('Ограничение: 2048 Unicode-скаляров');
+ }catch(error){
   el('window-output').hidden=true;
   el('window-error').textContent=String(error.message);
   return;
@@ -52,7 +56,9 @@ function show(){
   return;
  }
  try{
+  const started=performance.now();
   const result=inspectLocalWindow(text,{width,offset:state.offset,topN:5});
+  const elapsed=performance.now()-started;
   const before=chars.slice(0,state.offset).join(''),
    after=chars.slice(state.offset+width).join('');
   el('window-preview').textContent=
@@ -63,6 +69,7 @@ function show(){
   el('window-output').hidden=false;
   const metrics=[
    chip(n(result.treeCount),'Проверенных бинарных деревьев'),
+   chip(elapsed.toFixed(2)+' мс','Перебор на этом устройстве (не benchmark)'),
    chip(n(result.minimumUniquePairs),'Минимум уникальных дуплетов'),
    chip(n(result.uniqueOptima),'Оптимальных вариантов'),
    chip(n(result.balanced.uniquePairs),'Balanced · дуплетов'),

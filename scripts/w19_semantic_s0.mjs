@@ -12,13 +12,17 @@ const sha=b=>createHash('sha256').update(b).digest('hex');
 const fixture=JSON.parse(raw.fixture.toString('utf8'));
 const pack=JSON.parse(raw.definitions.toString('utf8'));
 const run=runS0Corpus(fixture.examples,pack);
-const stable=x=>JSON.stringify(x,Object.keys(x??{}).sort());
+const stable=x=>{
+  if(x===null||typeof x!=='object')return JSON.stringify(x);
+  if(Array.isArray(x))return '['+x.map(stable).join(',')+']';
+  return '{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stable(x[k])).join(',')+'}';
+};
 const cases=run.cases.map(c=>{
   const source=fixture.examples.find(x=>x.id===c.id);
   const actual=c.B.link;
   const provisionalExact=source.provisional.status===actual.status&&
     (source.provisional.status!=='PROPOSED'||
-      JSON.stringify(source.provisional.relation)===JSON.stringify(actual.candidates[0]?.relation));
+      stable(source.provisional.relation)===stable(actual.candidates[0]?.relation));
   return {
     id:c.id,family:source.family,text:c.text,contextId:c.contextId,
     sourceUtf8Bytes:Buffer.byteLength(c.text,'utf8'),

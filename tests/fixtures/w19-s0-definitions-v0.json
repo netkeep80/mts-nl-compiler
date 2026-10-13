@@ -267,6 +267,14 @@
       "concept": "EVERY"
     },
     {
+      "id": "lx.every.lower",
+      "surface": [
+        "каждый"
+      ],
+      "kind": "QUANTIFIER",
+      "concept": "EVERY"
+    },
+    {
       "id": "lx.aux.be",
       "surface": [
         "быть"

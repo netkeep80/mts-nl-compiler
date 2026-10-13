@@ -41,6 +41,34 @@ export function validateEvidence(data){
   assert.ok(exp.population.train>0&&exp.population.holdout>0);
   assert.ok(Array.isArray(exp.controls)&&exp.controls.length>=3);
  }
+ assert.ok(Array.isArray(data.runHistory)&&data.runHistory.length>=4,'visible chronology required');
+ assert.match(data.historyDisclosure,/NOT complete CI history/,'selected records must be identified');
+ const seenRuns=new Set();let failCount=0;
+ for(const run of data.runHistory){
+  assert.ok(['B0','B1','UI'].includes(run.experiment));
+  assert.ok(['CI','GUARD'].includes(run.kind));
+  assert.ok(['PASS','FAIL'].includes(run.status));
+  if(run.status==='FAIL')failCount++;
+  assert.ok(Number.isSafeInteger(run.runId)&&run.runId>0);
+  assert.ok(!seenRuns.has(run.runId),'reused GH Actions run identifier');
+  seenRuns.add(run.runId);
+  assert.match(run.head,/^[a-f0-9]{40}$/);
+  assert.match(run.observedAt,/^20\\d{2}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$/);
+  assert.ok(run.note&&run.note.length>16);
+  assert.equal(run.evidence,
+   'https://github.com/netkeep80/mts-nl-compiler/actions/runs/'+run.runId);
+  if(run.kind==='CI'){
+   assert.equal(run.status,'PASS','failed CI needs explicit evidence and should not be mislabeled');
+   assert.equal(run.testsPassed,run.testsTotal);
+   assert.ok(Number.isSafeInteger(run.testsTotal)&&run.testsTotal>0);
+  }else{
+   assert.equal(run.testsPassed,null);
+   assert.equal(run.testsTotal,null);
+  }
+ }
+ assert.ok(failCount>=2,'do not cherry-pick a deceptively all-green chronology');
+ for(let i=1;i<data.runHistory.length;i++)
+  assert.ok(data.runHistory[i-1].observedAt<=data.runHistory[i].observedAt,'history must be chronological');
  const B0=data.experiments.find(e=>e.id==='B0');
  const B1=data.experiments.find(e=>e.id==='B1');
  if(B0){

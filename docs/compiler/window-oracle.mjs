@@ -59,7 +59,9 @@ const describe=(tree,ordinal,baseline)=>{
  };
 };
 export function inspectLocalWindow(source,{width=8,offset=null,topN=5}={}){
+ if(typeof source!=='string'||source.length>4096)fail('input exceeds 2048 Unicode scalar budget');
  const codepoints=scalarsOf(source);
+ if(codepoints.length>2048)fail('input exceeds 2048 Unicode scalar budget');
  if(!Number.isInteger(width)||width<2||width>8)fail('width must be 2..8');
  if(!Number.isInteger(topN)||topN<1||topN>20)fail('topN must be 1..20');
  if(codepoints.length<width)fail('input shorter than selected window');

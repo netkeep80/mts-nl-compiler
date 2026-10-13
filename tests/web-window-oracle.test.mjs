@@ -88,6 +88,8 @@ test('W22: fails closed on invalid Unicode, out-of-bound widths and offsets',()=
  assert.throws(()=>inspectLocalWindow('1234',{width:8}),/shorter/);
  assert.throws(()=>inspectLocalWindow('12345678',{width:8,topN:100}),/topN/);
  assert.throws(()=>inspectLocalWindow('',{width:2}),/shorter/);
+ assert.throws(()=>inspectLocalWindow('x'.repeat(2049),{width:8}),/2048/);
+ assert.equal(inspectLocalWindow('🧪'.repeat(2048),{width:8}).treeCount,429);
 });
 test('W22: window inspector is transparent about physical and global limits',()=>{
  const result=inspectLocalWindow('мама мыла раму',{width:8});
@@ -117,9 +119,10 @@ test('W22: browser window front updates width, slider and visible grounded optim
  get('source').value='мама мыла раму. мама мыла раму.';
  get('window-width').value='8';get('window-offset').value='0';
  const document={getElementById:get,createElement(tag){const el=new Fake();el.tag=tag;return el;}};
- new Script(source).runInContext(createContext({document,inspectLocalWindow,scalarsOf,console}));
+ new Script(source).runInContext(createContext({document,inspectLocalWindow,scalarsOf,console,performance:{now:()=>123.456}}));
  assert.equal(get('window-output').hidden,false);
  assert.ok(get('window-metrics').children.length>=6);
+ assert.ok(get('window-metrics').children[1].children[1].textContent.includes('Перебор'));
  assert.ok(get('window-ranked').children[0].tag==='table');
  assert.equal(get('window-offset').value,String([...get('source').value].length-8));
  assert.ok(get('window-position').textContent.includes(' из '));

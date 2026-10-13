@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {test} from 'node:test';
 import {balancedPhysicalTree,evaluateMarginalPhysicalCost,w23FrequencyCandidateTrees}
  from '../src/w23d-marginal-link-cost-v0.mjs';
 
 const doc=(id,text)=>({id,text});
+const leftTree=text=>{
+ const points=[...text];let tree=points[0]??'';
+ for(let i=1;i<points.length;i++)tree=[tree,points[i]];
+ return tree;
+};
 
 test('W23-D: W23-C candidate predicts retained cost exactly while fresh active graph saves one Link',()=>{
  const documents=[doc('A','aaaab')];
@@ -47,10 +54,7 @@ test('W23-D: exact candidate already present in another current root adds zero r
  const learned=w23FrequencyCandidateTrees(documents,
   {minOccurrences:2,maxRounds:16,maxExpansionScalars:64});
  const candidate=learned.trees.A;
- const baselineTrees={
-  A:balancedPhysicalTree('aaaab'),
-  B:candidate
- };
+ const baselineTrees={A:balancedPhysicalTree('aaaab'),B:candidate};
  const r=evaluateMarginalPhysicalCost(documents,{targetId:'A',baselineTrees,candidateTree:candidate});
  assert.equal(r.prediction.deltaStoredRows,0);
  assert.equal(r.prediction.insertedAtoms,0);
@@ -106,6 +110,42 @@ test('W23-D: pair-count prediction includes candidate-local reuse, not source oc
  assert.equal(r.verification.retained.sourceEventsAreNotStructuralCounters,true);
  assert.equal(r.limits.sourceObservationsSeparate,true);
  assert.equal(r.limits.structuralPoleCountersSeparate,true);
+});
+
+test('W23-D: physical VACUUM bytes are independently measured and can grow with retained history',()=>{
+ const text=Array.from({length:320},(_,i)=>String.fromCodePoint(0x4e00+i)).join('');
+ const r=evaluateMarginalPhysicalCost([doc('large',text)],
+  {targetId:'large',candidateTree:leftTree(text)});
+ assert.ok(r.prediction.deltaStoredRows>200);
+ assert.equal(r.prediction.deltaStoredRows,r.verification.physicalRowsAdded);
+ assert.ok(r.physicalBytes.deltaRetainedVacuumBytes>0);
+ assert.equal(r.physicalBytes.dryRunBytePrediction,null);
+ assert.equal(r.freshCounterfactual.deltaStoredRows,0,
+  'unique-symbol trees have the same fresh row cardinality despite different shape');
+ console.log('W23D_SQLITE_BYTES '+JSON.stringify({
+  addedRows:r.prediction.deltaStoredRows,
+  baselineBytes:r.physicalBytes.baselineVacuumBytes,
+  retainedBytes:r.physicalBytes.retainedVacuumBytes,
+  retainedDeltaBytes:r.physicalBytes.deltaRetainedVacuumBytes,
+  freshDeltaRows:r.freshCounterfactual.deltaStoredRows
+ }));
+});
+
+test('W23-D: machine report preserves fresh-vs-retained objective separation',()=>{
+ const script=fileURLToPath(new URL('../scripts/w23d_sqlite_probe.mjs',import.meta.url));
+ const run=spawnSync(process.execPath,[script],{encoding:'utf8',timeout:20000});
+ assert.equal(run.status,0,run.stderr);
+ const line=run.stdout.split('\n').find(x=>x.startsWith('W23D_PHYSICAL_COST_REPORT '));
+ assert.ok(line,'missing W23-D machine report');
+ const report=JSON.parse(line.slice('W23D_PHYSICAL_COST_REPORT '.length));
+ assert.equal(report.schema,'mts-nl/w23d-physical-cost-report/v0');
+ assert.equal(report.status,'DRY_RUN_EQUALS_INDEPENDENT_SQLITE_REBUILD_AND_COLD_REPLAY');
+ assert.equal(report.migration.retainedDeltaRows,2);
+ assert.equal(report.migration.activeDeltaRows,-1);
+ assert.equal(report.migration.freshDeltaRows,-1);
+ assert.equal(report.preexistingReuse.retainedDeltaRows,0);
+ assert.equal(report.preexistingReuse.activeDeltaRows,-3);
+ assert.equal(report.conclusion.freshAndMigrationObjectivesMustRemainSeparate,true);
 });
 
 test('W23-D: fail closed on altered text, bad baselines, duplicate IDs and resource limits',()=>{

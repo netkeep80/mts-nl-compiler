@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Интерактивный эксперимент компиляции Unicode-фраз в бинарный граф Link: дуплеты, Re-Pair, метрики и точное восстановление.">
+<title>Link Compiler · MTS Research</title>
+<style>
+:root{font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;background:#f0f4f6;color:#19303a;--accent:#10786c;--shade:#f6fafb;--edge:#d9e5e8}
+*{box-sizing:border-box}body{margin:0}.page{max-width:1390px;margin:0 auto;padding:24px 28px 70px}
+a{color:#096d81;text-decoration:none}a:hover{text-decoration:underline}
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px;flex-wrap:wrap}
+.brand{font-weight:790;letter-spacing:.035em}.nav{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+h1{font-size:clamp(30px,5vw,49px);letter-spacing:-.045em;line-height:1.12;margin:6px 0 14px}
+h2{font-size:19px;margin:0 0 14px}h3{font-size:15px;margin:12px 0 8px}p{margin:7px 0}
+.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:780}
+.lead{font-size:16px;color:#526875;max-width:1000px;margin-bottom:25px}
+.panel{background:white;border:1px solid var(--edge);border-radius:14px;padding:21px;margin:0 0 17px}
+.layout{display:grid;grid-template-columns:minmax(340px,.95fr) minmax(400px,1.5fr);gap:17px;align-items:start}
+textarea{resize:vertical;min-height:160px;width:100%;padding:14px 15px;background:#f8fbfb;border:1px solid #b9cdd2;border-radius:9px;font:15px/1.6 ui-monospace,Consolas,monospace;color:#152f3b}
+label{display:block;color:#465d69;font-size:13px;font-weight:700;margin:11px 0 6px}
+select,input{width:100%;border:1px solid #c2d6dc;border-radius:8px;background:#fff;padding:9px;font:inherit}
+.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{font:inherit;cursor:pointer;border:1px solid #a5c6be;color:#216e62;background:white;border-radius:8px;padding:9px 13px;font-weight:700}
+button.primary{background:#0d786e;color:#fff;border-color:#0d786e;min-width:180px}
+button:hover{filter:brightness(.97)}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #79b6aa;outline-offset:2px}
+.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:17px}
+.small{font-size:12px}.muted{color:#677b87}.warning{border-left:4px solid #b77b42;background:#fff6eb;border-radius:7px;padding:13px 15px;color:#7b4d26;margin:16px 0}
+.notice{border-left:4px solid #278c7f;background:#eaf7f3;border-radius:7px;padding:12px 15px;color:#225b50;margin:14px 0}
+.error{background:#fff0ec;border:1px solid #e5bbb2;padding:12px;border-radius:8px;color:#923e34}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.metric{padding:12px;background:#f5f9f8;border:1px solid #e2ecea;border-radius:10px}
+.metric strong{display:block;font-size:23px;letter-spacing:-.035em}.metric span{font-size:12px;color:#627680}
+.tablewrap{overflow:auto;max-height:420px;border:1px solid var(--edge);border-radius:9px}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{text-align:left;border-bottom:1px solid #e8eff0;padding:9px 10px;vertical-align:top}
+th{background:#f4f8f9;position:sticky;top:0;z-index:1;font-size:11px;white-space:nowrap}
+tr:last-child td{border:0}td.number{font-variant-numeric:tabular-nums;text-align:right}
+.mono{font-family:ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.pill{border-radius:7px;background:#e6f4ed;color:#226e50;font-size:11px;padding:3px 7px;display:inline-block}
+.line-tree{padding:7px 12px;margin:5px 0 5px 12px;border-left:2px solid #c1dad6;background:#f9fbfb;font:12px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+details>summary{cursor:pointer;color:#1b6871;list-style:disclosure-closed}details[open]>summary{list-style:disclosure-open}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+#result[hidden],#status[hidden],#repair-settings[hidden]{display:none}
+#status{margin-top:12px}
+footer{margin-top:25px;font-size:12px;color:#697e87}
+@media(max-width:1080px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:570px){.page{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.control-grid{grid-template-columns:1fr}}
+</style></head>
+<body><div class="page">
+<header><div class="brand">⟼ MTS NL · Link Compiler Lab</div><nav class="nav"><a href="../observatory/">← Observatory</a><a href="../">Сайт проекта</a><a href="https://github.com/netkeep80/mts-nl-compiler">Исходный код ↗</a></nav></header>
+<main>
+<p class="eyebrow">W21 · локальный исследовательский движок</p>
+<h1>Фраза → дуплеты → Link</h1>
+<p class="lead">Введи любой текст. Компилятор построит бинарную структуру, покажет найденные повторения, Link с левым и правым полюсами, метрики переиспользования и результат точного восстановления Unicode. Никакого словаря и специальных правил для пробелов.</p>
+<div class="layout">
+<section class="panel" aria-label="Входные данные и параметры">
+<h2>Исходная последовательность</h2>
+<label for="source">Unicode-текст (не более 2048 символов Unicode)</label>
+<textarea id="source" spellcheck="false">мама мыла раму. мама мыла раму.</textarea>
+<div class="control-grid">
+<div><label for="mode">Алгоритм построения</label>
+<select id="mode"><option value="repair">Частотные пары · Re-Pair</option><option value="balanced">Сбалансированное дерево</option><option value="left">Левое дерево</option></select></div>
+<div><label for="maxRules">Максимум правил (0–128)</label><input id="maxRules" type="number" min="0" max="128" value="48"></div>
+<div><label for="minOccurrences">Минимум неперекрывающихся повторов</label><input id="minOccurrences" type="number" min="2" max="100" value="2"></div>
+<div><label for="maxRuleCodepoints">Длина изученного фрагмента ≤</label><input id="maxRuleCodepoints" type="number" min="2" max="256" value="64"></div>
+</div>
+<p class="small muted">Режим Re-Pair изучает частоты на этом же вводе — это не обучение на независимом корпусе. Числовые ID — временные локальные номера, не постоянные SQLite Link ID.</p>
+<div class="actions"><button id="compile" class="primary" type="button">Компилировать <span aria-hidden="true">⟼</span></button><button id="sample" type="button">Пример Unicode</button><button id="copy" type="button" disabled>Скопировать JSON</button></div>
+<div id="status" role="status" aria-live="polite" hidden></div>
+</section>
+<section class="panel" id="result" aria-label="Результат компиляции" hidden>
+<h2>Результат <span id="resultStatus" class="pill"></span></h2>
+<div id="metrics" class="metrics" aria-label="Метрики Link"></div>
+<div class="notice" id="replay"></div>
+<p class="small muted" id="runtime"></p>
+</section>
+</div>
+<div id="details" hidden>
+<div class="grid2">
+<section class="panel"><h2>Сравнение одной последовательности</h2><p class="small muted">Одинаковый ввод и символы для всех режимов. Уникальные пары — структурная мера, не объём SQLite и не MDL.</p><div id="comparison" class="tablewrap"></div></section>
+<section class="panel"><h2>Найденные правила повторений</h2><p class="small muted">Показывается только в режиме Re-Pair. Частоты измеряются на последовательности текущих токенов с проверкой неперекрывающихся замен.</p><div id="rules" class="tablewrap"></div></section>
+</div>
+<div class="grid2">
+<section class="panel"><h2>Дуплеты и переиспользование</h2><p class="small muted">Каждый Link вида <span class="mono">Lᵢ=(Lₐ⟼Lᵦ)</span>. Использования учитываются в развёрнутом дереве исходного текста, а не в SQLite.</p><div id="pairs" class="tablewrap"></div></section>
+<section class="panel"><h2>Дерево Link</h2><p class="small muted">Свернутый просмотр корня и его полюсов (до шести уровней/120 узлов интерфейса). Развёрнутое восстановление всегда проверяется целиком.</p><div id="tree"></div></section>
+</div>
+</div>
+<div class="warning"><strong>Что эта страница не делает.</strong> Не понимает смысл предложений, не исправляет грамматику, не выводит правила МТС v0.15, не создаёт persistent Link в SQLite и не доказывает сжатие по байтам. Это проверяемая локальная структура и структурный эксперимент Re-Pair.</div>
+</main>
+<footer>Данные остаются в твоём браузере, никакие фразы никуда не отправляются. Открытый исследовательский код: <a href="https://github.com/netkeep80/mts-nl-compiler/issues/97">W21 #97</a>.</footer>
+</div><script type="module" src="./app.mjs"></script>
+</body></html>

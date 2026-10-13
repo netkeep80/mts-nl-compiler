@@ -35,11 +35,31 @@
 
 SHA-256 точного corpus fixture:
 
-`bb3e4229e560032ecfbaed4694e40d4d335d123a3b69fb12bdf6b43eef43de27`
+`964be91874b4beecad6d74341f1ef845ed42492ea010f4fc95e22c8aefeae6ae`
 
 Definition pack SHA-256:
 
 `183e97b2b475d8ac3a5a6af035b99816ba20b0507c0688c27f869170e4eeb6f9`
+
+### Corpus corrigendum after independent review
+
+Independent review of Draft #112 found one reproducible annotation-span defect in the previous corpus revision:
+
+- case: `S09`;
+- text: `Система сохраняет документ до проверки.`;
+- field: `provisional.spans.temporal`;
+- erroneous interval: `34..38`, which points inside `документ`;
+- corrected standalone-token interval: **`51..55`**.
+
+Historical SHA-256 of the erroneous fixture is retained in the fixture corrigendum and machine report:
+
+`bb3e4229e560032ecfbaed4694e40d4d335d123a3b69fb12bdf6b43eef43de27`
+
+Historical PR head carrying that revision:
+
+`591aa567cb8d124c39db539f8f8107987e01693e`
+
+The correction changes only annotation provenance/span metadata. Definition pack and semantic engine were not changed.
 
 Engine SHA-256 на проверенном code head:
 
@@ -323,6 +343,26 @@ Pack умеет IF и TEMPORAL отдельно, но не имеет опред
 
 Link-форма даёт проверяемую graph representability/provenance, но сама по себе не добавляет смысл.
 
+### Span integrity after independent review
+
+All **111 provisional source spans** are now checked generically against `exactUnicodeTokens`:
+
+- exact UTF-8 byte slice must equal the declared surface;
+- `startUtf8` must equal the start of an observed token;
+- `endUtf8` must equal the end of an observed token;
+- the interval must cover a complete contiguous token or documented token sequence;
+- it may not cut through another observed token.
+
+For every `PROPOSED` case, matcher evidence spans are independently token-boundary checked. When a provisional span and matcher evidence refer to the same surface, their exact UTF-8 intervals must agree.
+
+Result after the S09 correction:
+
+- provisional spans checked: **111/111 PASS**;
+- additional provisional token-boundary defects: **0**;
+- matcher/source same-surface interval conflicts: **0**.
+
+This is fixture-integrity evidence, not independent semantic gold.
+
 ### Annotation leakage
 
 Тест подменяет provisional annotation на заведомо ложный `VERIFIED/FAKE`.
@@ -365,15 +405,19 @@ Definition Link graph S0 — research transport, а не canonical MTS semantic 
 
 ## 9. Метрики и CI
 
-Проверенный code head до документационного коммита:
+Исправленный corpus/span-test checkpoint до обновления этой заметки:
 
-`21bbef7e843770b8043b62ee2a3ec23a42f46d4a`
+`f93d4fb7b8b6ee011a0ae56c2fcfed888069303f`
 
-Node 24 / Ubuntu CI:
+На предшествующем полном запуске после generic span-falsifier:
 
-- **233/233 PASS**;
+- **234/234 PASS**;
 - 0 failed;
-- 0 skipped.
+- 0 skipped;
+- all 111 provisional spans PASS;
+- repo-guard SUCCESS.
+
+Финальный exact PR-head CI после обновления документации фиксируется в Draft PR #112 и checkpoint #91.
 
 repo-guard:
 

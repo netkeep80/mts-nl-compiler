@@ -141,7 +141,7 @@ test('W20: run ledger includes verified failures and exact links, without claimi
  assert.ok(page.includes('data-runfilter="FAIL"'));
 });
 test('W20: run ledger filter displays failures and their original remediation notes',()=>{
- const scripts=[...page.matchAll(/<script[^>]*>([^]*?)<\\/script>/g)];
+ const scripts=[...page.matchAll(/<script[^>]*>([^]*?)<\/script>/g)];
  assert.equal(scripts.length,2);
  const contextElement={innerHTML:'',setAttribute(){}};
  const tbody={innerHTML:''};

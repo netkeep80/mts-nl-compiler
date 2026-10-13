@@ -169,3 +169,14 @@ test('W20: run ledger filter displays failures and their original remediation no
  const allGreen=clone();for(const x of allGreen.runHistory)x.status='PASS';
  assert.throws(()=>validateEvidence(allGreen),/cherry-pick/);
 });
+
+test('W20: root README links to an immutable browser-viewable evidence snapshot',()=>{
+ const readme=readFileSync(new URL('../README.md',import.meta.url),'utf8');
+ const pinned='https://raw.githack.com/netkeep80/mts-nl-compiler/27148dab6148e810ed5f4096d1337ce8c4ba6f7e/docs/observatory/index.html';
+ assert.ok(readme.includes('[Открыть веб-панель результатов в браузере]('+pinned+')'));
+ assert.ok(readme.includes('HTML и исходные данные в GitHub'));
+ assert.ok(readme.includes('сторонний'));
+ assert.ok(readme.includes('GitHub Pages пока не подтверждена'));
+ assert.ok(!readme.includes('https://netkeep80.github.io/mts-nl-compiler/observatory/'),
+  'do not advertise a public Pages deployment before verifying one exists');
+});

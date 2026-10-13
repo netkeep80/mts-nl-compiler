@@ -164,3 +164,13 @@ test('W21: UI executes real engine in isolated fake DOM, including hostile liter
  assert.equal(get('result').hidden,true);
  assert.ok(get('status').textContent.includes('unpaired'));
 });
+
+test('W21: capped previews remain exact prefixes rather than splicing right-hand suffix into truncated left',()=>{
+ const text='а'.repeat(85)+'б'.repeat(18);
+ const r=compileText(text,{mode:'left'});
+ const root=r.nodes.find(x=>x.id===r.root);
+ assert.ok(root.preview.endsWith('…'));
+ assert.equal([...root.preview].slice(0,-1).join(''),[...text].slice(0,72).join(''));
+ assert.ok(!root.preview.includes('б'));
+ assert.equal(replayFromJSON(r),text);
+});

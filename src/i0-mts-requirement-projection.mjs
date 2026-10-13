@@ -70,8 +70,11 @@ function rawJsonTokenSpan(bytes, jsonPointer) {
     if (text[position] === '{') {
       position++;
       space();
+      const keys = new Set();
       while (text[position] !== '}') {
         const key = stringToken();
+        if (keys.has(key.value)) fail(pointer === '/requirements' ? 'DUPLICATE_ID' : 'INVALID_JSON', 'duplicate JSON key at ' + pointer + '/' + pointerPart(key.value));
+        keys.add(key.value);
         space();
         if (text[position++] !== ':') fail('INVALID_JSON', 'missing colon');
         walk(pointer + '/' + pointerPart(key.value));
@@ -146,11 +149,15 @@ export function buildI0Projection({registryBytes, traceabilityBytes, source = I0
       source.registry?.gitBlobSha1 !== I0_SOURCE.registry.gitBlobSha1 ||
       source.traceability?.gitBlobSha1 !== I0_SOURCE.traceability.gitBlobSha1 ||
       source.registry?.path !== I0_SOURCE.registry.path ||
-      source.traceability?.path !== I0_SOURCE.traceability.path) {
+      source.traceability?.path !== I0_SOURCE.traceability.path ||
+      JSON.stringify(source.ids) !== JSON.stringify(I0_SOURCE.ids)) {
     fail('UNTRUSTED_SOURCE', 'I0 accepts only the pinned normative revision');
   }
   const registry = expectObject(parsePinned(registryBytes, source.registry, source), 'registry');
   const traceability = expectObject(parsePinned(traceabilityBytes, source.traceability, source), 'traceability');
+  // JSON.parse alone silently overwrites duplicate object keys; fail closed on both files.
+  rawJsonTokenSpan(registryBytes, '');
+  rawJsonTokenSpan(traceabilityBytes, '');
   if (registry.schema !== 'mts-requirement-registry/v0.3' ||
       registry.mtsVersion !== 'v0.15' ||
       registry.status !== 'accepted' || registry.accepted !== true ||
@@ -288,8 +295,18 @@ export function buildI0Projection({registryBytes, traceabilityBytes, source = I0
 }
 
 export function assessI0Freshness(dependencyManifest, observed) {
-  if (!dependencyManifest?.inputs || !Array.isArray(dependencyManifest.inputs) || !observed ||
-      typeof observed !== 'object') return {status: 'UNKNOWN', changed: [], unavailable: ['manifest']};
+  if (!Array.isArray(dependencyManifest?.inputs) || dependencyManifest.inputs.length !== 2 ||
+      !observed || typeof observed !== 'object') {
+    return {status: 'UNKNOWN', changed: [], unavailable: ['manifest']};
+  }
+  const expected = [I0_SOURCE.registry, I0_SOURCE.traceability];
+  if (expected.some((pin, i) => dependencyManifest.inputs[i]?.path !== pin.path ||
+      dependencyManifest.inputs[i]?.gitBlobSha1 !== pin.gitBlobSha1 ||
+      dependencyManifest.inputs[i]?.commit !== I0_SOURCE.commit ||
+      dependencyManifest.inputs[i]?.repository !== I0_SOURCE.repository ||
+      !/^[a-f0-9]{64}$/.test(dependencyManifest.inputs[i]?.sha256 ?? ''))) {
+    return {status: 'UNKNOWN', changed: [], unavailable: ['manifest']};
+  }
   const changed = [], unavailable = [];
   for (const input of dependencyManifest.inputs) {
     const bytes = observed[input.path];
@@ -304,7 +321,8 @@ export function assessI0Freshness(dependencyManifest, observed) {
 // be promoted by candidate metadata, including a forged author-decision string.
 export function checkI0Candidate(candidate) {
   if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) fail('INVALID_CANDIDATE');
-  if (candidate.status === 'ACCEPTED' || candidate.authorityState === 'ACCEPTED' ||
+  if (String(candidate.status ?? '').toUpperCase() === 'ACCEPTED' ||
+      String(candidate.authorityState ?? '').toUpperCase() === 'ACCEPTED' ||
       candidate.accepted === true || candidate.authorDecision !== undefined) {
     return {status: 'REJECTED', reason: 'CANDIDATE_CANNOT_SELF_AUTHORIZE'};
   }

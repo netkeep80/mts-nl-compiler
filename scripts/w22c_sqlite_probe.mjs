@@ -22,6 +22,24 @@ const report={
   orphanedHistoricalLinks:r.retention.after.inactiveTotal,
   sourceOccurrences:r.retention.after.expandedPairEvents,
   structuralFromUses:r.retention.after.physicalFromUsesSum},
+ contrasts:[
+  {secondDocument:'бб',...(()=>{
+   const a=compareSqliteRegrouping([
+    {id:'A',text:'абаабабб'},{id:'B',text:'бб'}],{targetId:'A',width:4,offset:3});
+   return {bestLocalCost:a.bestWholePairsAmongLocalOptima,contextCost:a.bestWholePairs,
+    saving:a.wholeGraphSavingFromContext,retainedPhysical:a.retention.after.physicalTotal,
+    activeLinks:a.retention.after.activeTotal,inactiveLinks:a.retention.after.inactiveTotal,
+    historicalIdentityUnchanged:a.retention.oldLinkIdentitiesUnchanged};
+  })()},
+  {secondDocument:'абаб',...(()=>{
+   const b=compareSqliteRegrouping([
+    {id:'A',text:'абаабабб'},{id:'B',text:'абаб'}],{targetId:'A',width:4,offset:3});
+   return {bestLocalCost:b.bestWholePairsAmongLocalOptima,contextCost:b.bestWholePairs,
+    saving:b.wholeGraphSavingFromContext,retainedPhysical:b.retention.after.physicalTotal,
+    activeLinks:b.retention.after.activeTotal,inactiveLinks:b.retention.after.inactiveTotal,
+    historicalIdentityUnchanged:b.retention.oldLinkIdentitiesUnchanged};
+  })()}
+ ],
  physicalRowsAdded:r.retention.physicalRowsAdded,
  historicalLinkPolesUnchanged:r.retention.oldLinkIdentitiesUnchanged,
  coldReplay:r.retention.cold.status,limits:r.limits

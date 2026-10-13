@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {
   I0_SOURCE, buildI0Projection, assessI0Freshness, checkI0Candidate,
   sha256, gitBlobSha1
@@ -158,6 +160,35 @@ test('I0 pinned anum_docs v0.15: real five-requirement projection and falsifier 
     reject(() => build(brokenJson), 'INVALID_JSON');
     const changed = {...inputs, [trPath]: Buffer.concat([inputs[trPath], Buffer.from('\n')])};
     reject(() => build(changed), 'SOURCE_DIGEST_MISMATCH');
+  });
+
+  await t.test('incomplete or tampered dependency manifest cannot claim CURRENT', () => {
+    const missing = {...report.dependencyManifest, inputs: []};
+    assert.equal(assessI0Freshness(missing, inputs).status, 'UNKNOWN');
+    const partial = {...report.dependencyManifest, inputs: [report.dependencyManifest.inputs[0]]};
+    assert.equal(assessI0Freshness(partial, inputs).status, 'UNKNOWN');
+    const wrongCommit = {...report.dependencyManifest, inputs: report.dependencyManifest.inputs.map(
+      (v, i) => i === 0 ? {...v, commit: 'f'.repeat(40)} : v)};
+    assert.equal(assessI0Freshness(wrongCommit, inputs).status, 'UNKNOWN');
+  });
+
+  await t.test('duplicate JSON map keys cannot hide duplicate IDs', () => {
+    const duplicateKey = JSON.stringify(traced).replace(
+      '"V15-ONTO-01":', '"V15-ONTO-01":null,"V15-ONTO-01":'
+    );
+    assert.notEqual(duplicateKey, JSON.stringify(traced));
+    const modified = {...inputs, [trPath]: Buffer.from(duplicateKey, 'utf8')};
+    reject(() => build(modified), 'DUPLICATE_ID');
+  });
+
+  await t.test('CLI produces same deterministic machine-readable projection', () => {
+    const cli = fileURLToPath(new URL('../scripts/i0_mts_requirement_projection.mjs', import.meta.url));
+    const result = spawnSync(process.execPath, [cli, '--github'],
+      {encoding: 'utf8', timeout: 30000, maxBuffer: 2 * 1024 * 1024});
+    assert.equal(result.status, 0, result.stderr);
+    const emitted = JSON.parse(result.stdout);
+    assert.equal(emitted.projectionSha256, report.projectionSha256);
+    assert.deepEqual(emitted.requirements.map(x => x.id), report.requirements.map(x => x.id));
   });
 
   await t.test('candidate claiming ACCEPTED is rejected without author admission', () => {

@@ -97,3 +97,94 @@ export function inspectLocalWindow(source,{width=8,offset=null,topN=5}={}){
   }
  };
 }
+
+
+// W22-B: exact WHOLE-INPUT structural counterfactual, bounded to 128 scalars.
+// The outside balanced binary trees and their attachment order are kept fixed.
+// This is not optimization of the durable SQLite graph or independent corpus.
+function countContextPairs(prefixTree,windowTree,suffixTree,exactSource){
+ const atoms=new Map(),pairs=new Map(),nodes=[null],parts={
+  prefix:new Set(),window:new Set(),suffix:new Set()
+ };
+ const atom=s=>{
+  if(!atoms.has(s)){const id=nodes.length;atoms.set(s,id);nodes.push({symbol:s});}
+  return atoms.get(s);
+ };
+ const visit=(tree,part)=>{
+  if(typeof tree==='string')return atom(tree);
+  const from=visit(tree[0],part),to=visit(tree[1],part),key=from+','+to;
+  let id=pairs.get(key);
+  if(id===undefined){id=nodes.length;pairs.set(key,id);nodes.push({from,to});}
+  if(part)parts[part].add(id);
+  return id;
+ };
+ let root=visit(windowTree,'window');
+ if(prefixTree!==null){
+  const left=visit(prefixTree,'prefix'),key=left+','+root;
+  let id=pairs.get(key);
+  if(id===undefined){id=nodes.length;pairs.set(key,id);nodes.push({from:left,to:root});}
+  root=id;
+ }
+ if(suffixTree!==null){
+  const right=visit(suffixTree,'suffix'),key=root+','+right;
+  let id=pairs.get(key);
+  if(id===undefined){id=nodes.length;pairs.set(key,id);nodes.push({from:root,to:right});}
+  root=id;
+ }
+ // Decode from the numbered Link DAG, not from the original tree.
+ const output=[],stack=[root];
+ while(stack.length){
+  const t=nodes[stack.pop()];
+  if(Object.hasOwn(t,'symbol'))output.push(t.symbol);
+  else{stack.push(t.to);stack.push(t.from);}
+ }
+ if(output.join('')!==exactSource)fail('contextual candidate cold replay differs from source');
+ let sharedWithOutside=0;
+ for(const id of parts.window)if(parts.prefix.has(id)||parts.suffix.has(id))sharedWithOutside++;
+ return {uniqueWholePairs:pairs.size,sharedWithOutside,
+  reusedWholePairOccurrences:Math.max(0,output.length-1-pairs.size)};
+}
+export function inspectContextualWindow(source,{width=8,offset=null,topN=5}={}){
+ // Cap total text to control 429 × whole-source reconstruction cost.
+ if(typeof source!=='string'||source.length>256)fail('context source exceeds 128 Unicode scalars');
+ const chars=scalarsOf(source);
+ if(chars.length>128)fail('context source exceeds 128 Unicode scalars');
+ const local=inspectLocalWindow(source,{width,offset,topN});
+ const start=local.offset,end=start+width;
+ const leftChars=chars.slice(0,start),rightChars=chars.slice(end);
+ const prefix=leftChars.length?baselineTree(leftChars,'balanced'):null;
+ const suffix=rightChars.length?baselineTree(rightChars,'balanced'):null;
+ const candidates=canonicalTrees(chars.slice(start,end));
+ const ranked=candidates.map((tree,ordinal)=>{
+  const localPairs=tally(tree).uniquePairs;
+  const whole=countContextPairs(prefix,tree,suffix,source);
+  return {ordinal,localPairs,...whole,expression:formatTree(tree)};
+ }).sort((a,b)=>a.uniqueWholePairs-b.uniqueWholePairs||
+  a.localPairs-b.localPairs||a.ordinal-b.ordinal);
+ const globalBest=ranked[0];
+ const minLocal=local.minimumUniquePairs;
+ const localWinners=ranked.filter(x=>x.localPairs===minLocal);
+ const bestContextAmongLocal=localWinners[0]; // context-sorted
+ const balanced=countContextPairs(prefix,baselineTree(chars.slice(start,end),'balanced'),suffix,source);
+ const left=countContextPairs(prefix,baselineTree(chars.slice(start,end),'left'),suffix,source);
+ return {
+  schema:'mts-nl/contextual-window-oracle/v1',status:'EXHAUSTIVE_FIXED_CONTEXT',
+  width,offset:start,sourceScalars:chars.length,windowText:local.windowText,
+  treeCount:ranked.length,minimumLocalPairs:minLocal,
+  minimumWholePairs:globalBest.uniqueWholePairs,
+  bestContextCostAmongLocalOptima:bestContextAmongLocal.uniqueWholePairs,
+  avoidableByConsideringContext:bestContextAmongLocal.uniqueWholePairs-globalBest.uniqueWholePairs,
+  balanced:{...balanced,deltaWholePairs:balanced.uniqueWholePairs-globalBest.uniqueWholePairs},
+  left:{...left,deltaWholePairs:left.uniqueWholePairs-globalBest.uniqueWholePairs},
+  globalOptimumTies:ranked.filter(x=>x.uniqueWholePairs===globalBest.uniqueWholePairs).length,
+  bestCandidates:ranked.slice(0,topN),
+  limits:{
+   fullSourceColdReplay:true,
+   outsideGrouping:'balanced outside window, fixed left-associative attachment (prefix⟼window)⟼suffix',
+   maxSourceScalars:128,
+   corpusGlobalOptimality:false,
+   physicalSQLiteCost:false,
+   metric:'unique internal pair Links in newly rebuilt whole-input DAG'
+  }
+ };
+}

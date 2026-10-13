@@ -108,7 +108,7 @@ function makeFresh(documents,targetId,targetTree){
   const w=writerFor(db),roots=[];
   for(const d of documents){
    const tree=d.id===targetId?targetTree:balanced(scalarsOf(d.text));
-   roots.push({...d,...w.write(tree)});
+   roots.push({...d,bytes:Buffer.from(d.text,'utf8'),...w.write(tree)});
   }
   w.loader.finalize();
   const evidence=physicalEvidence(db,roots);
@@ -122,7 +122,7 @@ function retainedReplacement(documents,targetId,baselineTree,revisedTree){
   const w=writerFor(db),baselineRoots=[];
   for(const d of documents){
    const tree=d.id===targetId?baselineTree:balanced(scalarsOf(d.text));
-   baselineRoots.push({...d,...w.write(tree)});
+   baselineRoots.push({...d,bytes:Buffer.from(d.text,'utf8'),...w.write(tree)});
   }
   w.loader.finalize();
   const originalRows=readNumericLinks(db);
@@ -130,7 +130,7 @@ function retainedReplacement(documents,targetId,baselineTree,revisedTree){
   const target=documents.find(x=>x.id===targetId);
   const revision=w.write(revisedTree);
   const activeRoots=baselineRoots.map(d=>d.id===targetId?
-   {...target,...revision}:d);
+   {...target,bytes:Buffer.from(target.text,'utf8'),...revision}:d);
   w.loader.finalize();
   const rowsAfter=readNumericLinks(db),historical=new Map(rowsAfter.map(r=>[r.link_id,r]));
   for(const old of originalRows){

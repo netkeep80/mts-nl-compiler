@@ -3,6 +3,7 @@
 // never from remembered claims, and compare the checked-in snapshot in CI.
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
 import {trainProductiveSlots,trainCharBaseline} from '../src/w19-productive-slots-b1.mjs';
 
 export function renderW19B1Readable(fixture,fixtureSha256){
@@ -94,4 +95,4 @@ const fixtureBytes=readFileSync(new URL('../tests/fixtures/w19-productive-b1-v0.
 const fixture=JSON.parse(fixtureBytes.toString('utf8'));
 const digest=createHash('sha256').update(fixtureBytes).digest('hex');
 const markdown=renderW19B1Readable(fixture,digest);
-if(process.argv[1] && new URL('file://'+process.argv[1]).pathname===new URL(import.meta.url).pathname)process.stdout.write(markdown);
+if(process.argv[1] && pathToFileURL(process.argv[1]).href===import.meta.url)process.stdout.write(markdown);

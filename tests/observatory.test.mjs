@@ -3,6 +3,7 @@ import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {Script,createContext} from 'node:vm';
 import {renderObservatory,validateEvidence} from '../scripts/build_observatory.mjs';
 
 const input=JSON.parse(readFileSync(new URL('../data/observatory/runs-v1.json',import.meta.url),'utf8'));
@@ -81,4 +82,48 @@ test('W20: inert JSON embedding cannot break out into an executable HTML script'
  assert.ok(text);
  const parsed=JSON.parse(text[1]);
  assert.equal(parsed.experiments[0].title,evil.experiments[0].title);
+});
+
+test('W20: dashboard JavaScript compiles and all four views render with offline DOM mock',()=>{
+ const found=[...page.matchAll(/<script[^>]*>([^]*?)<\/script>/g)];
+ assert.equal(found.length,2);
+ const js=found[1][1];
+ const compiled=new Script(js,{filename:'observatory-inline.js'});
+ const handlers=new Map();
+ const nav=['overview','B0','B1','history'].map(view=>({
+  dataset:{view},setAttribute(name,value){this[name]=value;}
+ }));
+ const cases=Array.from({length:6},(_,i)=>({dataset:{case:String(i)},
+   setAttribute(name,value){this[name]=value;}}));
+ const elements={
+  'observatory-data':{textContent:found[0][1]},
+  asof:{textContent:''},
+  content:{innerHTML:'',setAttribute(){}},
+  'case-detail':{innerHTML:''}
+ };
+ const doc={
+  getElementById(id){return elements[id]??null;},
+  querySelectorAll(selector){if(selector==='.navbtn')return nav;if(selector==='[data-case]')return cases;
+   if(selector==='.sample')return cases;return [];},
+  addEventListener(type,handler){handlers.set(type,handler);}
+ };
+ const loc={hash:''};
+ const browser={
+  history:{replaceState(a,b,to){loc.hash=to;}},
+  addEventListener(type,handler){handlers.set('window:'+type,handler);}
+ };
+ const context=createContext({document:doc,location:loc,window:browser,URL,console});
+ compiled.runInContext(context);
+ assert.ok(elements.content.innerHTML.includes('Наблюдаем результаты'));
+ for(const view of ['B0','B1','history','overview']){
+  const control={dataset:{view}};
+  handlers.get('click')({target:{closest:()=>control}});
+  assert.equal(loc.hash,'#'+view);
+  assert.ok(elements.content.innerHTML.length>500,'view must contain substantive data');
+ }
+ handlers.get('click')({target:{closest:()=>({dataset:{view:'B0'}})}});
+ assert.ok(elements['case-detail'].innerHTML.includes('Исходная формулировка'));
+ handlers.get('click')({target:{closest:()=>({dataset:{case:'5'}})}});
+ assert.ok(elements['case-detail'].innerHTML.includes('UNKNOWN / OOV'));
+ assert.equal(nav.find(x=>x.dataset.view==='B0')['aria-current'],'page');
 });

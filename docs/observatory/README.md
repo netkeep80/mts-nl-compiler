@@ -47,3 +47,13 @@ Until then, download the offline HTML directly or use the Draft branch file. Opt
 - No CDN, telemetry, cookies or network requests; all evidence is static and can be inspected offline.
 - Link DAG display is not a general graph explorer; B1 shows only experiment-level counts and component recombinations.
 - The dashboard must always show `DRAFT_RESEARCH`, `TESTED_SYNTHETIC`, `UNKNOWN`, negative baselines and explicit provenance. It must not silently turn CI green into a semantic acceptance badge.
+
+## Новый раздел W22-D0 · настоящие 60 книг (13.10.2026)
+
+Открой вкладку **«W22 · 60 книг»** или адрес `/mts-nl-compiler/observatory/#W22`. Результаты получены из дважды проверенного [полного GitHub Actions](https://github.com/netkeep80/mts-nl-compiler/actions/runs/38385423856), исходники закреплены за `d0rj/RusLit@4509680428729da225a73a22008133660f92bb7e`.
+
+Выбор формы группировки окна 6/8 производился на **4 train snippets**. На всех 12 независимых heldout-фрагментах длиной 32 Unicode-скаляра результаты: width 6 **−1 Link**, width 8 **0 Link**, по физическому SQLite VACUUM bytes **0 для обоих**. Графики и показатели оригинальной 60-книжной W4 группы расположены в отдельном блоке **и не сравниваются напрямую** с пилотными snippets.
+
+Данные `w22d0` в [manifest](../../data/observatory/runs-v1.json) являются вручную закреплённым **проверенным статическим снимком**, не автоматическим считыванием GitHub Actions. [Научный отчёт](../w22d0_pinned_front_pilot.md) содержит ограничения и ссылки на исходную сборку. Подробные 12 per-book записи доступны через `reports/large-corpus-performance.json.w22D0` уже публикуемого CI-артефакта (сырьевые книги не включены).
+
+**Терминология:** 1 087 и 1 086 физических Link относятся к **сумме по 12 отдельно перестроенным двухдокументным базам**, а не к величине одной глобальной асети из всех 60 книг. Не приписывать этому результату семантическое обучение, production readiness или реальный процент компрессии на целых книгах.

@@ -127,7 +127,14 @@ Deterministic structural result from the implementation:
 
 Thus the incremental implementation examines/updates a much smaller **adjacency position set** on this workload. This is not yet a claim of lower physical Link count, lower SQLite bytes, semantic improvement, or guaranteed wall-time/memory improvement.
 
-Exact CI timing and heap observations are recorded from the PR run rather than treated as stable constants.
+PR Node24 CI #38429512558 observed on this exact workload:
+
+- full-rescan oracle elapsed: **102.314 ms**;
+- incremental elapsed: **38.781 ms**;
+- incremental sampled peak Node `heapUsed`: **64,661,648 bytes**;
+- start/end heap deltas were negative for both algorithms because garbage collection occurred during the process, so those deltas are not interpretable as allocation savings.
+
+The wall-time observation is positive for this runner but is **not generalized** into a guaranteed speedup. The deterministic claim is the adjacency-work reduction (0.063372 ratio) plus exact differential equivalence.
 
 ## Scope after C
 

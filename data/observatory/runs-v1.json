@@ -340,5 +340,128 @@
         }
       ]
     }
-  ]
+  ],
+  "runHistory": [
+    {
+      "experiment": "B0",
+      "kind": "CI",
+      "runId": 38323249637,
+      "head": "e6dc48e1a661f764bc7330117c0267162ee769cc",
+      "status": "PASS",
+      "testsPassed": 157,
+      "testsTotal": 157,
+      "observedAt": "2026-10-12T23:39:18Z",
+      "note": "Первый научный нулевой baseline B0: равенство raw и Link",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38323249637"
+    },
+    {
+      "experiment": "B1",
+      "kind": "CI",
+      "runId": 38324698580,
+      "head": "ebe0bc63e5229a8b0ceaa08fcf1e1d195e858b2b",
+      "status": "PASS",
+      "testsPassed": 158,
+      "testsTotal": 158,
+      "observedAt": "2026-10-12T23:56:15Z",
+      "note": "Первый продуктивный тест: пять скрытых сочетаний",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38324698580"
+    },
+    {
+      "experiment": "B1",
+      "kind": "CI",
+      "runId": 38324831570,
+      "head": "74667e9cb8986e7f16203c69a8df74cf1d4d7674",
+      "status": "PASS",
+      "testsPassed": 159,
+      "testsTotal": 159,
+      "observedAt": "2026-10-12T23:57:50Z",
+      "note": "Добавлен отрицательный тест склеенного потока",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38324831570"
+    },
+    {
+      "experiment": "B1",
+      "kind": "CI",
+      "runId": 38325370122,
+      "head": "d565cdf2d4988817ffc9578a527057e8efeeaf4d",
+      "status": "PASS",
+      "testsPassed": 160,
+      "testsTotal": 160,
+      "observedAt": "2026-10-13T00:04:06Z",
+      "note": "Добавлен проверяемый человекочитаемый отчёт",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325370122"
+    },
+    {
+      "experiment": "B1",
+      "kind": "GUARD",
+      "runId": 38325370129,
+      "head": "d565cdf2d4988817ffc9578a527057e8efeeaf4d",
+      "status": "FAIL",
+      "testsPassed": null,
+      "testsTotal": null,
+      "observedAt": "2026-10-13T00:04:07Z",
+      "note": "Ограничения ChangeIntent: превышены число новых файлов/документов и строки; затем уточнены фактические бюджеты PR",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325370129"
+    },
+    {
+      "experiment": "B0",
+      "kind": "GUARD",
+      "runId": 38325526140,
+      "head": "57319ac24856aa996f11a1cab18b1e6eaee1d41f",
+      "status": "FAIL",
+      "testsPassed": null,
+      "testsTotal": null,
+      "observedAt": "2026-10-13T00:05:00Z",
+      "note": "Установлен превышенный предел числа файлов в старом ChangeIntent PR; позднее бюджеты уточнены",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325526140"
+    },
+    {
+      "experiment": "B0",
+      "kind": "CI",
+      "runId": 38325526135,
+      "head": "57319ac24856aa996f11a1cab18b1e6eaee1d41f",
+      "status": "PASS",
+      "testsPassed": 158,
+      "testsTotal": 158,
+      "observedAt": "2026-10-13T00:06:00Z",
+      "note": "Исправлен синтаксис визуального отчёта B0, четыре фразы и шесть контрастов",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325526135"
+    },
+    {
+      "experiment": "B0",
+      "kind": "CI",
+      "runId": 38325596646,
+      "head": "210a547cdaa64915c4229605df5d4360f09431b3",
+      "status": "PASS",
+      "testsPassed": 158,
+      "testsTotal": 158,
+      "observedAt": "2026-10-13T00:06:47Z",
+      "note": "Проверка точного совпадения Markdown с фактическим выводом B0",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38325596646"
+    },
+    {
+      "experiment": "UI",
+      "kind": "CI",
+      "runId": 38326431901,
+      "head": "f5e62fbc402789fa0beccc9fbfab6f55302f76f9",
+      "status": "PASS",
+      "testsPassed": 157,
+      "testsTotal": 157,
+      "observedAt": "2026-10-13T00:16:45Z",
+      "note": "Первый автономный HTML, генератор и контроль снимка",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38326431901"
+    },
+    {
+      "experiment": "UI",
+      "kind": "CI",
+      "runId": 38326518133,
+      "head": "31f6a0536c76dcd71e7dc5ac3c25f72fe50ee83b",
+      "status": "PASS",
+      "testsPassed": 158,
+      "testsTotal": 158,
+      "observedAt": "2026-10-13T00:17:52Z",
+      "note": "Исполнение JavaScript четырёх разделов, тесты защиты и воспроизводимости",
+      "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38326518133"
+    }
+  ],
+  "historyDisclosure": "The 10 listed checks are a selected, verified sequence; NOT complete CI history; successful and failed checks both shown. Test counts are global suite sizes on different commits and do not prove model improvement."
 }

@@ -13,21 +13,54 @@ const pack=JSON.parse(readFileSync(new URL('./fixtures/w19-s0-definitions-v0.jso
 const byId=id=>fixture.examples.find(x=>x.id===id);
 const core=r=>({status:r.status,candidates:r.candidates.map(x=>x.relation)});
 const sorted=x=>JSON.stringify(x,Object.keys(x).sort());
+const spanKey=span=>span.startUtf8+':'+span.endUtf8+':'+span.surface;
+function assertWholeObservedTokenSpan(example,label,span){
+  const bytes=Buffer.from(example.text,'utf8'),tokens=exactUnicodeTokens(example.text);
+  assert.ok(Number.isSafeInteger(span.startUtf8)&&Number.isSafeInteger(span.endUtf8),
+    example.id+' '+label+' integer UTF-8 boundaries');
+  assert.ok(span.startUtf8>=0&&span.endUtf8>span.startUtf8&&span.endUtf8<=bytes.length,
+    example.id+' '+label+' valid UTF-8 interval');
+  assert.equal(bytes.subarray(span.startUtf8,span.endUtf8).toString('utf8'),span.surface,
+    example.id+' '+label+' exact source bytes');
 
-test('W19-S0 fixture is 28 provisional cases with exact UTF-8 annotation spans',()=>{
+  const first=tokens.findIndex(t=>t.startUtf8===span.startUtf8);
+  assert.notEqual(first,-1,example.id+' '+label+' must start on observed token boundary');
+  let last=-1;
+  for(let i=first;i<tokens.length;i++)if(tokens[i].endUtf8===span.endUtf8){last=i;break;}
+  assert.notEqual(last,-1,example.id+' '+label+' must end on observed token boundary');
+
+  const covered=tokens.slice(first,last+1);
+  assert.ok(covered.length>=1,example.id+' '+label+' must cover observed token(s)');
+  const overlapping=tokens.filter(t=>t.endUtf8>span.startUtf8&&t.startUtf8<span.endUtf8);
+  assert.deepEqual(overlapping,covered,example.id+' '+label+' may not cut through another token');
+  assert.equal(covered[0].startUtf8,span.startUtf8);
+  assert.equal(covered.at(-1).endUtf8,span.endUtf8);
+  return covered;
+}
+
+test('W19-S0 all 111 provisional spans cover whole observed token intervals',()=>{
   assert.equal(fixture.examples.length,28);
   assert.equal(fixture.status,'SYNTHETIC_PROVISIONAL_NOT_INDEPENDENT_GOLD');
   assert.equal(fixture.metricPolicy.semanticPrecisionRecallAccuracy,'NOT_SCORED_UNTIL_INDEPENDENT_GOLD');
-  const ids=new Set();
+  assert.deepEqual(fixture.corrigenda,[{
+    id:'W19-S0-CORRIGENDUM-001',date:'2026-10-13',caseId:'S09',
+    field:'provisional.spans.temporal',
+    reason:"Previous byte range selected the first two letters of 'документ' instead of the standalone token 'до'. Independent PR #112 review found the defect.",
+    priorCorpusSha256:'bb3e4229e560032ecfbaed4694e40d4d335d123a3b69fb12bdf6b43eef43de27',
+    priorPrHead:'591aa567cb8d124c39db539f8f8107987e01693e',
+    previousSpan:{surface:'до',startUtf8:34,endUtf8:38},
+    correctedSpan:{surface:'до',startUtf8:51,endUtf8:55}
+  }]);
+  const ids=new Set();let spanCount=0;
   for(const e of fixture.examples){
     assert.ok(!ids.has(e.id));ids.add(e.id);
     assert.equal(e.provisional.review,'PROVISIONAL_AI_AUTHORED_NOT_INDEPENDENT_GOLD');
     assert.equal(e.provenance.independentHumanReview,'NOT_PERFORMED');
-    const bytes=Buffer.from(e.text,'utf8');
-    for(const span of Object.values(e.provisional.spans)){
-      assert.equal(bytes.subarray(span.startUtf8,span.endUtf8).toString('utf8'),span.surface,e.id);
+    for(const [label,span] of Object.entries(e.provisional.spans)){
+      assertWholeObservedTokenSpan(e,label,span);spanCount++;
     }
   }
+  assert.equal(spanCount,111,'independent review scope must remain 111 provisional spans');
 });
 
 test('W19-S0 engine contains no Cyrillic grammar or lexical shortcuts',()=>{
@@ -63,6 +96,23 @@ test('Mode B Link definitions equal flat-template baseline and provisional fixtu
       assert.deepEqual(c.B.link.candidates[0].relation,e.provisional.relation,c.id);
     }
   }
+});
+
+test('all PROPOSED matcher evidence spans agree with declared provisional source spans',()=>{
+  const prepared=prepareLinkDefinitionPack(pack);let matcherSpanCount=0;
+  for(const e of fixture.examples.filter(x=>x.provisional.status==='PROPOSED')){
+    const actual=interpretLink(e.text,{contextId:e.contextId??null,prepared});
+    assert.equal(actual.status,'PROPOSED',e.id);
+    assert.equal(actual.candidates.length,1,e.id);
+    const declared=new Set(Object.values(e.provisional.spans).map(spanKey));
+    for(const [slot,span] of Object.entries(actual.candidates[0].evidence.spans)){
+      assertWholeObservedTokenSpan(e,'matcher:'+slot,span);
+      assert.ok(declared.has(spanKey(span)),
+        e.id+' matcher span '+slot+' must equal one declared provisional source span');
+      matcherSpanCount++;
+    }
+  }
+  assert.ok(matcherSpanCount>0);
 });
 
 test('controlled C ablations remove grounds or expose contextual ambiguity honestly',()=>{

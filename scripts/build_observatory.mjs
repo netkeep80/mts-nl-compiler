@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
-import {fileURLToPath} from 'node:url';
+import {pathToFileURL} from 'node:url';
 
 const sourceURL=new URL('../data/observatory/runs-v1.json',import.meta.url);
 const templateURL=new URL('../src/observatory-template.html',import.meta.url);
@@ -80,13 +80,11 @@ export function renderObservatory(data,htmlTemplate){
  return html;
 }
 
-const isDirectRun=process.argv[1]&&fileURLToPath(import.meta.url)===fileURLToPath(new URL('file://'+
-  (process.platform==='win32'&&process.argv[1].match(/^[A-Za-z]:/)?'/':'')+process.argv[1]));
+const isDirectRun=Boolean(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url);
 if(isDirectRun){
  const data=JSON.parse(readFileSync(sourceURL,'utf8'));
  const template=readFileSync(templateURL,'utf8');
  const html=renderObservatory(data,template);
- const path=fileURLToPath(outputURL);
  if(process.argv.includes('--check')){
   assert.equal(readFileSync(outputURL,'utf8'),html,'docs/observatory/index.html stale: run node scripts/build_observatory.mjs');
  }else{

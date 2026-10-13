@@ -1,0 +1,649 @@
+{
+  "schema": "mts-nl/W19S0/definition-pack/v0",
+  "status": "RESEARCH_PROVISIONAL_NOT_ACCEPTED_SEMANTICS",
+  "provenance": {
+    "authoring": "AI-prepared for W19-S0; requires independent human review",
+    "authority": "research fixture only",
+    "language": "ru",
+    "ruleModel": "declarative exact-token definitions; no morphology or hidden Russian grammar"
+  },
+  "tokenizer": {
+    "kind": "unicode-letter-mark-number-runs-plus-single-nonspace-symbols",
+    "caseFolding": false,
+    "morphology": false,
+    "whitespace": "separator only; exact source bytes retained separately"
+  },
+  "lexemes": [
+    {
+      "id": "lx.system.nom.upper",
+      "surface": [
+        "Система"
+      ],
+      "kind": "ENTITY",
+      "concept": "SYSTEM"
+    },
+    {
+      "id": "lx.system.nom.lower",
+      "surface": [
+        "система"
+      ],
+      "kind": "ENTITY",
+      "concept": "SYSTEM"
+    },
+    {
+      "id": "lx.system.dat",
+      "surface": [
+        "Системе"
+      ],
+      "kind": "ENTITY",
+      "concept": "SYSTEM"
+    },
+    {
+      "id": "lx.operator.nom",
+      "surface": [
+        "Оператор"
+      ],
+      "kind": "ENTITY",
+      "concept": "OPERATOR"
+    },
+    {
+      "id": "lx.operator.acc",
+      "surface": [
+        "оператор"
+      ],
+      "kind": "ENTITY",
+      "concept": "OPERATOR"
+    },
+    {
+      "id": "lx.document.nom.upper",
+      "surface": [
+        "Документ"
+      ],
+      "kind": "ENTITY",
+      "concept": "DOCUMENT"
+    },
+    {
+      "id": "lx.document.nom.lower",
+      "surface": [
+        "документ"
+      ],
+      "kind": "ENTITY",
+      "concept": "DOCUMENT"
+    },
+    {
+      "id": "lx.request.nom",
+      "surface": [
+        "запрос"
+      ],
+      "kind": "ENTITY",
+      "concept": "REQUEST"
+    },
+    {
+      "id": "lx.record.acc",
+      "surface": [
+        "запись"
+      ],
+      "kind": "ENTITY",
+      "concept": "RECORD"
+    },
+    {
+      "id": "lx.log.acc",
+      "surface": [
+        "журнал"
+      ],
+      "kind": "ENTITY",
+      "concept": "LOG"
+    },
+    {
+      "id": "lx.signature.nom",
+      "surface": [
+        "подпись"
+      ],
+      "kind": "ENTITY",
+      "concept": "SIGNATURE"
+    },
+    {
+      "id": "lx.key.security",
+      "surface": [
+        "ключ"
+      ],
+      "kind": "ENTITY",
+      "concept": "CRYPTO_KEY",
+      "contexts": [
+        "security"
+      ]
+    },
+    {
+      "id": "lx.key.database",
+      "surface": [
+        "ключ"
+      ],
+      "kind": "ENTITY",
+      "concept": "DATABASE_KEY",
+      "contexts": [
+        "database"
+      ]
+    },
+    {
+      "id": "lx.bank.finance",
+      "surface": [
+        "банк"
+      ],
+      "kind": "ENTITY",
+      "concept": "FINANCIAL_BANK",
+      "contexts": [
+        "finance"
+      ]
+    },
+    {
+      "id": "lx.bank.geo",
+      "surface": [
+        "банк"
+      ],
+      "kind": "ENTITY",
+      "concept": "RIVER_BANK",
+      "contexts": [
+        "geography"
+      ]
+    },
+    {
+      "id": "lx.must.f",
+      "surface": [
+        "должна"
+      ],
+      "kind": "MODAL",
+      "concept": "MUST"
+    },
+    {
+      "id": "lx.must.m",
+      "surface": [
+        "должен"
+      ],
+      "kind": "MODAL",
+      "concept": "MUST"
+    },
+    {
+      "id": "lx.may",
+      "surface": [
+        "может"
+      ],
+      "kind": "MODAL",
+      "concept": "MAY"
+    },
+    {
+      "id": "lx.prohibited",
+      "surface": [
+        "запрещено"
+      ],
+      "kind": "MODAL",
+      "concept": "PROHIBITED"
+    },
+    {
+      "id": "lx.save.inf",
+      "surface": [
+        "сохранить"
+      ],
+      "kind": "ACTION",
+      "concept": "SAVE"
+    },
+    {
+      "id": "lx.save.pres",
+      "surface": [
+        "сохраняет"
+      ],
+      "kind": "ACTION",
+      "concept": "SAVE"
+    },
+    {
+      "id": "lx.cancel.pass",
+      "surface": [
+        "отменён"
+      ],
+      "kind": "ACTION",
+      "concept": "CANCEL"
+    },
+    {
+      "id": "lx.accept.pass",
+      "surface": [
+        "принимается"
+      ],
+      "kind": "ACTION",
+      "concept": "ACCEPT"
+    },
+    {
+      "id": "lx.reject.pass",
+      "surface": [
+        "отклоняется"
+      ],
+      "kind": "ACTION",
+      "concept": "REJECT"
+    },
+    {
+      "id": "lx.delete.inf",
+      "surface": [
+        "удалить"
+      ],
+      "kind": "ACTION",
+      "concept": "DELETE"
+    },
+    {
+      "id": "lx.delete.impf",
+      "surface": [
+        "удалять"
+      ],
+      "kind": "ACTION",
+      "concept": "DELETE"
+    },
+    {
+      "id": "lx.open.inf",
+      "surface": [
+        "открыть"
+      ],
+      "kind": "ACTION",
+      "concept": "OPEN"
+    },
+    {
+      "id": "lx.neg.upper",
+      "surface": [
+        "Не"
+      ],
+      "kind": "NEGATION",
+      "concept": "NOT"
+    },
+    {
+      "id": "lx.neg.lower",
+      "surface": [
+        "не"
+      ],
+      "kind": "NEGATION",
+      "concept": "NOT"
+    },
+    {
+      "id": "lx.every",
+      "surface": [
+        "Каждый"
+      ],
+      "kind": "QUANTIFIER",
+      "concept": "EVERY"
+    },
+    {
+      "id": "lx.aux.be",
+      "surface": [
+        "быть"
+      ],
+      "kind": "AUX",
+      "concept": "BE"
+    },
+    {
+      "id": "lx.after",
+      "surface": [
+        "после"
+      ],
+      "kind": "TEMPORAL",
+      "concept": "AFTER"
+    },
+    {
+      "id": "lx.before",
+      "surface": [
+        "до"
+      ],
+      "kind": "TEMPORAL",
+      "concept": "BEFORE"
+    },
+    {
+      "id": "lx.check.gen",
+      "surface": [
+        "проверки"
+      ],
+      "kind": "EVENT",
+      "concept": "CHECK"
+    },
+    {
+      "id": "lx.valid",
+      "surface": [
+        "действительна"
+      ],
+      "kind": "PREDICATE",
+      "concept": "VALID"
+    },
+    {
+      "id": "lx.invalid",
+      "surface": [
+        "недействительна"
+      ],
+      "kind": "PREDICATE",
+      "concept": "INVALID"
+    },
+    {
+      "id": "lx.if",
+      "surface": [
+        "Если"
+      ],
+      "kind": "CONNECTIVE_IF",
+      "concept": "IF"
+    },
+    {
+      "id": "lx.only_if",
+      "surface": [
+        "только",
+        "если"
+      ],
+      "kind": "CONNECTIVE_ONLY_IF",
+      "concept": "ONLY_IF"
+    },
+    {
+      "id": "lx.comma",
+      "surface": [
+        ","
+      ],
+      "kind": "PUNCT_COMMA",
+      "concept": "COMMA"
+    },
+    {
+      "id": "lx.period",
+      "surface": [
+        "."
+      ],
+      "kind": "PUNCT_END",
+      "concept": "PERIOD"
+    }
+  ],
+  "templates": [
+    {
+      "id": "tpl.requirement",
+      "pattern": [
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "MODAL",
+          "slot": "modal"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "object"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "ACTION_REQUIREMENT",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "object": "$object.concept",
+        "modality": "$modal.concept",
+        "polarity": "POSITIVE"
+      }
+    },
+    {
+      "id": "tpl.requirement.negated_modal",
+      "pattern": [
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "NEGATION",
+          "slot": "neg"
+        },
+        {
+          "kind": "MODAL",
+          "slot": "modal"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "object"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "ACTION_REQUIREMENT",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "object": "$object.concept",
+        "modality": "$modal.concept",
+        "polarity": "NEGATED",
+        "negationScope": "MODAL_ACTION"
+      }
+    },
+    {
+      "id": "tpl.quantified.passive",
+      "pattern": [
+        {
+          "kind": "QUANTIFIER",
+          "slot": "quantifier"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "MODAL",
+          "slot": "modal"
+        },
+        {
+          "kind": "AUX"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "QUANTIFIED_ACTION",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "modality": "$modal.concept",
+        "quantifier": "$quantifier.concept",
+        "polarity": "POSITIVE",
+        "voice": "PASSIVE"
+      }
+    },
+    {
+      "id": "tpl.quantified.negated_quantifier",
+      "pattern": [
+        {
+          "kind": "NEGATION",
+          "slot": "neg"
+        },
+        {
+          "kind": "QUANTIFIER",
+          "slot": "quantifier"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "MODAL",
+          "slot": "modal"
+        },
+        {
+          "kind": "AUX"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "QUANTIFIED_ACTION",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "modality": "$modal.concept",
+        "quantifier": "$quantifier.concept",
+        "polarity": "NEGATED",
+        "negationScope": "QUANTIFIER",
+        "quantifierNegated": true,
+        "voice": "PASSIVE"
+      }
+    },
+    {
+      "id": "tpl.quantified.negated_modality",
+      "pattern": [
+        {
+          "kind": "QUANTIFIER",
+          "slot": "quantifier"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "NEGATION",
+          "slot": "neg"
+        },
+        {
+          "kind": "MODAL",
+          "slot": "modal"
+        },
+        {
+          "kind": "AUX"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "QUANTIFIED_ACTION",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "modality": "$modal.concept",
+        "quantifier": "$quantifier.concept",
+        "polarity": "NEGATED",
+        "negationScope": "MODALITY",
+        "modalityNegated": true,
+        "voice": "PASSIVE"
+      }
+    },
+    {
+      "id": "tpl.temporal",
+      "pattern": [
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "object"
+        },
+        {
+          "kind": "TEMPORAL",
+          "slot": "temporal"
+        },
+        {
+          "kind": "EVENT",
+          "slot": "event"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "TEMPORAL_ACTION",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "object": "$object.concept",
+        "temporal": "$temporal.concept",
+        "event": "$event.concept"
+      }
+    },
+    {
+      "id": "tpl.if_then",
+      "pattern": [
+        {
+          "kind": "CONNECTIVE_IF"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "conditionSubject"
+        },
+        {
+          "kind": "PREDICATE",
+          "slot": "conditionPredicate"
+        },
+        {
+          "kind": "PUNCT_COMMA"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "consequentSubject"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "consequentAction"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "CONDITION_SUFFICIENT_FOR_ACTION",
+        "conditionSubject": "$conditionSubject.concept",
+        "conditionPredicate": "$conditionPredicate.concept",
+        "consequentSubject": "$consequentSubject.concept",
+        "consequentAction": "$consequentAction.concept"
+      }
+    },
+    {
+      "id": "tpl.only_if",
+      "pattern": [
+        {
+          "kind": "ENTITY",
+          "slot": "subject"
+        },
+        {
+          "kind": "ACTION",
+          "slot": "action"
+        },
+        {
+          "kind": "CONNECTIVE_ONLY_IF"
+        },
+        {
+          "kind": "ENTITY",
+          "slot": "conditionSubject"
+        },
+        {
+          "kind": "PREDICATE",
+          "slot": "conditionPredicate"
+        },
+        {
+          "kind": "PUNCT_END"
+        }
+      ],
+      "emit": {
+        "relation": "ACTION_REQUIRES_CONDITION",
+        "subject": "$subject.concept",
+        "action": "$action.concept",
+        "conditionSubject": "$conditionSubject.concept",
+        "conditionPredicate": "$conditionPredicate.concept"
+      }
+    }
+  ]
+}

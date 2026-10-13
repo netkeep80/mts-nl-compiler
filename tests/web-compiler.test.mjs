@@ -100,7 +100,7 @@ test('W21: learned structures are not general-language predictions and cannot re
  const r=compileText('система должна проверять запись. система должна проверять запись.');
  assert.ok(r.learnedRules.length>0);
  assert.equal(r.status,'EXACT_REPLAY_PASS');
- assert.ok(r.scientificWarning.includes('not independent'));
+ assert.ok(r.scientificWarning.includes('in-sample pair discovery is not'));
  // Comparing physical storage capacity to scalar count is forbidden:
  // only raw source byte count and structural unique pair count are reported.
  assert.equal(r.metrics.sqliteBytes,undefined);
@@ -145,7 +145,7 @@ test('W21: UI executes real engine in isolated fake DOM, including hostile liter
  get('mode').value='repair';get('maxRules').value='48';
  get('minOccurrences').value='2';get('maxRuleCodepoints').value='64';
  const fakeDoc={getElementById:get,createElement:t=>new FakeElement(t)};
- const context=createContext({document:fakeDoc,console,TextEncoder,performance:{now:()=>123},
+ const context=createContext({document:fakeDoc,console,TextEncoder,compileText,compareModes,performance:{now:()=>123},
   navigator:{clipboard:{writeText:async()=>{}}}});
  new Script(script,{filename:'app.mjs'}).runInContext(context);
  assert.equal(get('result').hidden,false);

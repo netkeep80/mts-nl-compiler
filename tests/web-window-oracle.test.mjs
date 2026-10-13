@@ -136,7 +136,7 @@ test('W22: browser window front updates width, slider and visible grounded optim
  get('source').value='мама';
  handlers.get('source:input')();
  assert.ok(get('window-preview').textContent.includes('мама'));
- assert.equal(get('window-metrics').children[1].children[0].textContent,'2');
+ assert.equal(get('window-metrics').children[2].children[0].textContent,'2');
  get('source').value='�\uD800';
  handlers.get('source:input')();
  assert.equal(get('window-output').hidden,true);

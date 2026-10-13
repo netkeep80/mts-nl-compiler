@@ -463,5 +463,74 @@
       "evidence": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38326518133"
     }
   ],
-  "historyDisclosure": "The 10 listed checks are a selected, verified sequence; NOT complete CI history; successful and failed checks both shown. Test counts are global suite sizes on different commits and do not prove model improvement."
+  "historyDisclosure": "The 10 listed checks are a selected, verified sequence; NOT complete CI history; successful and failed checks both shown. Test counts are global suite sizes on different commits and do not prove model improvement.",
+  "w22d0": {
+    "schema": "mts-nl/w22d0-observatory-summary/v0",
+    "date": "2026-10-13",
+    "status": "MEASURED_PINNED_60_BOOK_PILOT",
+    "authority": "Validated full GitHub Actions on exact source commit; research-level pilot, not a full-corpus regrouping optimization",
+    "sourceRepo": "d0rj/RusLit",
+    "sourceCommit": "4509680428729da225a73a22008133660f92bb7e",
+    "compilerReviewHead": "a9dc70914fc116b9073845430b7d835a232b9757",
+    "mergedMain": "d21db4b493bcde5e9d067ed76d6b09dcc382c30a",
+    "ciRunId": 38385423856,
+    "ciUrl": "https://github.com/netkeep80/mts-nl-compiler/actions/runs/38385423856",
+    "reportUrl": "https://github.com/netkeep80/mts-nl-compiler/blob/main/docs/w22d0_pinned_front_pilot.md",
+    "artifact": "numeric-60-books-sqlite-top1000 / reports/large-corpus-performance.json.w22D0",
+    "sourceBooks": 60,
+    "sourceBytes": 19701816,
+    "trainingBooks": 48,
+    "heldoutBooks": 12,
+    "shapeSelectionTrainSamples": 4,
+    "perBookSampleScalars": 32,
+    "windowOffset": 8,
+    "fullCorpusReferenceOnly": {
+      "balancedLinks": 2747870,
+      "balancedSqliteVacuumBytes": 120221696,
+      "w4Links": 2640382,
+      "w4SqliteVacuumBytes": 114528256,
+      "w4GrammarRules": 96,
+      "w4TrainCoverage": 0.676077,
+      "w4HeldoutCoverage": 0.660408,
+      "sameEventSpaceAsPilot": false
+    },
+    "windows": [
+      {
+        "width": 6,
+        "candidates": 42,
+        "selectedOrdinal": 14,
+        "balancedOrdinal": 19,
+        "baselinePhysicalLinksSummed": 1087,
+        "selectedPhysicalLinksSummed": 1086,
+        "deltaPhysicalLinks": -1,
+        "deltaSqliteVacuumBytes": 0,
+        "improvedDocs": 1,
+        "regressedDocs": 0,
+        "tiedDocs": 11,
+        "trainingTimeMsObserved": 233.544
+      },
+      {
+        "width": 8,
+        "candidates": 429,
+        "selectedOrdinal": 134,
+        "balancedOrdinal": 214,
+        "baselinePhysicalLinksSummed": 1088,
+        "selectedPhysicalLinksSummed": 1088,
+        "deltaPhysicalLinks": 0,
+        "deltaSqliteVacuumBytes": 0,
+        "improvedDocs": 0,
+        "regressedDocs": 0,
+        "tiedDocs": 12,
+        "trainingTimeMsObserved": 2381.4
+      }
+    ],
+    "limitations": [
+      "Every pilot heldout cost is a separately built two-document SQLite database: 32-scalar book snippet plus immutable 32-scalar train-derived context",
+      "Displayed link totals are sums across 12 independent paired SQLite databases, NOT a single 60-book physical graph",
+      "Train selects a single tree shape from 4 of 48 train book snippets; no dictionary transfer or semantic claims",
+      "Exactly 12 heldout snippets evaluated; no heldout tuning; repeated use of now-observed heldout cannot be labeled untouched",
+      "No material SQLite VACUUM byte benefit measured; 6-scalar shape saved one physically stored Link across 12 paired rebuilds",
+      "Times are one Node24 Linux-run observation, not a portable benchmark; full 60-book W4 is a separate reference experiment"
+    ]
+  }
 }

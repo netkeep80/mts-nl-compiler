@@ -116,7 +116,7 @@ Switching the first root to the already-existing candidate yields:
 | deactivated existing rows | **3** |
 | inactive historical rows | **3** |
 
-This is the only zero-row migration case demonstrated here: the required candidate structure was already physically present.
+This is the nontrivial zero-row migration case demonstrated here: unlike the separate no-op control, the target root changes, but the required candidate structure was already physically present.
 
 The same control also separates source and structural counts:
 

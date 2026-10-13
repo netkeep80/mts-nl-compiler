@@ -22,6 +22,8 @@ export const linksPlatformAuditPin=Object.freeze({
  cpp:'cpp/Platform.Data.Doublets.Sequences/Converters/CompressingConverter.h'
 });
 
+// Exact logical predicate from pinned C# UpdateMaxDoublet, represented with the
+// C# precedence made explicit: && binds more tightly than ||.
 export function linksPlatformCSharpUpdateMaxPredicate({
  frequency,maxFrequency,minFrequency=1,source,target,bestSource=0,bestTarget=0
 }){
@@ -87,17 +89,23 @@ export function compressFrequencyReference(documents,{
  const rules=[],trace=[];
  let fullScanAdjacentInspections=0,rankedCandidatesExamined=0;
  for(let round=0;round<maxRounds;round++){
-  const counts=new Map();
+  const counts=new Map(),allCounts=includeTrace?new Map():null;
   for(const seq of sequences)for(let i=0;i+1<seq.length;i++){
    fullScanAdjacentInspections++;
    const leftToken=seq[i],rightToken=seq[i+1];
    const left=terms.get(leftToken),right=terms.get(rightToken);
+   const identity=pairIdKey(leftToken,rightToken),canonical=canonicalPairKey(left,right);
+   if(includeTrace){
+    const all=allCounts.get(identity);
+    if(all)all.frequency++;
+    else allCounts.set(identity,{identity,leftToken,rightToken,frequency:1,canonical,
+     expanded:left.expanded+right.expanded,length:left.length+right.length});
+   }
    if(left.length+right.length>maxExpansionScalars)continue;
-   const identity=pairIdKey(leftToken,rightToken),found=counts.get(identity);
+   const found=counts.get(identity);
    if(found)found.frequency++;
-   else counts.set(identity,{identity,leftToken,rightToken,frequency:1,
-    canonical:canonicalPairKey(left,right),expanded:left.expanded+right.expanded,
-    length:left.length+right.length});
+   else counts.set(identity,{identity,leftToken,rightToken,frequency:1,canonical,
+    expanded:left.expanded+right.expanded,length:left.length+right.length});
   }
   const ranked=[...counts.values()].filter(x=>x.frequency>=minOccurrences)
    .sort((a,b)=>b.frequency-a.frequency||cmp(a.canonical,b.canonical));
@@ -106,7 +114,7 @@ export function compressFrequencyReference(documents,{
    rankedCandidatesExamined++;
    const rewritten=[];let used=0;
    const existingToken=pairs.get(candidate.identity);
-   const replacementToken=existingToken??nextToken;
+   const replacementToken=existingToken??nextToken; // dry-run handle only
    for(const seq of sequences){
     const out=[];
     for(let i=0;i<seq.length;i++){
@@ -120,7 +128,7 @@ export function compressFrequencyReference(documents,{
   }
   const before=includeTrace?{
    round:round+1,sequences:sequences.map(seq=>seq.slice()),
-   pairFrequencies:frequencySnapshot(counts),
+   pairFrequencies:frequencySnapshot(allCounts),
    chosen:chosen?{leftToken:chosen.leftToken,rightToken:chosen.rightToken,
     frequency:chosen.frequency,canonical:chosen.canonical,length:chosen.length,
     expanded:chosen.expanded,nonOverlappingReplacements:replacements}:null
@@ -129,6 +137,7 @@ export function compressFrequencyReference(documents,{
   const plannedReplacement=pairs.get(chosen.identity)??nextToken;
   const made=pair(chosen.leftToken,chosen.rightToken);
   if(made.token!==plannedReplacement)fail('dry-run replacement token disagrees with pair reuse');
+  // The dry-run used either the already existing token or exactly nextToken before creation.
   sequences=nextSequences;
   const rule=Object.freeze({round:round+1,token:made.token,createdAbstractPair:made.created,
    leftToken:chosen.leftToken,rightToken:chosen.rightToken,

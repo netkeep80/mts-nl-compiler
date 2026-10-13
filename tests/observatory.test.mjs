@@ -235,7 +235,7 @@ test('W22-D0 Observatory: a real browser view renders physical Link table and co
  handlers.get('click')({target:{closest:()=>({dataset:{view:'W22'}})}});
  assert.equal(loc.hash,'#W22');
  assert.ok(current.innerHTML.includes('60 настоящих книг'));
- assert.ok(current.innerHTML.includes('1 086'));
+ assert.match(current.innerHTML,/1[\u00a0\u202f ]086/);
  assert.ok(current.innerHTML.includes('42'));
  assert.ok(current.innerHTML.includes('429'));
  assert.ok(current.innerHTML.includes('38385423856'));

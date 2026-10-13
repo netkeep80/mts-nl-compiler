@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
 import {createContext,Script} from 'node:vm';
-import {inspectLocalWindow} from '../docs/compiler/window-oracle.mjs';
+import {inspectLocalWindow,inspectContextualWindow} from '../docs/compiler/window-oracle.mjs';
 import {compileText,scalarsOf} from '../docs/compiler/engine.mjs';
 
 const catalan={2:1,3:2,4:5,5:14,6:42,7:132,8:429};
@@ -102,7 +102,7 @@ test('W22: window inspector is transparent about physical and global limits',()=
 });
 test('W22: browser window front updates width, slider and visible grounded optimal cases',()=>{
  const source=readFileSync(new URL('../docs/compiler/window-ui.mjs',import.meta.url),'utf8')
-  .replace(/^import \{inspectLocalWindow\} from '\.\/window-oracle\.mjs';\n/,'')
+  .replace(/^import \{inspectLocalWindow,inspectContextualWindow\} from '\.\/window-oracle\.mjs';\n/,'')
   .replace(/^import \{scalarsOf\} from '\.\/engine\.mjs';\n/m,'');
  const handlers=new Map();
  class Fake{
@@ -119,11 +119,13 @@ test('W22: browser window front updates width, slider and visible grounded optim
  get('source').value='мама мыла раму. мама мыла раму.';
  get('window-width').value='8';get('window-offset').value='0';
  const document={getElementById:get,createElement(tag){const el=new Fake();el.tag=tag;return el;}};
- new Script(source).runInContext(createContext({document,inspectLocalWindow,scalarsOf,console,performance:{now:()=>123.456}}));
+ new Script(source).runInContext(createContext({document,inspectLocalWindow,inspectContextualWindow,scalarsOf,console,performance:{now:()=>123.456}}));
  assert.equal(get('window-output').hidden,false);
  assert.ok(get('window-metrics').children.length>=6);
  assert.ok(get('window-metrics').children[1].children[1].textContent.includes('Перебор'));
  assert.ok(get('window-ranked').children[0].tag==='table');
+ assert.equal(get('window-context-output').hidden,false);
+ assert.ok(get('window-context-ranked').children[0].tag==='table');
  assert.equal(get('window-offset').value,String([...get('source').value].length-8));
  assert.ok(get('window-position').textContent.includes(' из '));
  assert.equal(get('window-next').disabled,true);

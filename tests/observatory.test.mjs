@@ -1,0 +1,84 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {readFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {renderObservatory,validateEvidence} from '../scripts/build_observatory.mjs';
+
+const input=JSON.parse(readFileSync(new URL('../data/observatory/runs-v1.json',import.meta.url),'utf8'));
+const template=readFileSync(new URL('../src/observatory-template.html',import.meta.url),'utf8');
+const page=readFileSync(new URL('../docs/observatory/index.html',import.meta.url),'utf8');
+const clone=()=>JSON.parse(JSON.stringify(input));
+
+test('W20: committed offline HTML is exactly regenerated from the pinned evidence manifest',()=>{
+ const expected=renderObservatory(input,template);
+ assert.equal(page,expected,'stale dashboard: run node scripts/build_observatory.mjs');
+ const script=fileURLToPath(new URL('../scripts/build_observatory.mjs',import.meta.url));
+ const run=spawnSync(process.execPath,[script,'--check'],{encoding:'utf8',timeout:10000});
+ assert.equal(run.status,0,run.stderr);
+ const result=JSON.parse(run.stdout);
+ assert.equal(result.mode,'CHECK_PASS');
+ assert.deepEqual(result.experiments,['B0','B1']);
+ console.log('OBSERVATORY_BUILD '+JSON.stringify(result));
+});
+test('W20: evidence references and negative outcomes cannot be silently dropped',()=>{
+ validateEvidence(input);
+ assert.deepEqual(input.sources.map(x=>x.pr),[92,93]);
+ assert.equal(input.experiments[0].testsPassed,158);
+ assert.equal(input.experiments[1].testsPassed,160);
+ const b0=input.experiments[0],b1=input.experiments[1];
+ assert.deepEqual(b0.baselines.map(x=>x.order),[0,1,2,3]);
+ assert.equal(b0.population.testEvents,126);
+ assert.equal(b0.contrasts.length,6);
+ assert.ok(b0.contrasts.some(x=>x.status==='ABSTAIN_OOV'));
+ assert.ok(b0.baselines[3].bitsPerScalar>b0.baselines[2].bitsPerScalar);
+ assert.equal(b1.proposals.length,5);
+ assert.equal(b1.linkGraph.total,53);
+ assert.equal(b1.holdoutCells.length,5);
+ assert.ok(b1.controls.some(x=>x.result==='UNKNOWN'));
+ assert.ok(b1.controls.some(x=>x.result==='UNIDENTIFIABLE'));
+});
+test('W20: reader can view every example without a network dependency',()=>{
+ assert.equal((page.match(/<script/g)||[]).length,2);
+ assert.ok(page.includes('<html lang="ru">'));
+ assert.ok(page.includes('data-view="B0"'));
+ assert.ok(page.includes('data-view="B1"'));
+ assert.ok(page.includes('data-view="history"'));
+ assert.ok(page.includes('data-case'));
+ assert.ok(page.includes('case-filter'));
+ assert.ok(page.includes('aria-current'));
+ assert.ok(page.includes('matrix'));
+ assert.ok(page.includes('log loss')||page.includes('log-loss'));
+ assert.ok(!/<script[^>]+src\s*=/i.test(page));
+ assert.ok(!/https?:\/\/(?:cdn\.|fonts\.|unpkg\.|jsdelivr\.)/i.test(page));
+ assert.equal(page.includes('__OBSERVATORY_DATA__'),false);
+});
+test('W20: fail closed for forged/missing evidence or an external source link',()=>{
+ const wrong=clone();
+ wrong.sources[0].head='badsha';
+ assert.throws(()=>validateEvidence(wrong));
+ const url=clone();
+ url.sources[0].ci='https://example.org/evil';
+ assert.throws(()=>validateEvidence(url));
+ const divergent=clone();
+ divergent.experiments[0].testsPassed=157;
+ assert.throws(()=>validateEvidence(divergent));
+ const semantic=clone();
+ semantic.experiments[0].review='ACCEPTED_SEMANTIC';
+ assert.throws(()=>validateEvidence(semantic));
+ const hidden=clone();
+ hidden.experiments[1].proposals.pop();
+ assert.throws(()=>validateEvidence(hidden));
+});
+test('W20: inert JSON embedding cannot break out into an executable HTML script',()=>{
+ const evil=clone();
+ evil.experiments[0].title='</script><img src=x onerror=alert(1)>';
+ const html=renderObservatory(evil,template);
+ assert.equal((html.match(/<script/g)||[]).length,2);
+ assert.ok(!html.includes('<img src=x onerror=alert(1)>'));
+ assert.ok(html.includes('\\u003c/script\\u003e'));
+ const text=html.match(/<script id="observatory-data" type="application\/json">([^]*?)<\/script>/);
+ assert.ok(text);
+ const parsed=JSON.parse(text[1]);
+ assert.equal(parsed.experiments[0].title,evil.experiments[0].title);
+});

@@ -26,7 +26,7 @@ S0 **audit stratum**: 28 pre-exposed synthetic examples; useful for checking err
 
 HOLDOUT **transfer stratum**: 33 newly collected examples with exact text + context fixed in data/w19-g0/holdout.tsv. 30 intentionally constructed positive/negative probes; three short sourced Russian repository statements. Origins, source blob pins and class tags are in origins.tsv, **not** the blind packet. The real-source subset is small and not representative of domain requirements.
 
-For each stratum the annotator receives ONLY the corresponding three-column blind file (case_id, context, text) and this section's **annotation instructions**, not origins, mapping, S0 gold guesses, machine reports or template IDs. A holdout context may be an experimental disambiguator; it is not an automatic answer.
+For each stratum the annotator receives ONLY the corresponding three-column blind file (case_id, context, text) and the standalone docs/w19_g0_annotator_instructions.md. **Do not distribute this audit document to annotators**: it contains S0 machine statuses, audit findings and mapping/provenance references that would break blindness. The annotator must not receive origins, mapping, S0 provisional guesses, machine reports or template IDs. Stage DEFINITIONS access is separately gated until TEXT is locked. A holdout context may be an experimental disambiguator; it is not an automatic answer.
 
 Blind S0 IDs B001..B028 use a frozen permutation, with its correspondence to S0 IDs kept in manifest.txt **outside the annotator distribution**. No human evaluations exist at this checkpoint.
 
@@ -82,7 +82,7 @@ On Node.js 24+ (works with ordinary LF/UTF-8 paths on Linux and Windows):
     node --test tests/w19_g0_validate.test.mjs
     node scripts/w19_g0_validate.mjs --annotations path/to/A1.tsv
 
-An annotation file must not be committed to the shared branch until consent/provenance and blindness are reviewed. Keep the original independently produced artifacts. Verify external S0 file digests against manifest before future G0-B; S0 is in unmerged Draft #112, not in this branch.
+Send only the standalone annotator instructions and the appropriate blind TSV to human raters; the audit protocol stays with the experiment operator. An annotation file must not be committed to the shared branch until consent/provenance and blindness are reviewed. Keep the original independently produced artifacts. Verify external S0 file digests against manifest before future G0-B; S0 is in unmerged Draft #112, not in this branch.
 
 Stage G0-A stops here for real independent annotation. No S0 semantic engine, tokenizer, definitions, accepted MTS, formalism, Γ, policy or workflows changed. G0-B and semantic metrics are NOT_EXECUTED. This PR is research tooling only: MERGED is not SCIENTIFICALLY ACCEPTED. No merge without Author approval.
 

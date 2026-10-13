@@ -150,6 +150,8 @@ test('W23-D: machine report preserves fresh-vs-retained objective separation',()
 
 test('W23-D: fail closed on altered text, bad baselines, duplicate IDs and resource limits',()=>{
  assert.throws(()=>evaluateMarginalPhysicalCost([doc('A','abc')],
+  {targetId:'A',candidateTree:'abc'}),/exactly one Unicode scalar/);
+ assert.throws(()=>evaluateMarginalPhysicalCost([doc('A','abc')],
   {targetId:'A',candidateTree:['a','b']}),/candidate does not exactly replay/);
  assert.throws(()=>evaluateMarginalPhysicalCost([doc('A','abc')],
   {targetId:'A',baselineTrees:{A:['a','b']},candidateTree:balancedPhysicalTree('abc')}),

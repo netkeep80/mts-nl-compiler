@@ -69,6 +69,36 @@ export function validateEvidence(data){
  assert.ok(failCount>=2,'do not cherry-pick a deceptively all-green chronology');
  for(let i=1;i<data.runHistory.length;i++)
   assert.ok(data.runHistory[i-1].observedAt<=data.runHistory[i].observedAt,'history must be chronological');
+ const pilot=data.w22d0;
+ assert.ok(pilot,'real 60-book W22-D0 evidence snapshot required');
+ assert.equal(pilot.schema,'mts-nl/w22d0-observatory-summary/v0');
+ assert.equal(pilot.status,'MEASURED_PINNED_60_BOOK_PILOT');
+ assert.match(pilot.compilerReviewHead,/^[a-f0-9]{40}$/);
+ assert.match(pilot.mergedMain,/^[a-f0-9]{40}$/);
+ assert.match(pilot.sourceCommit,/^[a-f0-9]{40}$/);
+ assert.equal(pilot.sourceRepo,'d0rj/RusLit');
+ assert.equal(pilot.ciUrl,'https://github.com/netkeep80/mts-nl-compiler/actions/runs/'+pilot.ciRunId);
+ assert.equal(pilot.reportUrl,'https://github.com/netkeep80/mts-nl-compiler/blob/main/docs/w22d0_pinned_front_pilot.md');
+ assert.equal(pilot.sourceBooks,60);
+ assert.equal(pilot.trainingBooks,48);
+ assert.equal(pilot.heldoutBooks,12);
+ assert.equal(pilot.perBookSampleScalars,32);
+ assert.equal(pilot.shapeSelectionTrainSamples,4);
+ assert.equal(pilot.windowOffset,8);
+ assert.equal(pilot.fullCorpusReferenceOnly.sameEventSpaceAsPilot,false,
+  'prohibit comparing whole-book baseline with 32-scalar snippet');
+ assert.deepEqual(pilot.windows.map(w=>w.width),[6,8]);
+ assert.deepEqual(pilot.windows.map(w=>w.candidates),[42,429]);
+ assert.ok(Array.isArray(pilot.limitations)&&pilot.limitations.length>=5);
+ for(const x of pilot.windows){
+  assert.equal(x.selectedPhysicalLinksSummed-x.baselinePhysicalLinksSummed,x.deltaPhysicalLinks);
+  assert.equal(x.improvedDocs+x.regressedDocs+x.tiedDocs,pilot.heldoutBooks);
+  assert.ok(Number.isFinite(x.trainingTimeMsObserved)&&x.trainingTimeMsObserved>0);
+  assert.ok(Number.isSafeInteger(x.selectedOrdinal)&&x.selectedOrdinal>=0&&x.selectedOrdinal<x.candidates);
+  assert.equal(x.deltaSqliteVacuumBytes,0);
+ }
+ assert.deepEqual(pilot.windows.map(w=>w.deltaPhysicalLinks),[-1,0],
+  'never exaggerate the very small heldout effect');
  const B0=data.experiments.find(e=>e.id==='B0');
  const B1=data.experiments.find(e=>e.id==='B1');
  if(B0){

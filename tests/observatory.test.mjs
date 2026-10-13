@@ -187,3 +187,58 @@ test('W21: Observatory links directly to published browser Link Compiler',()=>{
  assert.ok(html.includes(nav));
  assert.ok(readFileSync(new URL('../docs/compiler/index.html',import.meta.url),'utf8').includes('id="source"'));
 });
+
+test('W22-D0 Observatory: pinned real 60-book results remain negative/near-null and noncomparable to W4',()=>{
+ const p=input.w22d0;
+ assert.equal(p.status,'MEASURED_PINNED_60_BOOK_PILOT');
+ assert.equal(p.sourceBooks,60);
+ assert.equal(p.sourceBytes,19701816);
+ assert.equal(p.trainingBooks,48);
+ assert.equal(p.heldoutBooks,12);
+ assert.equal(p.shapeSelectionTrainSamples,4);
+ assert.deepEqual(p.windows.map(x=>x.candidates),[42,429]);
+ assert.deepEqual(p.windows.map(x=>x.selectedOrdinal),[14,134]);
+ assert.deepEqual(p.windows.map(x=>x.deltaPhysicalLinks),[-1,0]);
+ assert.deepEqual(p.windows.map(x=>x.deltaSqliteVacuumBytes),[0,0]);
+ assert.equal(p.fullCorpusReferenceOnly.sameEventSpaceAsPilot,false);
+ assert.equal(p.ciUrl,'https://github.com/netkeep80/mts-nl-compiler/actions/runs/38385423856');
+ assert.ok(p.limitations.some(x=>x.includes('12 independent paired SQLite')));
+ assert.ok(page.includes('function w22(){'));
+ assert.ok(page.includes('data-view="W22"'));
+ const falseSavings=clone();falseSavings.w22d0.windows[1].deltaPhysicalLinks=-100;
+ assert.throws(()=>validateEvidence(falseSavings));
+ const falselySame=clone();falselySame.w22d0.fullCorpusReferenceOnly.sameEventSpaceAsPilot=true;
+ assert.throws(()=>validateEvidence(falselySame));
+ const wrongSource=clone();wrongSource.w22d0.sourceCommit='abc';
+ assert.throws(()=>validateEvidence(wrongSource));
+});
+test('W22-D0 Observatory: a real browser view renders physical Link table and correct source evidence',()=>{
+ const scripts=[...page.matchAll(/<script[^>]*>([^]*?)<\/script>/g)];
+ assert.equal(scripts.length,2);
+ const current={innerHTML:''},handlers=new Map();
+ const nav=['overview','B0','B1','W22','history'].map(view=>({
+  dataset:{view},setAttribute(){}
+ }));
+ const doc={
+  getElementById(id){return ({
+   'observatory-data':{textContent:scripts[0][1]},
+   content:current,asof:{textContent:''}
+  })[id]??null;},
+  querySelectorAll(selector){return selector==='.navbtn'?nav:[];},
+  addEventListener(event,callback){handlers.set(event,callback);}
+ };
+ const loc={hash:''};
+ const browser={history:{replaceState(a,b,hash){loc.hash=hash;}},addEventListener(){}};
+ new Script(scripts[1][1]).runInContext(createContext({
+  document:doc,window:browser,location:loc,console
+ }));
+ handlers.get('click')({target:{closest:()=>({dataset:{view:'W22'}})}});
+ assert.equal(loc.hash,'#W22');
+ assert.ok(current.innerHTML.includes('60 настоящих книг'));
+ assert.match(current.innerHTML,/1[\u00a0\u202f ]086/);
+ assert.ok(current.innerHTML.includes('42'));
+ assert.ok(current.innerHTML.includes('429'));
+ assert.ok(current.innerHTML.includes('38385423856'));
+ assert.ok(current.innerHTML.includes('12 независимо'));
+ assert.ok(current.innerHTML.includes('размер'));
+});

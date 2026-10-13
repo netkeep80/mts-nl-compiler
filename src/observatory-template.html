@@ -32,6 +32,7 @@
 <button type="button" class="navbtn" data-view="overview">Обзор</button>
 <button type="button" class="navbtn" data-view="B0">B0 · Предсказания</button>
 <button type="button" class="navbtn" data-view="B1">B1 · Структура</button>
+<button type="button" class="navbtn" data-view="W22">W22 · 60 книг</button>
 <button type="button" class="navbtn" data-view="history">История и источники</button>
 <a class="navbtn" href="../compiler/" aria-label="Открыть интерактивный Link компилятор">↗ Веб-компилятор</a>
 <div class="meta-box">Исследовательские Draft PR.<br>Данные закреплены за SHA.<br>Страница не выполняет обучение.</div>
@@ -61,7 +62,7 @@ const controls=e=>'<div class="stack">'+e.controls.map(c=>'<div><span class="chi
 const top=(title,intro)=>'<p class="eyebrow">Исследовательская панель / Evidence</p><h1 class="h1">'+clean(title)+'</h1><p class="lede">'+clean(intro)+"</p>";
 function overview(){
  const b0=experiments.B0,b1=experiments.B1;
- return top("Наблюдаем результаты, а не только зелёный CI","Снимки реальных выполненных B0/B1 экспериментов. Данные синтетические, источники и версии закреплены; сравнение между разными задачами не является общей метрикой качества.")+
+ return top("Наблюдаем результаты, а не только зелёный CI","Два синтетических эксперимента B0/B1 и отдельно подтверждённый пилот W22-D0 на реальных 60 книгах. Разные задачи и разные объёмы входа никогда не объединяются в одну метрику.")+
  '<div class="topcards">'+stat("2","Эксперимента","B0 и B1 · Draft")+
  stat("318/318","Тестов успешно","158 + 160, разные ветки")+
  stat("6 + 4","Примеры B0","6 контрастов, 4 heldout")+
@@ -72,7 +73,8 @@ function overview(){
  '<p class="muted small">'+clean(b0.limitation)+'</p><button class="action" type="button" data-view="B0">Открыть фразы и ошибки →</button>')+
  panel("B1 · Продуктивная структура",'<span class="ribbon">P2 · структуры</span><p>'+clean(b1.lead)+'</p>'+bar("recall",100,100,"%","")+
  '<p class="muted small">'+clean(b1.limitation)+'</p><button class="action" type="button" data-view="B1">Открыть Link-матрицу →</button>')+
- '</div>'+panel("Научные ограничения",controls(b0)+"<div class='sep'></div>"+controls(b1))+
+ '</div>'+panel("W22-D0 · настоящий корпус 60 книг",'<span class="ribbon grey">Проверено на pinned RusLit</span><p><strong>Окно 6: −1 Link, окно 8: 0 Link</strong> на одинаковых фрагментах 12 heldout книг. Физического сокращения SQLite в байтах нет. Это не показатель экономии на всех 60 книгах.</p><button type="button" class="action" data-view="W22">Открыть результаты 60 книг →</button>')+
+ panel("Научные ограничения",controls(b0)+"<div class='sep'></div>"+controls(b1))+
  '<p class="small muted">Результаты зафиксированы на конкретных SHA; страница не обращается к GitHub API и не показывает статус CI в реальном времени.</p>';
 }
 function b0(){
@@ -124,6 +126,42 @@ function b1(){
  panel("Отрицательные тесты",controls(e))+'</div>'+
  '<div class="annotation warn">Нельзя сравнивать ранг 12–15 с log₂-score n-грамм как вероятности. Перенос в непрерывную речь и смысловая правильность не доказаны.</div>'+srcLinks("B1");
 }
+function w22(){
+ const e=db.w22d0;
+ const report='<div class="links">'+url(e.reportUrl,"Научный отчёт W22-D0")+
+  url(e.ciUrl,"Полная CI-сборка 60 книг")+
+  url("https://github.com/netkeep80/mts-nl-compiler/issues/104","Issue #104")+'</div>';
+ const rows=e.windows.map(x=>'<tr><td>'+x.width+'</td><td class="num">'+n(x.candidates)+'</td>'+
+  '<td class="num">'+x.selectedOrdinal+'</td><td class="num">'+n(x.baselinePhysicalLinksSummed)+'</td>'+
+  '<td class="num">'+n(x.selectedPhysicalLinksSummed)+'</td>'+
+  '<td class="num"><strong>'+n(x.deltaPhysicalLinks)+'</strong></td>'+
+  '<td>'+x.improvedDocs+' / '+x.regressedDocs+' / '+x.tiedDocs+'</td>'+
+  '<td class="num">'+n(x.deltaSqliteVacuumBytes)+'</td>'+
+  '<td class="num">'+n(x.trainingTimeMsObserved)+' мс</td></tr>').join("");
+ const table='<div class="tablewrap"><table><thead><tr><th>Ширина</th><th>Деревьев</th>'+
+  '<th>Выбранный ordinal</th><th>Balanced Link</th><th>Выбранный Link</th>'+
+  '<th>Δ Link</th><th>Лучше / хуже / равно</th><th>Δ SQLite байт</th><th>Поиск формы</th>'+
+  '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+ const f=e.fullCorpusReferenceOnly;
+ return top("W22-D0 · 60 настоящих книг","Результат независимого пилота с точным исходным Git-коммитом: не успех любой ценой, а измеренная почти нулевая выгода группировки.")+
+ '<div class="topcards">'+stat("60","Книг","19 701 816 исходных байт")+
+ stat("48 / 12","Train / heldout","Выбор формы на 4 train")+
+ stat("−1 / 0","Δ Link","Окно 6 / окно 8")+
+ stat("0 байт","Δ VACUUM","Для обоих размеров окна")+'</div>'+
+ '<div class="annotation warn"><strong>Что именно измерено:</strong> 12 отдельных опытов. Каждый содержит два 32-скалярных фрагмента: отложенная книга и фиксированный учебный контекст. Количество Link в таблице — <strong>сумма по 12 независимо построенным SQLite-базам</strong>, а не число Link во всей базе 60 книг.</div>'+
+ panel("Контроль на отложенных книгах",table+
+  '<p class="small muted">Δ = Link выбранного дерева − Link balanced, отрицательное — экономия. Замена бинарной формы зафиксирована до просмотра 12 heldout. Время — одно наблюдение Linux Node24, не переносимый benchmark.</p>')+
+ panel("Полнокорпусные ориентиры — другая задача",
+  '<p class="small muted">Оригинальная сборка всех 60 книг, показана для масштаба отдельно: эти значения нельзя сравнивать напрямую с маленькими 32-скалярными опытами.</p>'+
+  '<div class="tablewrap"><table><thead><tr><th>Отдельная модель</th><th>Физических Link</th><th>SQLite VACUUM</th></tr></thead><tbody>'+
+  '<tr><td>Balanced, все 60 книг</td><td class="num">'+n(f.balancedLinks)+'</td><td class="num">'+n(f.balancedSqliteVacuumBytes)+' байт</td></tr>'+
+  '<tr><td>W4 Re-Pair, все 60 книг</td><td class="num">'+n(f.w4Links)+'</td><td class="num">'+n(f.w4SqliteVacuumBytes)+' байт</td></tr></tbody></table></div>')+
+ panel("Доказательства и ограничения",
+  '<p>Исходный корпус: <strong>'+clean(e.sourceRepo)+'</strong>, SHA '+clean(e.sourceCommit)+
+  '. Отчёт содержит 12 независимых проверочных книг, полный холодный replay и физические Link ID SQLite, а не hash IDs.</p>'+report+
+  '<div class="stack">'+e.limitations.map(x=>'<div class="small muted">• '+clean(x)+'</div>').join("")+'</div>')+
+ '<div class="annotation">Вывод: перебор 429 разложений формы окна сам по себе не дал измеримой экономии Link на heldout. Следующий эксперимент должен учитывать фактически существующий общий словарь Link, историю и предельную стоимость вставки.</div>';
+}
 function ledgerRows(filter){
  const entries=db.runHistory.filter(x=>filter==="all"||(filter==="FAIL"?x.status==="FAIL":x.kind===filter));
  if(!entries.length)return '<tr><td colspan="6">Записи по выбранному фильтру отсутствуют.</td></tr>';
@@ -153,15 +191,15 @@ function history(){
  '<div class="small"><span class="ribbon grey">Draft / не принято</span> · '+e.testsPassed+'/'+e.testsTotal+' tests PASS</div>'+
  '<p class="mono small">Head: '+clean(source[e.id].head)+'</p><p class="mono small">Fixture SHA256: '+clean(source[e.id].fixtureSha256)+'</p></div></section>').join("")+
  panel("Модель обновления",'<p>Добавление эксперимента производится через <code>data/observatory/runs-v1.json</code>. Генератор формирует полностью автономный <code>docs/observatory/index.html</code>; тесты сравнивают его байт-в-байт с исходными данными.</p>'+
- '<p>Данные являются вручную закреплёнными проверенными снимками исходных отчётов. Автоматический импорт из CI и публичный GitHub Pages пока не включены.</p>')+
- '<div class="annotation warn">Следующий обязательный научный шаг — независимый набор реальных требований и честная проверка B2 на непрерывном потоке; красивые графики не заменяют доказательства.</div>';
+ '<p>Данные являются вручную закреплёнными проверенными снимками исходных отчётов. GitHub Pages опубликован из main/docs; автоматический импорт новых результатов CI пока не включён.</p>')+
+ '<div class="annotation warn">Следующая научная задача — явная предельная стоимость Link в существующей асети и независимые тексты требований. Красивые графики не заменяют точного холодного replay и честного heldout.</div>';
 }
 function navigate(view){
- if(!["overview","B0","B1","history"].includes(view))view="overview";
+ if(!["overview","B0","B1","W22","history"].includes(view))view="overview";
  for(const b of document.querySelectorAll(".navbtn"))b.setAttribute("aria-current",b.dataset.view===view?"page":"false");
- target.innerHTML=view==="B0"?b0():view==="B1"?b1():view==="history"?history():overview();
+ target.innerHTML=view==="B0"?b0():view==="B1"?b1():view==="W22"?w22():view==="history"?history():overview();
  if(view==="B0")detailB0(0);
- document.title="MTS NL — "+({overview:"Обзор",B0:"Предсказания",B1:"Структура",history:"История"}[view]);
+ document.title="MTS NL — "+({overview:"Обзор",B0:"Предсказания",B1:"Структура",W22:"60 книг",history:"История"}[view]);
  if(location.hash!=="#"+view)window.history.replaceState(null,"","#"+view);
 }
 document.addEventListener("click",e=>{

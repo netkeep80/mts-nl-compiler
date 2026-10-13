@@ -2,9 +2,9 @@
 
 ## Наблюдение за тестами — Observatory
 
-**[Открыть веб-панель результатов в браузере](https://raw.githack.com/netkeep80/mts-nl-compiler/exp/w20-observatory-static-dashboard/docs/observatory/index.html)** · [HTML и исходные данные в GitHub](https://github.com/netkeep80/mts-nl-compiler/blob/exp/w20-observatory-static-dashboard/docs/observatory/index.html) · [PR #95](https://github.com/netkeep80/mts-nl-compiler/pull/95).
+**[Открыть веб-панель результатов в браузере](https://raw.githack.com/netkeep80/mts-nl-compiler/27148dab6148e810ed5f4096d1337ce8c4ba6f7e/docs/observatory/index.html)** · [HTML и исходные данные в GitHub](https://github.com/netkeep80/mts-nl-compiler/blob/exp/w20-observatory-static-dashboard/docs/observatory/index.html) · [PR #95](https://github.com/netkeep80/mts-nl-compiler/pull/95).
 
-Панель показывает предсказания фраз B0, найденные Link-сочетания B1, сравнения с n-граммами, отрицательные тесты и историю проверок CI. Сейчас это **исследовательский Draft** со статическим снимком, а не онлайн-мониторинг и не доказательство понимания языка. Веб-предпросмотр работает через сторонний `raw.githack.com` (при первом открытии HTML может потребоваться подтверждение); публикация на официальном GitHub Pages пока не подтверждена.
+Панель показывает предсказания фраз B0, найденные Link-сочетания B1, сравнения с n-граммами, отрицательные тесты и историю проверок CI. Сейчас это **исследовательский Draft** со статическим снимком, а не онлайн-мониторинг и не доказательство понимания языка. Веб-предпросмотр открывает закреплённую ревизию `27148dab…` через сторонний `raw.githack.com` (при первом открытии HTML может потребоваться подтверждение); публикация на официальном GitHub Pages пока не подтверждена.
 
 Обучаемый компилятор на взвешенной асети дуплетов. Новая **исследовательская** P0-модель — **одна** таблица `links(link_id,from_id,to_id,string,weight,from_uses,to_uses)`. Структурные счётчики — производный кэш, а не частота наблюдений; weight [0,1] либо NULL пока не имеет доказанной вероятностной семантики. База знаний/правил не разделяется на типовые таблицы.
 

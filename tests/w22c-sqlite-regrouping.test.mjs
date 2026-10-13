@@ -42,6 +42,35 @@ test('W22-C: real SQLite independently replays same multi-document Unicode with 
   sqliteStructuralFromUses:r.retention.after.physicalFromUsesSum
  }));
 });
+test('W22-C: cross-document controlled contrast flips the optimum benefit 1 -> 0',()=>{
+ const a={id:'A',text:'абаабабб'};
+ const contextBeneficial=compareSqliteRegrouping([a,{id:'B',text:'бб'}],
+  {targetId:'A',width:4,offset:3});
+ const contextNeutral=compareSqliteRegrouping([a,{id:'B',text:'абаб'}],
+  {targetId:'A',width:4,offset:3});
+ assert.equal(contextBeneficial.localMinimum,2);
+ assert.equal(contextBeneficial.wholeGraphSavingFromContext,1);
+ assert.equal(contextNeutral.localMinimum,2);
+ assert.equal(contextNeutral.wholeGraphSavingFromContext,0);
+ assert.ok(contextBeneficial.retention.physicalRowsAdded>=1);
+ assert.ok(contextBeneficial.retention.nowInactiveLinks>=1);
+ assert.ok(contextBeneficial.retention.after.physicalTotal>contextBeneficial.retention.after.activeTotal);
+ assert.equal(contextBeneficial.retention.oldLinkIdentitiesUnchanged,true);
+ assert.equal(contextNeutral.retention.oldLinkIdentitiesUnchanged,true);
+ assert.equal(contextBeneficial.retention.cold.status,'EXACT_NUMERIC_SQLITE_REPLAY_PASS');
+ assert.equal(contextNeutral.retention.cold.status,'EXACT_NUMERIC_SQLITE_REPLAY_PASS');
+ console.log('W22C_CONTRAST '+JSON.stringify({
+  sharingCompetingLinks:{extraSource:'бб',gain:contextBeneficial.wholeGraphSavingFromContext,
+   minimumWholePairs:contextBeneficial.bestWholePairs,
+   bestLocalCost:contextBeneficial.bestWholePairsAmongLocalOptima,
+   retainedPhysical:contextBeneficial.retention.retainedPhysicalLinks,
+   active:contextBeneficial.retention.after.activeTotal,
+   inactive:contextBeneficial.retention.nowInactiveLinks},
+  neutralizingSharedLinks:{extraSource:'абаб',gain:contextNeutral.wholeGraphSavingFromContext,
+   minimumWholePairs:contextNeutral.bestWholePairs,
+   bestLocalCost:contextNeutral.bestWholePairsAmongLocalOptima}
+ }));
+});
 test('W22-C: source root multiplicity is not SQLite from_uses or to_uses',()=>{
  const replicated=[
   {id:'X',text:'мама'},

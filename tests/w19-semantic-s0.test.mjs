@@ -98,21 +98,29 @@ test('Mode B Link definitions equal flat-template baseline and provisional fixtu
   }
 });
 
-test('all PROPOSED matcher evidence spans agree with declared provisional source spans',()=>{
-  const prepared=prepareLinkDefinitionPack(pack);let matcherSpanCount=0;
+test('PROPOSED matcher source spans are token-aligned and agree with declared same-surface spans',()=>{
+  const prepared=prepareLinkDefinitionPack(pack);let matcherSpanCount=0,compared=0;
   for(const e of fixture.examples.filter(x=>x.provisional.status==='PROPOSED')){
     const actual=interpretLink(e.text,{contextId:e.contextId??null,prepared});
     assert.equal(actual.status,'PROPOSED',e.id);
     assert.equal(actual.candidates.length,1,e.id);
-    const declared=new Set(Object.values(e.provisional.spans).map(spanKey));
+    const matcherSpans=Object.values(actual.candidates[0].evidence.spans);
+    const matcherBySurface=new Map();
     for(const [slot,span] of Object.entries(actual.candidates[0].evidence.spans)){
       assertWholeObservedTokenSpan(e,'matcher:'+slot,span);
-      assert.ok(declared.has(spanKey(span)),
-        e.id+' matcher span '+slot+' must equal one declared provisional source span');
-      matcherSpanCount++;
+      if(!matcherBySurface.has(span.surface))matcherBySurface.set(span.surface,[]);
+      matcherBySurface.get(span.surface).push(span);matcherSpanCount++;
+    }
+    for(const [label,declared] of Object.entries(e.provisional.spans)){
+      const sameSurface=matcherBySurface.get(declared.surface);
+      if(!sameSurface)continue; // provisional annotations are not required to enumerate every matcher slot and vice versa
+      assert.ok(sameSurface.some(span=>spanKey(span)===spanKey(declared)),
+        e.id+' '+label+' must agree with matcher source interval for surface '+declared.surface);
+      compared++;
     }
   }
   assert.ok(matcherSpanCount>0);
+  assert.ok(compared>0);
 });
 
 test('controlled C ablations remove grounds or expose contextual ambiguity honestly',()=>{

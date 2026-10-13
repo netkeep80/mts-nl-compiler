@@ -84,6 +84,40 @@ test('I0 pinned anum_docs v0.15: real five-requirement projection and falsifier 
     assert.ok(!JSON.stringify(report).includes('"verifies"'));
   });
 
+  await t.test('reverse index is partial: unselected dependents prevent global negative conclusions', () => {
+    const selected = new Set(report.requirements.map(x => x.id));
+    const registryIds = new Set(reg.requirements.map(x => x.id));
+    assert.equal(registryIds.size, 48);
+    assert.equal(selected.size, 5);
+    assert.deepEqual(report.reverseScope, {
+      sourceRequirements: 'SELECTED_ONLY',
+      selectedSourceCount: 5,
+      registryRequirementCount: 48,
+      unindexedSourceCount: 43,
+      completeAcrossRegistry: false,
+      emptyOrMissingEntryMeans: 'UNKNOWN_OUTSIDE_SELECTION'
+    });
+
+    // The real accepted registry contains two external dependents of FRESH-01.
+    // Neither is a projected source, so this reverse posting is absent.
+    // Its absence MUST NOT be used as evidence of zero global dependents.
+    const outsideFresh = reg.requirements
+      .filter(x => !selected.has(x.id) && x.dependsOn.includes('V15-FRESH-01'))
+      .map(x => x.id).sort();
+    assert.deepEqual(outsideFresh, ['V15-FRESH-02', 'V15-FRESH-03']);
+    assert.equal(report.reverse.dependsOn['V15-FRESH-01'], undefined);
+    assert.equal(report.reverseScope.completeAcrossRegistry, false);
+    assert.equal(report.reverseScope.emptyOrMissingEntryMeans, 'UNKNOWN_OUTSIDE_SELECTION');
+
+    // Even a populated reverse posting omits real dependents outside the sample.
+    const outsideOnto = reg.requirements
+      .filter(x => !selected.has(x.id) && x.dependsOn.includes('V15-ONTO-01'))
+      .map(x => x.id).sort();
+    assert.deepEqual(outsideOnto, ['V15-CLOSE-01', 'V15-ONTO-03']);
+    assert.deepEqual(report.reverse.dependsOn['V15-ONTO-01'], ['V15-ONTO-02']);
+    assert.ok(outsideOnto.every(id => !report.reverse.dependsOn['V15-ONTO-01'].includes(id)));
+  });
+
   await t.test('reprocessing same pinned inputs is byte deterministic', () => {
     const replay = projectI0Inputs(inputs);
     assert.equal(JSON.stringify(report), JSON.stringify(replay));

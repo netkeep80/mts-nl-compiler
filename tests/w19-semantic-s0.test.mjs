@@ -222,6 +222,15 @@ test('W19-S0 machine protocol is deterministic, complete and explicitly not gold
   assert.equal(report.metrics.binaryizationDisagreements,0);
   assert.equal(report.metrics.exactReplayFailures,0);
   assert.deepEqual(report.metrics.provisionalDiagnosticMismatches,[]);
+  assert.equal(report.metrics.provisionalSpanCount,111);
+  assert.equal(report.sourceDigests.corpusSha256,'964be91874b4beecad6d74341f1ef845ed42492ea010f4fc95e22c8aefeae6ae');
+  assert.equal(report.sourceDigests.definitionPackSha256,'183e97b2b475d8ac3a5a6af035b99816ba20b0507c0688c27f869170e4eeb6f9');
+  assert.equal(report.sourceDigests.engineSha256,'e73db1ea1afea12950a88d7ee1f81220863b792f1dc3c9086e1e5af11463339a');
+  assert.equal(report.sourceHistory.length,1);
+  assert.equal(report.sourceHistory[0].priorCorpusSha256,
+    'bb3e4229e560032ecfbaed4694e40d4d335d123a3b69fb12bdf6b43eef43de27');
+  assert.deepEqual(report.sourceHistory[0].previousSpan,{surface:'до',startUtf8:34,endUtf8:38});
+  assert.deepEqual(report.sourceHistory[0].correctedSpan,{surface:'до',startUtf8:51,endUtf8:55});
   assert.equal(report.annotationPolicy.independentGold,false);
   assert.equal(report.annotationPolicy.engineReceivesProvisionalAnnotation,false);
   assert.equal(report.annotationPolicy.accuracyMetrics,'NOT_SCORED_NO_INDEPENDENT_GOLD');

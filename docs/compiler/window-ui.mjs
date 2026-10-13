@@ -1,4 +1,4 @@
-import {inspectLocalWindow} from './window-oracle.mjs';
+import {inspectLocalWindow,inspectContextualWindow} from './window-oracle.mjs';
 import {scalarsOf} from './engine.mjs';
 
 // All user-supplied text is rendered as textContent; no HTML interpolation.
@@ -22,6 +22,19 @@ function renderTable(rows){
  }
  table.append(head,body);return table;
 }
+function contextTable(rows){
+ const table=element('table'),head=element('thead'),header=element('tr'),body=element('tbody');
+ for(const h of ['Место','Link во всём тексте','В окне','Общие с окружением','Reuse всего','Бинарное дерево окна'])
+  header.append(element('th',h));
+ head.append(header);
+ for(const r of rows){
+  const tr=element('tr');
+  for(const item of [r.rank,r.uniqueWholePairs,r.localPairs,r.sharedWithOutside,
+   r.reusedWholePairOccurrences,fmt(r.expression)])addCell(tr,item);
+  body.append(tr);
+ }
+ table.append(head,body);return table;
+}
 function chip(value,label){
  const root=element('div');root.className='metric';
  const strong=element('strong',value),span=element('span',label);
@@ -37,6 +50,8 @@ function show(){
   if(chars.length>2048)throw Error('Ограничение: 2048 Unicode-скаляров');
  }catch(error){
   el('window-output').hidden=true;
+  el('window-context-output').hidden=true;
+  el('window-context-status').textContent='';
   el('window-error').textContent=String(error.message);
   return;
  }
@@ -51,6 +66,8 @@ function show(){
  el('window-position').textContent='Скаляры '+state.offset+'…'+(state.offset+width)+' из '+chars.length;
  if(chars.length<width){
   el('window-output').hidden=true;
+  el('window-context-output').hidden=true;
+  el('window-context-status').textContent='';
   el('window-preview').textContent='Ввод: '+fmt(text);
   el('window-error').textContent='Для окна '+width+' нужно минимум '+width+' Unicode-символов; сейчас '+chars.length+'. Можно уменьшить ширину до 2.';
   return;
@@ -80,8 +97,32 @@ function show(){
   el('window-metrics').replaceChildren(...metrics);
   el('window-ranked').replaceChildren(renderTable(result.candidates.map((c,i)=>({...c,rank:i+1,
    expression:fmt(c.expression)}))));
+  if(chars.length<=128){
+   const contextStart=performance.now();
+   const context=inspectContextualWindow(text,{width,offset:state.offset,topN:5});
+   const ms=performance.now()-contextStart;
+   el('window-context-output').hidden=false;
+   el('window-context-status').textContent='Весь ввод: '+chars.length+
+    ' скаляров. Окружение группируется неизменно; отдельный замер '+ms.toFixed(2)+' мс (не benchmark).';
+   el('window-context-metrics').replaceChildren(
+    chip(n(context.minimumWholePairs),'Минимум Link всего'),
+    chip(n(context.bestContextCostAmongLocalOptima),'Link при лучшем локальном оптимуме'),
+    chip(n(context.avoidableByConsideringContext),'Выгода знания окружения'),
+    chip(n(context.balanced.uniqueWholePairs),'Всего при balanced-окне'),
+    chip(n(context.left.uniqueWholePairs),'Всего при left-окне'),
+    chip(n(context.globalOptimumTies),'Равноценных контекстных минимумов')
+   );
+   el('window-context-ranked').replaceChildren(contextTable(
+    context.bestCandidates.map((c,i)=>({...c,rank:i+1}))));
+  }else{
+   el('window-context-output').hidden=true;
+   el('window-context-status').textContent='Контекстный полный пересчёт ограничен 128 Unicode-скалярами; локальный перебор остаётся доступен для текста до 2048 скаляров.';
+  }
+
  }catch(error){
   el('window-output').hidden=true;
+  el('window-context-output').hidden=true;
+  el('window-context-status').textContent='';
   el('window-error').textContent=String(error.message);
  }
 }

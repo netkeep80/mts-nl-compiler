@@ -93,3 +93,15 @@ test('W19 B0: standalone report deterministic, labels unreviewed, distinct sourc
     bitsPerScoredScalar:x.heldout.bitsPerScoredScalar,top1Accuracy:x.heldout.top1Accuracy})),
   validControlsAnomalyWarning:report.validControlsAnomalyWarning}));
 });
+
+test('W19 B0 readable observation shows actual heldout phrases, every contrast and baseline',()=>{
+ const filename=fileURLToPath(new URL('../scripts/w19_b0_readable.mjs',import.meta.url));
+ const result=spawnSync(process.execPath,[filename],{encoding:'utf8',timeout:20000});
+ assert.equal(result.status,0,result.stderr);
+ const md=result.stdout;
+ for(const required of ['W19-B0 — наблюдаемые результаты','T01','T02','T03','T04','T05','T06',
+  'Система должна проверять журнал.','ABSTAIN_OOV','Link контекст, сбалансированная бинаризация']){
+  assert.ok(md.includes(required),'missing observable test result: '+required);
+ }
+ console.log('W19_B0_MARKDOWN_BEGIN\n'+md+'W19_B0_MARKDOWN_END');
+});

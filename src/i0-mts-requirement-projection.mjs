@@ -116,9 +116,6 @@ function rawJsonTokenSpan(bytes, jsonPointer) {
 
 function parsePinned(bytes, descriptor, source) {
   sourceBytes(bytes, descriptor.path);
-  if (gitBlobSha1(bytes) !== descriptor.gitBlobSha1) {
-    fail('SOURCE_DIGEST_MISMATCH', descriptor.path + ' does not match pinned Git blob');
-  }
   let decoded;
   try { decoded = new TextDecoder('utf-8', {fatal: true}).decode(bytes); }
   catch { fail('INVALID_UTF8', descriptor.path); }
@@ -280,6 +277,13 @@ export function buildI0Projection({registryBytes, traceabilityBytes, source = I0
     forward,
     reverse
   };
+  // Validate bytes against immutable Git blob identities before publishing any report.
+  // Structural diagnostics above can fail more specifically, but no changed source can pass.
+  for (const [descriptor, bytes] of [[source.registry, registryBytes], [source.traceability, traceabilityBytes]]) {
+    if (gitBlobSha1(bytes) !== descriptor.gitBlobSha1) {
+      fail('SOURCE_DIGEST_MISMATCH', descriptor.path + ' does not match pinned Git blob');
+    }
+  }
   return {...body, projectionSha256: sha256(Buffer.from(JSON.stringify(body), 'utf8'))};
 }
 

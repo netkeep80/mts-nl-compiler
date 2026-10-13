@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {compareSqliteRegrouping} from '../src/w22c-sqlite-regrouping-v0.mjs';
 
 const docs=[
@@ -117,4 +119,28 @@ test('W22-C: up to 8 scalars enumerates 429 durable DB rebuild alternatives with
  assert.equal(r.retention.after.physicalToUsesSum,r.retention.after.physicalPairs);
  assert.ok(r.retention.after.physicalTotal>=r.retention.after.activeTotal);
  assert.equal(r.limits.physicalSQLiteCost,undefined);
+});
+
+test('W22-C: human-readable CI results have a reproducible machine report with contrast provenance',()=>{
+ const script=fileURLToPath(new URL('../scripts/w22c_sqlite_probe.mjs',import.meta.url));
+ const result=spawnSync(process.execPath,[script],{encoding:'utf8',timeout:20000});
+ assert.equal(result.status,0,result.stderr);
+ const line=result.stdout.split('\n').find(x=>x.startsWith('W22C_PHYSICAL_SQLITE_REPORT '));
+ assert.ok(line,'missing physical SQLite evidence report');
+ const report=JSON.parse(line.slice('W22C_PHYSICAL_SQLITE_REPORT '.length));
+ assert.equal(report.schema,'mts-nl/w22c-physical-counterfactual/v0');
+ assert.equal(report.status,'PHYSICAL_SQLITE_EXACT_MULTIDOC_PASS');
+ assert.equal(report.sourceKind,'synthetic-controlled');
+ assert.equal(report.candidateCount,5);
+ assert.deepEqual(report.contrasts.map(x=>x.secondDocument),['бб','абаб']);
+ assert.deepEqual(report.contrasts.map(x=>x.saving),[1,0]);
+ assert.deepEqual(report.contrasts.map(x=>x.bestLocalCost),[7,6]);
+ assert.deepEqual(report.contrasts.map(x=>x.contextCost),[6,6]);
+ assert.deepEqual(report.contrasts.map(x=>x.inactiveLinks),[4,0]);
+ assert.ok(report.contrasts.every(x=>x.historicalIdentityUnchanged));
+ assert.equal(report.coldReplay,'EXACT_NUMERIC_SQLITE_REPLAY_PASS');
+ console.log('W22C_REPORT_CHECKED '+JSON.stringify({
+  records:report.contrasts.length,physicalSnapshots:report.contrasts.map(x=>x.retainedPhysical),
+  savings:report.contrasts.map(x=>x.saving)
+ }));
 });

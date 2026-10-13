@@ -53,7 +53,7 @@ export function validateEvidence(data){
   assert.ok(!seenRuns.has(run.runId),'reused GH Actions run identifier');
   seenRuns.add(run.runId);
   assert.match(run.head,/^[a-f0-9]{40}$/);
-  assert.match(run.observedAt,/^20\\d{2}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$/);
+  assert.match(run.observedAt,/^20\d{2}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
   assert.ok(run.note&&run.note.length>16);
   assert.equal(run.evidence,
    'https://github.com/netkeep80/mts-nl-compiler/actions/runs/'+run.runId);

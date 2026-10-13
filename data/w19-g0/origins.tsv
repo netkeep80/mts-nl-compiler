@@ -1,0 +1,34 @@
+case_id	kind	source	source_blob_sha	category
+H001	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		paraphrase
+H002	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		paraphrase
+H003	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		word-order
+H004	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		word-order
+H005	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		negation-scope
+H006	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		negation-scope
+H007	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		quantifier-scope
+H008	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		quantifier-scope
+H009	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		if-only-if
+H010	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		if-only-if
+H011	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		temporal-direction
+H012	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		temporal-direction
+H013	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		temporal-until
+H014	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		temporal-after
+H015	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		pronoun-ambiguity
+H016	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		pronoun-ambiguity
+H017	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		context-homonym
+H018	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		context-homonym
+H019	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		nested-condition
+H020	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		nested-condition
+H021	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		multiple-actions
+H022	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		multiple-actions
+H023	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		grammatical-error
+H024	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		grammatical-error
+H025	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		logical-contradiction
+H026	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		logical-contradiction
+H027	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		unknown-definition
+H028	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		unknown-definition
+H029	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		nested-negation
+H030	SYNTHETIC_AI_CONSTRUCTED	W19-G0 controlled counterexamples, authored 2026-10-13		pronoun-context
+H031	QUOTED_PUBLIC_REPO	README.md	5f67170ed07716687569d1f0a874faf8ac37b681	real-source
+H032	QUOTED_PUBLIC_REPO	docs/architecture.md	9a1ac643cc17e93384de55cc741d0207e347ef26	real-source
+H033	QUOTED_PUBLIC_REPO	README.md	5f67170ed07716687569d1f0a874faf8ac37b681	real-source

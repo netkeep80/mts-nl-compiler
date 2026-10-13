@@ -178,3 +178,12 @@ test('W20: root README links to configured official GitHub Pages site',()=>{
  assert.ok(readme.includes('исследовательскими статическими снимками'));
  assert.ok(!readme.includes('raw.githack.com'),'disallow obsolete third-party preview');
 });
+
+test('W21: Observatory links directly to published browser Link Compiler',()=>{
+ const html=readFileSync(new URL('../docs/observatory/index.html',import.meta.url),'utf8');
+ const tmpl=readFileSync(new URL('../src/observatory-template.html',import.meta.url),'utf8');
+ const nav='<a class="navbtn" href="../compiler/" aria-label="Открыть интерактивный Link компилятор">↗ Веб-компилятор</a>';
+ assert.ok(tmpl.includes(nav));
+ assert.ok(html.includes(nav));
+ assert.ok(readFileSync(new URL('../docs/compiler/index.html',import.meta.url),'utf8').includes('id="source"'));
+});

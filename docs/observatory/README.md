@@ -9,7 +9,7 @@ Open [`index.html`](./index.html) in any browser without an internet connection.
 - **Обзор:** number of confirmed tests, B0 prediction versus B1 structural slot results, contrasting limitations
 - **B0:** log-loss and top-1 bar charts for 0–3 context codepoints, full heldout sentences, six selectable spelling/grammar/logic/modality contrasts, OOV and false-alarm counterexamples
 - **B1:** 6×4 training/withheld matrix, five proposed Link recombinations, Link graph sizes, raw n-gram control, UNKNOWN on no-boundary stream and paired-world counterexample
-- **История:** experiment order, PR and exact head SHA, pinned fixtures, CI and repo-guard run links
+- **История:** 10 directly verified CI/repo-guard executions across B0/B1/UI, their Git HEADs, test counts, two observed governance FAILs and filters (all / CI / guard / failures), plus pinned experiment reports
 
 The chart axes are deliberately separated. B0 n-gram prediction accuracy cannot be plotted as if it were B1 productive heldout coverage. The source data are synthetic, not independently reviewed human gold.
 
@@ -27,6 +27,14 @@ node --test tests/observatory.test.mjs
 - The manifest pins fixture SHA256, original report blob SHA, exact source branch HEAD and matching Actions run links.
 - Updating dashboard history requires a new reviewed manifest record with exact evidence. The current version does **not** automatically poll GitHub or refresh itself.
 - No `.github/**`, `requirements/**`, `db/**`, or `repo-policy.json` changes are made by this research PR.
+
+## Evidence integrity and limitations of the run history
+
+- Run ledger entries refer to exact `actions/runs/<id>` results already inspected through GitHub Actions, with the commit, suite count and brief test or policy finding.
+- The dashboard includes **two repo-guard FAIL records**, alongside the subsequently successful controls. This is a **selected audited history**, not every run across all project branches; it must not be presented as a complete real-time CI stream.
+- The manifest validator rejects duplicate run IDs, malformed SHA/timestamps, ungrounded action URLs, mismatched test counts, missing failure records or source revisions labeled as accepted science. UI and unit tests exercise the history status filters.
+- `testsPassed` tracks the *whole repository suite at a particular commit*. A rise from 157 to 160 is an increase in tested cases, **not** evidence that the compiler's prediction accuracy improved.
+- The GitHub Actions verification currently executes under **Linux/Node 24**. The browser HTML and path helpers are intended to be portable to Windows, but a Windows browser/runner execution has **not yet been independently verified**. Do not claim Windows CI green based on Linux-only checks.
 
 ## GitHub Pages publication — separate author/infrastructure gate
 

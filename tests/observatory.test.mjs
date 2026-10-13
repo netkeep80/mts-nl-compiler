@@ -99,7 +99,8 @@ test('W20: dashboard JavaScript compiles and all four views render with offline 
   'observatory-data':{textContent:found[0][1]},
   asof:{textContent:''},
   content:{innerHTML:'',setAttribute(){}},
-  'case-detail':{innerHTML:''}
+  'case-detail':{innerHTML:''},
+  'runhistory-rows':{innerHTML:''}
  };
  const doc={
   getElementById(id){return elements[id]??null;},
@@ -126,4 +127,45 @@ test('W20: dashboard JavaScript compiles and all four views render with offline 
  handlers.get('click')({target:{closest:()=>({dataset:{case:'5'}})}});
  assert.ok(elements['case-detail'].innerHTML.includes('UNKNOWN / OOV'));
  assert.equal(nav.find(x=>x.dataset.view==='B0')['aria-current'],'page');
+});
+
+test('W20: run ledger includes verified failures and exact links, without claiming it is complete',()=>{
+ assert.equal(input.runHistory.length,10);
+ assert.equal(input.runHistory.filter(x=>x.status==='FAIL').length,2);
+ assert.ok(input.runHistory.every(x=>x.evidence.endsWith('/'+x.runId)));
+ assert.ok(input.historyDisclosure.includes('NOT complete CI history'));
+ const b0Runs=input.runHistory.filter(x=>x.experiment==='B0'&&x.kind==='CI');
+ assert.deepEqual(b0Runs.map(x=>x.testsPassed),[157,158,158]);
+ assert.deepEqual(input.runHistory.filter(x=>x.experiment==='B1'&&x.kind==='CI').map(x=>x.testsPassed),[158,159,160]);
+ assert.ok(page.includes('История экспериментов'));
+ assert.ok(page.includes('data-runfilter="FAIL"'));
+});
+test('W20: run ledger filter displays failures and their original remediation notes',()=>{
+ const scripts=[...page.matchAll(/<script[^>]*>([^]*?)<\\/script>/g)];
+ assert.equal(scripts.length,2);
+ const contextElement={innerHTML:'',setAttribute(){}};
+ const tbody={innerHTML:''};
+ const nav=['overview','B0','B1','history'].map(view=>({dataset:{view},setAttribute(){}}));
+ const tabs=['all','CI','GUARD','FAIL'].map(runfilter=>({dataset:{runfilter},setAttribute(n,v){this[n]=v;}}));
+ const handlers=new Map();
+ const documentMock={
+  getElementById(id){return ({'observatory-data':{textContent:scripts[0][1]},content:contextElement,
+   asof:{textContent:''},'runhistory-rows':tbody})[id]??null;},
+  querySelectorAll(q){return q==='.navbtn'?nav:q==='[data-runfilter]'?tabs:[];},
+  addEventListener(n,f){handlers.set(n,f);}
+ };
+ const locationMock={hash:''};
+ const browser={history:{replaceState(a,b,h){locationMock.hash=h;}},addEventListener(){}};
+ new Script(scripts[1][1]).runInContext(createContext({document:documentMock,window:browser,location:locationMock,console}));
+ handlers.get('click')({target:{closest:()=>({dataset:{view:'history'}})}});
+ assert.ok(contextElement.innerHTML.includes('Реальные запуски CI'));
+ handlers.get('click')({target:{closest:()=>({dataset:{runfilter:'FAIL'}})}});
+ assert.ok(tbody.innerHTML.includes('38325370129'));
+ assert.ok(tbody.innerHTML.includes('38325526140'));
+ assert.ok(!tbody.innerHTML.includes('38323249637'));
+ assert.equal(tabs.find(x=>x.dataset.runfilter==='FAIL')['aria-pressed'],'true');
+ const noHistory=clone();noHistory.runHistory=[];
+ assert.throws(()=>validateEvidence(noHistory),/chronology/);
+ const allGreen=clone();for(const x of allGreen.runHistory)x.status='PASS';
+ assert.throws(()=>validateEvidence(allGreen),/cherry-pick/);
 });

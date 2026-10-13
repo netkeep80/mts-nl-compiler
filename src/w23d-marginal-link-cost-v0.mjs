@@ -31,16 +31,19 @@ export function balancedPhysicalTree(text){
 
 function expandTree(tree,{maxNodes=16384}={}){
  let seen=0;
- const walk=x=>{
+ const walk=(x,isRoot=false)=>{
   if(++seen>maxNodes)fail('tree node budget exceeded');
   if(typeof x==='string'){
    if(!validText(x))fail('invalid atom text');
+   const n=[...x].length;
+   if(n!==1&&!(isRoot&&n===0))
+    fail('physical tree atom must be exactly one Unicode scalar');
    return x;
   }
   if(!Array.isArray(x)||x.length!==2)fail('binary tree required');
-  return walk(x[0])+walk(x[1]);
+  return walk(x[0],false)+walk(x[1],false);
  };
- return walk(tree);
+ return walk(tree,true);
 }
 
 function balancedUnits(units){
@@ -109,7 +112,8 @@ function validateInputs(documents,targetId,baselineTrees,candidateTree){
  const target=documents.find(d=>d.id===targetId);
  if(expandTree(candidateTree)!==target.text)fail('candidate does not exactly replay target');
  for(const d of documents){
-  const tree=baselineTrees?.[d.id]??balancedPhysicalTree(d.text);
+  const tree=Object.hasOwn(baselineTrees??{},d.id)?
+   baselineTrees[d.id]:balancedPhysicalTree(d.text);
   if(expandTree(tree)!==d.text)fail('baseline tree does not exactly replay '+d.id);
  }
 }
@@ -128,7 +132,8 @@ function materializeTree(db,loader,tree){
 function buildBaseline(db,documents,baselineTrees){
  const loader=new NumericCorpusLoader(db,{reuseAtoms:true,reusePairs:true}),roots=[];
  for(const d of documents){
-  const tree=baselineTrees?.[d.id]??balancedPhysicalTree(d.text);
+  const tree=Object.hasOwn(baselineTrees??{},d.id)?
+   baselineTrees[d.id]:balancedPhysicalTree(d.text);
   roots.push({...d,bytes:Buffer.from(d.text,'utf8'),...materializeTree(db,loader,tree)});
  }
  loader.finalize();

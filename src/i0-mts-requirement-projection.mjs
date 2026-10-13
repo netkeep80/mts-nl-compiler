@@ -282,6 +282,16 @@ export function buildI0Projection({registryBytes, traceabilityBytes, source = I0
     dependencyManifest: manifest,
     requirements: entries,
     forward,
+    // Reverse postings index only edges originating at the five selected IDs.
+    // Missing entries are not evidence that no other registry requirement depends on a target.
+    reverseScope: {
+      sourceRequirements: 'SELECTED_ONLY',
+      selectedSourceCount: ids.length,
+      registryRequirementCount: byId.size,
+      unindexedSourceCount: byId.size - ids.length,
+      completeAcrossRegistry: false,
+      emptyOrMissingEntryMeans: 'UNKNOWN_OUTSIDE_SELECTION'
+    },
     reverse
   };
   // Validate bytes against immutable Git blob identities before publishing any report.

@@ -65,7 +65,8 @@ test('W22-C: exact Unicode, repeated roots, controls and empty-oracle gain',()=>
   assert.equal(r.retention.cold.documents,2);
   assert.equal(r.retention.after.expandedAtomEvents,2*[...text].length);
   assert.equal(r.retention.after.expandedPairEvents,2*([...text].length-1));
-  assert.ok(r.freshTop.every(x=>x.activePairs<=r.retention.retainedPhysicalLinks));
+  assert.equal(r.freshTop[0].activePairs,r.retention.after.activePairs);
+  assert.ok(r.retention.retainedPhysicalLinks>=r.retention.after.activeTotal);
  }
 });
 test('W22-C: fail closed on missing IDs, duplicate documents, invalid Unicode and candidate budgets',()=>{

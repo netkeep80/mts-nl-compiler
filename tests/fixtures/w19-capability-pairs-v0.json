@@ -1,0 +1,74 @@
+{
+  "schema": "mts-nl/W19B0/controlled-fixture/v0",
+  "status": "SYNTHETIC_UNREVIEWED_NOT_HUMAN_GOLD",
+  "purpose": "Controlled exact-string anomalies and semantic counterexamples; never a semantic accuracy claim",
+  "train": [
+    "Система должна сохранять журнал.",
+    "Система должна проверять запрос.",
+    "Каждый запрос должен иметь идентификатор.",
+    "При ошибке система должна сохранять событие.",
+    "REST API должен проверять запрос.",
+    "Система может изменять запись.",
+    "Каждый журнал содержит событие.",
+    "Из A⇒B следует условное отношение.",
+    "Из A⇒B и A следует B.",
+    "Система должна проверять запись."
+  ],
+  "heldout": [
+    "Система должна проверять журнал.",
+    "Система должна сохранять запрос.",
+    "Система может проверять событие.",
+    "Каждый запрос содержит запись."
+  ],
+  "pairs": [
+    {
+      "id": "T01",
+      "goldKind": "synthetic-orthographic-deletion",
+      "reference": "Система должна проверять журнал.",
+      "alternative": "Система должна проверять журна.",
+      "goldReview": "UNREVIEWED"
+    },
+    {
+      "id": "T02",
+      "goldKind": "synthetic-grammar-contrast",
+      "reference": "Система должна сохранять запрос.",
+      "alternative": "Система должна сохраняет запрос.",
+      "goldReview": "UNREVIEWED"
+    },
+    {
+      "id": "T03",
+      "goldKind": "both-valid-modal-contrast",
+      "reference": "Система должна изменять запись.",
+      "alternative": "Система может изменять запись.",
+      "goldReview": "UNREVIEWED"
+    },
+    {
+      "id": "T04",
+      "goldKind": "logic-implication-converse",
+      "reference": "Из A⇒B и A следует B.",
+      "alternative": "Из A⇒B и B следует A.",
+      "goldReview": "UNREVIEWED"
+    },
+    {
+      "id": "T05",
+      "goldKind": "rare-but-grammatically-valid",
+      "reference": "Каждый журнал содержит событие.",
+      "alternative": "При ошибке журнал содержит событие.",
+      "goldReview": "UNREVIEWED"
+    },
+    {
+      "id": "T06",
+      "goldKind": "math-parentheses-change",
+      "reference": "a+b*c",
+      "alternative": "(a+b)*c",
+      "goldReview": "UNREVIEWED"
+    }
+  ],
+  "notes": [
+    "Train and heldout are disjoint arrays of independently authored strings; repeated substrings remain by design",
+    "Gold labels identify constructed contrasts but are not accepted semantic truth",
+    "T03 and T05 are not errors; statistical surprise cannot override semantics",
+    "T04 cannot be judged by surface plausibility; it needs a logical inference model",
+    "All alphabets/contexts learned only from train, OOV at evaluation abstains"
+  ]
+}

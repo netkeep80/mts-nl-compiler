@@ -2,6 +2,24 @@
 import {NumericCorpusLoader} from './numeric-corpus-loader-v1.mjs';
 import {formatLinkId} from './numeric-link-store-v1.mjs';
 const error=x=>{throw Error('TOP100: '+x);};
+// The glyphs below are only diagnostic display escaping, never learning hints.
+// The delimited view makes leading and trailing whitespace observable.
+export function visibleLinkText(text){
+ const show=c=>c===' '?'␠':c==='\n'?'␊':c==='\r'?'␍':
+  c==='\t'?'␉':c==='\u00a0'?'⍽':c==='\ufeff'?'⟨BOM⟩':
+  c==='\u200b'?'⟨ZWSP⟩':c;
+ return '⟦'+[...text].map(show).join('')+'⟧';
+}
+// A compact *display* alphabet: literal parentheses, backslash or a marker
+// in source must not impersonate structural grouping or whitespace.
+const treeGlyph=c=>{
+ const specials={' ':'␠','\n':'␊','\r':'␍','\t':'␉','\u00a0':'⍽','\ufeff':'⟨BOM⟩','\u200b':'⟨ZWSP⟩'};
+ if(Object.hasOwn(specials,c))return specials[c];
+ if(c==='('||c===')'||c==='\\'||c==='␠'||c==='␊'||c==='␍'||c==='␉'||c==='⍽'||c==='⟨BOM⟩'||c==='⟨ZWSP⟩')return '\\'+c;
+ return c;
+};
+const escapedJson=s=>JSON.stringify(s);
+const escapedMd=s=>String(s).replaceAll('|','\\|').replaceAll('\n','\\n').replaceAll('\r','\\r');
 function rankTop(entries,n=1000,numericIds=false){
  if(!Number.isSafeInteger(n)||n<1||n>1000)error('invalid top rank');
  const compareId=(a,b)=>{
@@ -29,7 +47,15 @@ function rankTop(entries,n=1000,numericIds=false){
  return heap.map((x,i)=>({...x,rank:i+1}));
 }
 export class CountedNumericCorpusLoader extends NumericCorpusLoader{
- constructor(db,o={}){super(db,o);this.pairEvents=0;this.pairCounts=new Map();this.docNumber=0;this.poisoned=false;}
+ constructor(db,o={}){super(db,o);this.pairEvents=0;this.pairCounts=new Map();this.atomCounts=new Map();this.atomEvents=0;this.docNumber=0;this.poisoned=false;}
+ _atom(text,c){
+  const id=super._atom(text,c);
+  if(text!=='')this.atomEvents += [...text].length;
+  const v=this.atomCounts.get(id);
+  if(v){if(v.text!==text)error('atom identity changed');v.count++;if(v.last!==this.docNumber){v.last=this.docNumber;v.documents++;}}
+  else this.atomCounts.set(id,{text,count:1,documents:1,last:this.docNumber});
+  return id;
+ }
  _pair(a,b,c){
   const id=super._pair(a,b,c);this.pairEvents++;
   const v=this.pairCounts.get(id);
@@ -42,6 +68,21 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
   this.docNumber++;
   try{return super.appendBook(bytes,options);}
   catch(e){this.poisoned=true;throw e;}
+ }
+ topAtoms(n=1000){
+  if(this.poisoned||!Number.isSafeInteger(n)||n<1||n>1000)error('invalid/incomplete corpus');
+  const entries=[];
+  for(const [id,v] of this.atomCounts)if(v.text!==''){
+   if([...v.text].length!==1)error('non-scalar source atom');
+   entries.push({id:formatLinkId(id),text:v.text,count:v.count,documents:v.documents});
+  }
+  const total=[...entries].reduce((z,e)=>z+e.count,0);
+  if(total!==this.atomEvents)error('atom event conservation');
+  return {schema:'mts-nl/observed-atom-frequency/v1',books:this.docNumber,
+   denominatorAtomicOccurrences:total,
+   top:rankTop(entries,n,true).map(x=>({...x,
+    visible:visibleLinkText(x.text),escaped:escapedJson(x.text),
+    empiricalRate:+(x.count/total).toPrecision(8)}))};
  }
  topLinks(n=1000){
   if(this.poisoned||n<1||n>1000)error('invalid/incomplete corpus');
@@ -63,6 +104,28 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
    }
    memo.set(id,v);active.delete(id);return v;
   };
+  // Minimal parenthesis-only spelling of the ACTUAL stored binary tree.
+  // Every non-root pair is grouped as "(LEFT RIGHT)" (no separator).
+  // The one outermost pair is omitted: мама -> (ма)(ма).
+  // Root and pole IDs remain in dedicated table columns, not inside text.
+  const tree=(root,maxNodes=2048)=>{
+   const out=[],stack=[{id:root,stage:0,root:true}],active=new Set();
+   let count=0;
+   while(stack.length){
+    const x=stack.pop();
+    if(x.stage===1){active.delete(x.id);if(!x.root)out.push(')');continue;}
+    const r=q.get(x.id);
+    if(!r)error('missing tree Link '+x.id);
+    if(r.from_id===null){out.push([...r.string].map(treeGlyph).join(''));continue;}
+    if(active.has(x.id))error('cyclic tree Link');
+    if(++count>maxNodes)return {text:'⟨TREE_LIMIT_EXCEEDED⟩',truncated:true};
+    active.add(x.id);
+    if(!x.root)out.push('(');
+    stack.push({id:x.id,stage:1,root:x.root},
+     {id:r.to_id,stage:0,root:false},{id:r.from_id,stage:0,root:false});
+   }
+   return {text:out.join(''),truncated:false};
+  };
   const candidates=rankTop((function*(counts){
    for(const [id,v] of counts)if(v.count>1)
     yield {id:formatLinkId(id),count:v.count,documents:v.documents};
@@ -74,6 +137,9 @@ export class CountedNumericCorpusLoader extends NumericCorpusLoader{
     if(!r||r.from_id===null)error('pair expected');
     return {...x,fromId:formatLinkId(r.from_id),toId:formatLinkId(r.to_id),
      expandedCodepoints:p.length,preview:p.length<=64?p.head:p.head+' … '+p.tail,
+     visiblePreview:visibleLinkText(p.length<=64?p.head:p.head+' … '+p.tail),
+     escapedPreview:escapedJson(p.length<=64?p.head:p.head+' … '+p.tail),
+     ...(()=>{const v=tree(BigInt(x.id));return {binaryTree:v.text,treeTruncated:v.truncated};})(),
      empiricalRate:+(x.count/this.pairEvents).toPrecision(8)};
    })};
  }
@@ -111,19 +177,38 @@ export function topObservedWords(documents,n=1000){
      empiricalRate:+(x.count/positions[i]).toPrecision(8)}))
   }))};
 }
-export function topRankedMarkdown(links,words){
- const esc=s=>String(s).replaceAll('|','\\|').replaceAll('\n','\\\\n').replaceAll('\r','\\\\r');
- const out=['# TOP 1000 observed Link and word/phrase frequencies','',
-  'Link ID is SQLite AUTOINCREMENT; count = observed expanded occurrences, not structural degree or learned probability.','',
-  '| Rank | Link | From / To | Occurrences | Books | Length | Preview |',
-  '|---:|---:|---|---:|---:|---:|---|'];
+export function topRankedMarkdown(links,words,atoms=null){
+ const out=['# TOP 1000 observed Link, atom and word/phrase frequencies','',
+  'Link IDs are SQLite AUTOINCREMENT. Pair occurrences are **balanced-tree node events**, not all positional substrings.',
+  'An atomic Link is a terminal carrying a source scalar (no poles); equal from/to IDs do NOT define an atom.',
+  '⟦ and ⟧ mark the beginning and end of the **displayed fragment**, not the source line. '+
+  '␠ = U+0020 space; ⍽ = U+00A0 NBSP; ␊ = LF; ␍ = CR; ␉ = TAB. '+
+  'The JSON column is the unambiguous original content. No characters are normalized.',''];
+ if(atoms){
+  out.push('## Source atomic Link frequency','',
+   'Every atomic occurrence is counted at source-leaf creation, including under reused parent Links. '+
+   'This count should exactly match the independent source-scalar histogram.','',
+   '| Rank | Atom Link ID | Visible atom | Exact JSON scalar | Occurrences | Books | Rate |',
+   '|---:|---:|---|---|---:|---:|---:|');
+  for(const x of atoms.top)out.push('| '+x.rank+' | '+x.id+' | '+escapedMd(x.visible)+
+   ' | `'+escapedMd(x.escaped)+'` | '+x.count+' | '+x.documents+' | '+x.empiricalRate+' |');
+  out.push('','Atom occurrences (denominator): '+atoms.denominatorAtomicOccurrences,'');
+ }
+ out.push('## Observed binary Link nodes','',
+  'Pair ID is in the Link column; From/To are direct physical numeric pole IDs. '+
+  'Tree syntax: parenthesized binary pairs, root outer brackets omitted (мама → (ма)(ма)); '+
+  'leaves are exact source scalars, with spaces shown as ␠ and literal parentheses escaped. ' +
+  'The original numeric IDs remain in Link ID and From/To columns.','',
+  '| Rank | Link ID | From / To | Node occurrences | Books | Scalars | Bounded text ⟦start…end⟧ | Exact JSON | Binary grouping |',
+  '|---:|---:|---|---:|---:|---:|---|---|---|');
  for(const x of links.top)out.push('| '+x.rank+' | '+x.id+' | '+x.fromId+' / '+x.toId+' | '+
-  x.count+' | '+x.documents+' | '+x.expandedCodepoints+' | '+esc(x.preview)+' |');
+  x.count+' | '+x.documents+' | '+x.expandedCodepoints+' | '+escapedMd(x.visiblePreview??visibleLinkText(x.preview))+
+  ' | `'+escapedMd(x.escapedPreview??escapedJson(x.preview))+'` | `'+escapedMd(x.binaryTree??'')+'` |');
  for(const group of words.classes){
   out.push('','## '+group.name+' (observed, not inferred)','',
    '| Rank | Text | Occurrences | Books | Empirical relative frequency |',
    '|---:|---|---:|---:|---:|');
-  for(const x of group.top)out.push('| '+x.rank+' | '+esc(x.text)+' | '+x.count+
+  for(const x of group.top)out.push('| '+x.rank+' | '+escapedMd(x.text)+' | '+x.count+
    ' | '+x.documents+' | '+x.empiricalRate+' |');
  }
  return out.join('\n')+'\n';

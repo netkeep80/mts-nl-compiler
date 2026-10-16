@@ -1,0 +1,136 @@
+{
+  "schema": "mts-nl/W15-fixed-pair-alignment-comparison/v0",
+  "sourceBytes": 19701816,
+  "documents": 60,
+  "replay": "60/60 self-contained W15 decoder PASS",
+  "models": {
+    "balanced": {
+      "links": 2747870,
+      "atoms": 194,
+      "pairs": 2747676,
+      "indexBits": 22,
+      "W14ULEBBytes": 16205827,
+      "formats": {
+        "progressive": {
+          "totalBytes": 14065216,
+          "pairBytes": 14064382,
+          "rootBytes": 165,
+          "headerAndAtomsAndLengthsBytes": 669,
+          "zlib9Bytes": 13404198,
+          "sha256": "1f4d030173bb165648cc07f2bef7b8064a9836a64f9c854185fd587d8b3ed848"
+        },
+        "dense": {
+          "totalBytes": 15113052,
+          "pairBytes": 15112218,
+          "rootBytes": 165,
+          "headerAndAtomsAndLengthsBytes": 669,
+          "zlib9Bytes": 14020765,
+          "sha256": "7bfe8e6cb94f506195b1784b12b3c303e816ccee37d665d9cac22c990479664c"
+        },
+        "packed24": {
+          "totalBytes": 16486905,
+          "pairBytes": 16486056,
+          "rootBytes": 180,
+          "headerAndAtomsAndLengthsBytes": 669,
+          "zlib9Bytes": 13354413,
+          "sha256": "87045764e19fb788287c489c2fe6f7a28ace32252ab41e7ba110b41978afeb9a"
+        },
+        "aligned32": {
+          "totalBytes": 21982317,
+          "pairBytes": 21981408,
+          "rootBytes": 240,
+          "headerAndAtomsAndLengthsBytes": 669,
+          "zlib9Bytes": 13485191,
+          "sha256": "ac6e6d60d53b17f379ad4c7e5e9fd45f15f7012274111a9ca7f7ae50e1746748"
+        }
+      }
+    },
+    "word-aligned": {
+      "links": 2031925,
+      "atoms": 194,
+      "pairs": 2031731,
+      "indexBits": 21,
+      "W14ULEBBytes": 11016192,
+      "formats": {
+        "progressive": {
+          "totalBytes": 10143817,
+          "pairBytes": 10142991,
+          "rootBytes": 158,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9409606,
+          "sha256": "a0fcc5facfa5cfa9745b1d41ce366a0e0740427d1fc4c0daa317925574a80494"
+        },
+        "dense": {
+          "totalBytes": 10667414,
+          "pairBytes": 10666588,
+          "rootBytes": 158,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9863084,
+          "sha256": "3d5e1a238bbfcb3bf34be2aac46f5bdf15712339d32ada327b6f9f936d4fc5e8"
+        },
+        "packed24": {
+          "totalBytes": 12191234,
+          "pairBytes": 12190386,
+          "rootBytes": 180,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9175499,
+          "sha256": "70fa56d7abfd1df01aecbde93f3a03bad16075543da19b37c1077713f9f5f025"
+        },
+        "aligned32": {
+          "totalBytes": 16254756,
+          "pairBytes": 16253848,
+          "rootBytes": 240,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9174476,
+          "sha256": "c321d6aa23754d6ad132755bd4ae4202963bf46529350c53ca1e4fa37125a38b"
+        }
+      }
+    },
+    "learned": {
+      "links": 1951822,
+      "atoms": 194,
+      "pairs": 1951628,
+      "indexBits": 21,
+      "W14ULEBBytes": 10627678,
+      "formats": {
+        "progressive": {
+          "totalBytes": 9723277,
+          "pairBytes": 9722451,
+          "rootBytes": 158,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9136259,
+          "sha256": "8e5792f37366e1efb7e8c8a87c06f87645b6190415b84c5265b80bdc5d9d9b19"
+        },
+        "dense": {
+          "totalBytes": 10246873,
+          "pairBytes": 10246047,
+          "rootBytes": 158,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9602266,
+          "sha256": "ad914d551adadffeebda0699d13b79a62545bc9bbe6d6408a27d03a7cddb6fe1"
+        },
+        "packed24": {
+          "totalBytes": 11710616,
+          "pairBytes": 11709768,
+          "rootBytes": 180,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9038031,
+          "sha256": "c01693eb69397a4eb7bdb3d87e84d82a4f30be739dd850485c5ababb4fb4a713"
+        },
+        "aligned32": {
+          "totalBytes": 15613932,
+          "pairBytes": 15613024,
+          "rootBytes": 240,
+          "headerAndAtomsAndLengthsBytes": 668,
+          "zlib9Bytes": 9021791,
+          "sha256": "5335993a082fcf586fc46bfd7520099f8472e984cded588ed63a68cfa49f75a8"
+        }
+      }
+    }
+  },
+  "rawArchiveControls": {
+    "zlib9": 5412025,
+    "BZip2_9": 3636963,
+    "LZMA6": 3796040
+  }
+}

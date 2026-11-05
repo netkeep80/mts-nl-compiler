@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 jobs:
   policy-check:
@@ -16,36 +18,31 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Run pinned repo-guard v6.0.1
+      - name: Run pinned repo-guard
         id: repo_guard
-        uses: netkeep80/repo-guard@74db97791e6da8a75287164f0d0b41579108f114
+        uses: netkeep80/repo-guard@f0566a6599f6d37f2c76431a26bb259030c9c1b9
         with:
-          base: ${{ github.event.pull_request.base.sha }}
-          head: ${{ github.event.pull_request.head.sha }}
+          mode: check-pr
+          enforcement: blocking
           node-version: 24
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Capture exact diagnostics
+      - name: Capture blocking diagnostics when rules fail
         if: always() && steps.repo_guard.outputs.result != 'passed'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: netkeep80/repo-guard
-          ref: 74db97791e6da8a75287164f0d0b41579108f114
-          path: .tools/repo-guard-v6
+          ref: f0566a6599f6d37f2c76431a26bb259030c9c1b9
+          path: .tools/repo-guard
           persist-credentials: false
-
-      - name: Print exact diagnostics
+      - name: Print blocking diagnostics
         if: always() && steps.repo_guard.outputs.result != 'passed'
         env:
-          RG_BASE: ${{ github.event.pull_request.base.sha }}
-          RG_HEAD: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm --prefix .tools/repo-guard-v6 install --omit=dev --silent
-          node .tools/repo-guard-v6/dist/repo-guard.mjs --repo-root . check \
-            --base "$RG_BASE" \
-            --head "$RG_HEAD" \
-            --format json || true
-
+          npm --prefix .tools/repo-guard install --omit=dev --silent
+          node .tools/repo-guard/dist/repo-guard.mjs --repo-root . --enforcement blocking check-pr --format json
       - name: Publish summary
         if: always()
         run: |

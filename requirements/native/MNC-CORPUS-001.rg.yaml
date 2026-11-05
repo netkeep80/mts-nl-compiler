@@ -49,10 +49,6 @@ relations:
   - predicates: [verified_by]
     target:
       kind: artifact
-      path: "tests/corpus-sources.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
       path: "tests/corpus-top-report-v1.test.mjs"
   - predicates: [verified_by]
     target:

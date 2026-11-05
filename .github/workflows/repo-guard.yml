@@ -25,6 +25,24 @@ jobs:
           head: 6d9f74625aa35df407563a6cbb046a467894f46b
           node-version: 24
 
+      - name: Capture exact RED diagnostics
+        if: always() && steps.repo_guard.outputs.result != 'passed'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: netkeep80/repo-guard
+          ref: 74db97791e6da8a75287164f0d0b41579108f114
+          path: .tools/repo-guard-v6
+          persist-credentials: false
+
+      - name: Print exact RED diagnostics
+        if: always() && steps.repo_guard.outputs.result != 'passed'
+        run: |
+          npm --prefix .tools/repo-guard-v6 install --omit=dev --silent
+          node .tools/repo-guard-v6/dist/repo-guard.mjs --repo-root . check \
+            --base 6d9f74625aa35df407563a6cbb046a467894f46b \
+            --head 6d9f74625aa35df407563a6cbb046a467894f46b \
+            --format json || true
+
       - name: Publish summary
         if: always()
         run: |

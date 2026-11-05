@@ -1,0 +1,28 @@
+format: repo-guard/requirement-v1
+id: MNC-KB-001
+normative: "### MNC-KB-001 — Deterministic bootstrap physical Link snapshot\n\n**MUST:** the current accepted #45 bootstrap gate deterministically materializes the Git-owned five-field data/links.json source through the accepted db/schema.sql into a temporary SQLite snapshot, preserves physical Link identity including parallel identities, cycles and null-versus-zero weight, separates a logical graph digest from the physical SQLite digest, and validates cold read-only replay. The current source status remains BOOTSTRAP_UNTRAINED__NOT_SEMANTICALLY_VERIFIED. This Requirement does not claim a trained knowledge base, release artifact, cross-toolchain byte reproducibility or semantic acceptance."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "data/links.json"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "db/schema.sql"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/knowledge-snapshot-v0.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/knowledge-snapshot-v0.test.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/knowledge-snapshot-v0.md"

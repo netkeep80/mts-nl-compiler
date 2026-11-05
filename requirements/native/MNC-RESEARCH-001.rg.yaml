@@ -1,6 +1,6 @@
 format: repo-guard/requirement-v1
 id: MNC-RESEARCH-001
-normative: "### MNC-RESEARCH-001 — Reproducible non-authoritative research history\n\n**MUST:** merged research experiments preserve executable inputs, fixtures, provenance, negative outcomes and replayable tests while keeping hypotheses and RESEARCH_UNACCEPTED records non-authoritative. A passing test, compression result, inference candidate or retained research file MUST NOT by itself become accepted semantic truth or governance authority."
+normative: "### MNC-RESEARCH-001 — Preservation of explicit unaccepted research authority\n\n**MUST:** during the current M-B0 coexistence state, the repository preserves the legacy MNC-024, MNC-026, MNC-028 and MNC-030 records as explicit RESEARCH_UNACCEPTED evidence. Their presence, related research implementations, passing tests, compression results, inference candidates or retained artifacts MUST NOT by themselves become accepted MTS semantics, scientific truth or governance authority. This Requirement preserves authority status; it does not claim ownership of generic research implementation files."
 lifecycle:
   accepted: true
   current: true
@@ -22,59 +22,3 @@ relations:
     target:
       kind: artifact
       path: "requirements/MNC-030.yaml"
-  - predicates: [requires]
-    target:
-      kind: artifact
-      path: "experiments/fixtures/mama-object-tree.json"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
-      path: "experiments/compression-implication-v0.mjs"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
-      path: "experiments/inference-v0.mjs"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
-      path: "experiments/object-tree-json-v0.mjs"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
-      path: "experiments/retention-oracle-v0.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/compression-implication.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/inference-experiment.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/object-tree-json.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/retention-cost-report.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/retention-oracle.test.mjs"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "experiments/COMPRESSION_AS_INFERENCE.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "experiments/OBJECT_TREE_JSON.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "experiments/README.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "experiments/RETENTION_MDL.md"

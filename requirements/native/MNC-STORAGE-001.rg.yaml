@@ -1,6 +1,6 @@
 format: repo-guard/requirement-v1
 id: MNC-STORAGE-001
-normative: "### MNC-STORAGE-001 — Canonical numeric Link storage and exact replay\n\n**MUST:** the accepted storage layer uses canonical SQLite integer Link identity with indexed poles and preserves exact graph/text replay across the numeric cutover and legacy bridge. Hashes may evidence artifact integrity but MUST NOT define physical Link identity. Storage tests must exercise schema, DAG replay, packed representation, numeric allocation and legacy migration without silently changing accepted MTS semantics."
+normative: "### MNC-STORAGE-001 — Canonical numeric Link storage and exact replay\n\n**MUST:** the accepted canonical storage layer uses the SQLite links relation with integer physical Link identity and indexed poles, preserves exact 64-bit graph/text replay, and supports deterministic numeric allocation and legacy migration without changing accepted MTS semantics. Hashes may evidence artifact integrity but MUST NOT define physical Link identity. Numeric storage tests must exercise schema invariants, parallel identities, cycles, weights and migration behavior."
 lifecycle:
   accepted: true
   current: true
@@ -13,19 +13,7 @@ relations:
   - predicates: [implemented_by]
     target:
       kind: artifact
-      path: "data/links.json"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
       path: "src/store.mjs"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
-      path: "src/dag.mjs"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
-      path: "src/packed-dag-e1.mjs"
   - predicates: [implemented_by]
     target:
       kind: artifact
@@ -38,14 +26,6 @@ relations:
     target:
       kind: artifact
       path: "tests/schema.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/dag.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/packed-dag-e1.test.mjs"
   - predicates: [verified_by]
     target:
       kind: artifact
@@ -62,7 +42,3 @@ relations:
     target:
       kind: artifact
       path: "docs/numeric-legacy-migration-v1.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "docs/numeric-link-storage-v1.md"

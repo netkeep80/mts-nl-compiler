@@ -1,6 +1,6 @@
 format: repo-guard/requirement-v1
 id: MNC-REPO-001
-normative: "### MNC-REPO-001 — Reproducible repository execution boundary\n\n**MUST:** the accepted repository remains a self-describing Node.js project with an explicit license, package entry point, transient-file exclusions, project-memory root, and CI execution of the repository test suite. These repository mechanics support reproducibility and governance only; CI success MUST NOT be presented as scientific or semantic acceptance."
+normative: "### MNC-REPO-001 — Reproducible repository execution boundary\n\n**MUST:** the accepted repository remains a self-describing private ESM Node.js 24+ project with an explicit npm test entry, CI execution of the repository test suite, a project-memory locator, and Git exclusions for transient dependency, coverage, build and local database artifacts. These repository mechanics support reproducibility and governance only; CI success MUST NOT be presented as scientific or semantic acceptance. No package runtime export or library entry-point contract is asserted by this Requirement."
 lifecycle:
   accepted: true
   current: true
@@ -14,23 +14,11 @@ relations:
     target:
       kind: artifact
       path: ".anet/memory.json"
-  - predicates: [requires]
+  - predicates: [implemented_by]
     target:
       kind: artifact
       path: ".gitignore"
   - predicates: [requires]
     target:
       kind: artifact
-      path: "LICENSE"
-  - predicates: [requires]
-    target:
-      kind: artifact
       path: "package.json"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "README.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "docs/architecture.md"

@@ -13,15 +13,7 @@ relations:
   - predicates: [requires]
     target:
       kind: artifact
-      path: "corpus/pilot.json"
-  - predicates: [requires]
-    target:
-      kind: artifact
       path: "corpus/real-sources-e0.json"
-  - predicates: [requires]
-    target:
-      kind: artifact
-      path: "corpus/wikimedia-sources.json"
   - predicates: [implemented_by]
     target:
       kind: artifact

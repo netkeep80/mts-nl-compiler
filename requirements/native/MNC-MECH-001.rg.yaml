@@ -21,11 +21,11 @@ relations:
   - predicates: [implemented_by]
     target:
       kind: artifact
-      path: "src/incremental-source-root-e7.mjs"
+      path: "src/dag.mjs"
   - predicates: [implemented_by]
     target:
       kind: artifact
-      path: "src/knowledge-snapshot-v0.mjs"
+      path: "src/incremental-source-root-e7.mjs"
   - predicates: [implemented_by]
     target:
       kind: artifact
@@ -42,6 +42,10 @@ relations:
     target:
       kind: artifact
       path: "src/observed-phrase-numeric-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/packed-dag-e1.mjs"
   - predicates: [implemented_by]
     target:
       kind: artifact
@@ -89,15 +93,15 @@ relations:
   - predicates: [verified_by]
     target:
       kind: artifact
+      path: "tests/dag.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
       path: "tests/incremental-source-root-e7-real.test.mjs"
   - predicates: [verified_by]
     target:
       kind: artifact
       path: "tests/incremental-source-root-e7.test.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/knowledge-snapshot-v0.test.mjs"
   - predicates: [verified_by]
     target:
       kind: artifact
@@ -114,6 +118,10 @@ relations:
     target:
       kind: artifact
       path: "tests/observed-phrase-numeric-v0.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/packed-dag-e1.test.mjs"
   - predicates: [verified_by]
     target:
       kind: artifact
@@ -162,10 +170,6 @@ relations:
     target:
       kind: artifact
       path: "docs/incremental-source-roots-e7.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: "docs/knowledge-snapshot-v0.md"
   - predicates: [documents]
     target:
       kind: artifact

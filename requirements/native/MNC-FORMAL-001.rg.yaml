@@ -13,19 +13,11 @@ relations:
   - predicates: [implemented_by]
     target:
       kind: artifact
-      path: "experiments/evidence-score-oracle-v0.mjs"
-  - predicates: [implemented_by]
-    target:
-      kind: artifact
       path: "experiments/native-exact-sequence-bridge-v0.mjs"
   - predicates: [implemented_by]
     target:
       kind: artifact
       path: "experiments/native-graph-registry-v0.mjs"
-  - predicates: [verified_by]
-    target:
-      kind: artifact
-      path: "tests/evidence-score-oracle.test.mjs"
   - predicates: [verified_by]
     target:
       kind: artifact

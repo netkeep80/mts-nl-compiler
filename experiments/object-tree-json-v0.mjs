@@ -97,6 +97,21 @@ export function serializeObjectTree(graph,options) {
  return JSON.stringify(exportObjectTree(graph,options),null,2)+"\n";
 }
 
+export function makeMamaObjectTreeExample() {
+ const rows=[
+  {link_id:"m",string:"м"},
+  {link_id:"a",string:"а"},
+  {link_id:"nil",string:"NIL"},
+  {link_id:"ma",from_id:"m",to_id:"a"},
+  {link_id:"mama",from_id:"ma",to_id:"ma",weight:.75},
+  {link_id:"s:4",from_id:"a",to_id:"nil"},
+  {link_id:"s:3",from_id:"m",to_id:"s:4"},
+  {link_id:"s:2",from_id:"a",to_id:"s:3"},
+  {link_id:"s:1",from_id:"m",to_id:"s:2"}
+ ];
+ return serializeObjectTree(rows,{sequences:{text:{root:"s:1",terminator:"nil"}}});
+}
+
 // Lexically reject duplicate object members before JSON.parse silently loses them.
 // Reject arrays, numbers and booleans in the same single-pass grammar scanner.
 export function parseStrictJson(input) {

@@ -3,10 +3,11 @@ name: Pinned MTS v0.15 native bridge experiment
 on:
   pull_request:
     paths:
+      - experiments/inference-v0.mjs
+      - experiments/compression-implication-v0.mjs
       - experiments/native-exact-sequence-bridge-v0.mjs
       - experiments/object-tree-json-v0.mjs
       - experiments/FORMAL_BRIDGE.md
-      - experiments/fixtures/mama-object-tree.json
       - tests/native-exact-sequence-bridge.test.mjs
       - tests/upstream-formal-v015.integration.mjs
       - tests/upstream-graph-identity.integration.mjs

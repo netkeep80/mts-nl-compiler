@@ -7,8 +7,8 @@ import {readFileSync,writeFileSync} from "node:fs";
 import {resolve,dirname,join} from "node:path";
 import {pathToFileURL} from "node:url";
 import {LinkGraph} from "../experiments/inference-v0.mjs";
-import {makeRewriteFixture,decodeSequence} from "../experiments/compression-implication-v0.mjs";
-import {extractSingleImageRewrite} from "../experiments/retention-oracle-v0.mjs";
+import {makeRewriteFixture,decodeSequence,extractSingleImageRewrite}
+ from "../experiments/compression-implication-v0.mjs";
 import {serializeObjectTree,importObjectTree} from "../experiments/object-tree-json-v0.mjs";
 import {createNativeRegistry,readNativeRegistry,compareRowsExactly}
  from "../experiments/native-graph-registry-v0.mjs";

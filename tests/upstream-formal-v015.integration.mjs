@@ -1,11 +1,10 @@
 // This integration test is deliberately launched ONLY in pinned upstream CI.
 // It imports actual accepted anum_docs source built at the exact selected SHA.
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { LinkGraph } from "../experiments/inference-v0.mjs";
-import { importObjectTree } from "../experiments/object-tree-json-v0.mjs";
+import { importObjectTree,makeMamaObjectTreeExample } from "../experiments/object-tree-json-v0.mjs";
 import { bridgeTransportToCell,readCellSequence }
   from "../experiments/native-exact-sequence-bridge-v0.mjs";
 
@@ -16,7 +15,7 @@ const [{Memory,ensureRootBasis},{materializeExactSequence,readExactSequence}]=aw
  importFrom("ts/dist/src/memory.js"),
  importFrom("ts/dist/src/exact-sequence.js")
 ]);
-const fixture=readFileSync(new URL("../experiments/fixtures/mama-object-tree.json",import.meta.url),"utf8");
+const fixture=makeMamaObjectTreeExample();
 const restored=importObjectTree(fixture);
 const g=new LinkGraph(restored.rows);
 g.atom("R","ROOT"); // experimental ID representation of the chosen root; not native identity

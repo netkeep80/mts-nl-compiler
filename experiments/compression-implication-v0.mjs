@@ -29,6 +29,26 @@ export function makeRewriteFixture({left="м",right="а",last=null,selected=true
   return {g,rule,root,common,source:left+right+left+(last??right)};
 }
 
+export function extractSingleImageRewrite(g,ruleId,nil) {
+ const rule=g.get(ruleId),body=g.get(rule.to_id);
+ if(rule.from_id===null||body.from_id===null)throw new Error("Malformed rule");
+ function read(root) {
+  const items=[],seen=new Set();
+  while(root!==nil) {
+   if(seen.has(root))throw new Error("Cyclic rule list");
+   seen.add(root);
+   const n=g.get(root);
+   if(n.from_id===null)throw new Error("Invalid rule list");
+   items.push(n.from_id);root=n.to_id;
+   if(items.length>1000)throw new Error("Rule list budget");
+  }
+  return items;
+ }
+ const lhs=read(body.from_id),rhs=read(body.to_id),vars=read(rule.from_id);
+ if(lhs.length!==1||rhs.length!==1)throw new Error("Expected 1-to-1 rewrite");
+ return {lhs:lhs[0],rhs:rhs[0],variables:vars};
+}
+
 export function decodeSequence(g,root,{maxVisits=100_000}={}) {
   let visits=0;
   const active=new Set();

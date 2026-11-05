@@ -22,7 +22,3 @@ relations:
     target:
       kind: artifact
       path: ".github/PULL_REQUEST_TEMPLATE.md"
-  - predicates: [documents]
-    target:
-      kind: artifact
-      path: ".anet/memory.json"

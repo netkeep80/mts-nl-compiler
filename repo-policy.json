@@ -49,8 +49,7 @@
       "archive/**"
     ],
     "canonical_docs": [
-      "README.md",
-      "docs/architecture.md"
+      "README.md"
     ],
     "governance_paths": [
       "repo-policy.json",

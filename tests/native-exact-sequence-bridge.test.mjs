@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { loadRows,counterMismatches } from "../src/store.mjs";
 import { LinkGraph } from "../experiments/inference-v0.mjs";
-import { makeRewriteFixture,evaluateRewrite } from "../experiments/compression-implication-v0.mjs";
+import { makeRewriteFixture,evaluateRewrite,extractSingleImageRewrite }
+  from "../experiments/compression-implication-v0.mjs";
 import { importObjectTree,serializeObjectTree,parseStrictJson }
   from "../experiments/object-tree-json-v0.mjs";
 import { readTransportSequence,materializeCellSequence,readCellSequence,
@@ -76,6 +77,47 @@ test("unselected arbitrary Link rules survive object-tree export and still infer
    original.candidates[0].provenance);
  }
 });
+test("compression rule parser preserves fail-closed 1-to-1 extraction",()=>{
+ const valid=makeRewriteFixture();
+ const shape=extractSingleImageRewrite(valid.g,valid.rule,"nil");
+ assert.equal(shape.variables.length,2);
+ assert.ok(shape.lhs);
+ assert.ok(shape.rhs);
+
+ const malformed=new LinkGraph();
+ malformed.atom("nil","nil");malformed.atom("v","v");malformed.atom("body","body");
+ malformed.pair("rule","v","body");
+ assert.throws(()=>extractSingleImageRewrite(malformed,"rule","nil"),/Malformed rule/);
+
+ const invalid=new LinkGraph();
+ for(const id of ["nil","v","bad"])invalid.atom(id,id);
+ invalid.pair("body","bad","nil");invalid.pair("rule","nil","body");
+ assert.throws(()=>extractSingleImageRewrite(invalid,"rule","nil"),/Invalid rule list/);
+
+ const cyclic=new LinkGraph();
+ for(const id of ["nil","v"])cyclic.atom(id,id);
+ cyclic.pair("cycle","v","cycle");cyclic.pair("body","cycle","nil");
+ cyclic.pair("rule","nil","body");
+ assert.throws(()=>extractSingleImageRewrite(cyclic,"rule","nil"),/Cyclic rule list/);
+
+ const nonOne=makeRewriteFixture();
+ const original=extractSingleImageRewrite(nonOne.g,nonOne.rule,"nil");
+ const lhs=nonOne.g.makeList([original.lhs,original.lhs],"nil");
+ const body=nonOne.g.makeDerived(lhs,nonOne.g.makeList([original.rhs],"nil"));
+ const vars=nonOne.g.makeList(original.variables,"nil");
+ const rule=nonOne.g.makeDerived(vars,body);
+ assert.throws(()=>extractSingleImageRewrite(nonOne.g,rule,"nil"),/Expected 1-to-1 rewrite/);
+
+ const bounded=new LinkGraph();
+ for(const id of ["nil","v","rhs"])bounded.atom(id,id);
+ const long=bounded.makeList(Array(1001).fill("v"),"nil");
+ const rhs=bounded.makeList(["rhs"],"nil");
+ const body2=bounded.makeDerived(long,rhs);
+ const vars2=bounded.makeList(["v"],"nil");
+ const rule2=bounded.makeDerived(vars2,body2);
+ assert.throws(()=>extractSingleImageRewrite(bounded,rule2,"nil"),/Rule list budget/);
+});
+
 test("native accepted FORMAL JSON bare-entry null and arrays are not this transport",()=>{
  // Accepted anum_docs/formal/v0.15/regression/grounded-zero-role.json uses
  // GroundImage:["GroundOutput"] and "Theory->GroundRule":null.

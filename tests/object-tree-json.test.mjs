@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
+import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {test} from "node:test";
 import {DatabaseSync} from "node:sqlite";
 import {LinkGraph} from "../experiments/inference-v0.mjs";
 import {loadRows,counterMismatches} from "../src/store.mjs";
-import {exportObjectTree,serializeObjectTree,importObjectTree,parseStrictJson,FORMAT}
-  from "../experiments/object-tree-json-v0.mjs";
+import {exportObjectTree,serializeObjectTree,importObjectTree,parseStrictJson,FORMAT,
+  makeMamaObjectTreeExample} from "../experiments/object-tree-json-v0.mjs";
 
 function fixture(){
  const g=new LinkGraph();
@@ -74,8 +75,11 @@ test("strict byte-for-byte canonical JSON export -> import -> export",()=>{
  assert.equal(dag.weight,.75);
 });
 
-test("example file can be independently imported and fully restored",()=>{
- const text=readFileSync(new URL("../experiments/fixtures/mama-object-tree.json",import.meta.url),"utf8");
+test("generated canonical example matches frozen historical bytes and fully restores",()=>{
+ const text=makeMamaObjectTreeExample();
+ assert.equal(Buffer.byteLength(text,"utf8"),1137);
+ assert.equal(createHash("sha256").update(text,"utf8").digest("hex"),
+  "bcf47518715051acdfacc5586b645cb37fdc325b5d72430dc11891f07d713137");
  const restore=importObjectTree(text);
  const doc=restore.canonical;
  assert.equal(selectedSymbols(doc,"text"),"мама");

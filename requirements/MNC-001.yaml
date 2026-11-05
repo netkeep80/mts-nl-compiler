@@ -2,8 +2,6 @@ id: MNC-001
 artifacts:
   - path: README.md
     relations: [requires, documents]
-  - path: docs/architecture.md
-    relations: [requires, documents]
   - path: db/schema.sql
     relations: [requires, implements]
   - path: data/links.json
@@ -14,18 +12,10 @@ artifacts:
     relations: [requires, implements]
   - path: corpus/pilot.json
     relations: [requires]
-  - path: corpus/wikimedia-sources.json
-    relations: [requires]
-  - path: tests/corpus-sources.test.mjs
-    relations: [requires, verifies]
   - path: experiments/object-tree-json-v0.mjs
     relations: [requires, implements]
   - path: tests/object-tree-json.test.mjs
     relations: [requires, verifies]
-  - path: experiments/fixtures/mama-object-tree.json
-    relations: [requires]
-  - path: experiments/OBJECT_TREE_JSON.md
-    relations: [requires, documents]
   - path: experiments/native-exact-sequence-bridge-v0.mjs
     relations: [requires, implements]
   - path: experiments/FORMAL_BRIDGE.md

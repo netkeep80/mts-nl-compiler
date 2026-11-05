@@ -1,12 +1,11 @@
 // Runs ONLY with real pinned accepted anum_docs v0.15 as a separate CI step.
 // This tests an explicit metadata registry, NOT native semantic Link identity.
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {pathToFileURL} from "node:url";
 import {LinkGraph} from "../experiments/inference-v0.mjs";
 import {makeRewriteFixture,evaluateRewrite} from "../experiments/compression-implication-v0.mjs";
-import {serializeObjectTree,importObjectTree}
+import {serializeObjectTree,importObjectTree,makeMamaObjectTreeExample}
  from "../experiments/object-tree-json-v0.mjs";
 import {createNativeRegistry,readNativeRegistry,compareRowsExactly}
  from "../experiments/native-graph-registry-v0.mjs";
@@ -24,7 +23,7 @@ const api={materializeV012StringAnum:strings.materializeV012StringAnum,
  readExactSequence:sequences.readExactSequence};
 const newMemory=()=>{const memory=new Memory();
  return {memory,basis:ensureRootBasis(memory)};};
-const fixture=readFileSync(new URL("../experiments/fixtures/mama-object-tree.json",import.meta.url),"utf8");
+const fixture=makeMamaObjectTreeExample();
 const loaded=importObjectTree(fixture);
 {
  const {memory,basis}=newMemory();

@@ -1,0 +1,24 @@
+format: repo-guard/requirement-v1
+id: MNC-RESEARCH-001
+normative: "### MNC-RESEARCH-001 — Preservation of explicit unaccepted research authority\n\n**MUST:** during the current M-B0 coexistence state, the repository preserves the legacy MNC-024, MNC-026, MNC-028 and MNC-030 records as explicit RESEARCH_UNACCEPTED evidence. Their presence, related research implementations, passing tests, compression results, inference candidates or retained artifacts MUST NOT by themselves become accepted MTS semantics, scientific truth or governance authority. This Requirement preserves authority status; it does not claim ownership of generic research implementation files."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "requirements/MNC-024.yaml"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "requirements/MNC-026.yaml"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "requirements/MNC-028.yaml"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "requirements/MNC-030.yaml"

@@ -1,0 +1,56 @@
+format: repo-guard/requirement-v1
+id: MNC-FORMAL-001
+normative: "### MNC-FORMAL-001 — Research-only FORMAL bridge boundary\n\n**MUST:** merged FORMAL/Graph/Gamma bridge surfaces remain explicitly experimental, use pinned upstream identities and executable differential/negative controls, preserve exact sequence and graph identity where claimed, and MUST NOT promote test-side Gamma behavior or research evidence into accepted MTS semantics or production semantic authority."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: ".github/workflows/formal-bridge.yml"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "experiments/native-exact-sequence-bridge-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "experiments/native-graph-registry-v0.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/native-exact-sequence-bridge.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/native-graph-registry.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/upstream-formal-v015.integration.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/upstream-graph-identity.integration.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/upstream-native-gamma.integration.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/upstream-weight-cascade.integration.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "experiments/FORMAL_BRIDGE.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "experiments/NATIVE_GRAPH_REGISTRY.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "experiments/WEIGHT_CASCADE.md"

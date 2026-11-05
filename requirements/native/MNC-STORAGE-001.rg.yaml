@@ -1,0 +1,68 @@
+format: repo-guard/requirement-v1
+id: MNC-STORAGE-001
+normative: "### MNC-STORAGE-001 — Canonical numeric Link storage and exact replay\n\n**MUST:** the accepted storage layer uses canonical SQLite integer Link identity with indexed poles and preserves exact graph/text replay across the numeric cutover and legacy bridge. Hashes may evidence artifact integrity but MUST NOT define physical Link identity. Storage tests must exercise schema, DAG replay, packed representation, numeric allocation and legacy migration without silently changing accepted MTS semantics."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "db/schema.sql"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "data/links.json"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/store.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/dag.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/packed-dag-e1.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/numeric-link-store-v1.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/numeric-legacy-bridge-v1.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/schema.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/dag.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/packed-dag-e1.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/numeric-link-store-v1.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/numeric-legacy-bridge-v1.test.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/numeric-canonical-cutover.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/numeric-legacy-migration-v1.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/numeric-link-storage-v1.md"

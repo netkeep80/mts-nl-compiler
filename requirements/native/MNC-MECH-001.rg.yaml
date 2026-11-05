@@ -1,0 +1,216 @@
+format: repo-guard/requirement-v1
+id: MNC-MECH-001
+normative: "### MNC-MECH-001 — Deterministic mechanical Link research\n\n**MUST:** accepted mechanical Link experiments preserve exact replay and deterministic comparison across grouping, frequency, incremental agenda, source-root, repair, alignment and physical-cost variants. Physical rows, active reachability, observed event counts and serialized bytes remain separate objectives, and mechanical compression/structure MUST NOT be presented as semantic understanding."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/w22c_sqlite_probe.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/w23d_sqlite_probe.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/content-stable-grouping-e3.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/incremental-source-root-e7.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/knowledge-snapshot-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/late-revision-e4.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/observed-pair-agenda-e5.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/observed-pair-grammar-e2.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/observed-phrase-numeric-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/pair-frequency-e2.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/real-stream-e6.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/universal-repair-ab-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/universal-repair-numeric-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/w22c-sqlite-regrouping-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/w22d0-pinned-front-pilot.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/w23-frequency-reference-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/w23-incremental-pair-agenda-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/w23d-marginal-link-cost-v0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/word-aligned-ab-v1.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/word-aligned-numeric-v0.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/incremental-source-root-e7-real.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/incremental-source-root-e7.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/knowledge-snapshot-v0.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/late-revision-e4.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/observed-pair-agenda-e5.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/observed-pair-grammar-e2.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/observed-phrase-numeric-v0.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/real-stream-e6.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/universal-repair-ab-v0.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/universal-repair-numeric-v0.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/w22c-sqlite-regrouping.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/w22d0-pinned-front-pilot.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/w23-frequency-reference.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/w23-incremental-pair-agenda.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/w23d-marginal-link-cost.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/word-aligned-ab-v1.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/word-aligned-numeric-v0.test.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/incremental-source-roots-e7-real.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/incremental-source-roots-e7.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/knowledge-snapshot-v0.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/late-revision-e4.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/observed-pair-agenda-e5.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/observed-phrase-numeric-v0.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/real-stream-e6.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/universal-repair-blind-v0.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/w22c_sqlite_regrouping.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/w22d0_pinned_front_pilot.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/w23_linksplatform_audit.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/w23c_incremental_pair_agenda.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/w23d_marginal_physical_link_cost.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/word-aligned-ab-v1.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/word-aligned-numeric-v0.md"

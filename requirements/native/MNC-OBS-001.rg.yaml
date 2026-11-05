@@ -1,0 +1,71 @@
+format: repo-guard/requirement-v1
+id: MNC-OBS-001
+normative: "### MNC-OBS-001 — Deterministic research observability and browser compiler\n\n**MUST:** accepted browser-facing research surfaces remain offline/static, deterministic, safe for arbitrary Unicode input, reproducible from pinned evidence, and explicit about the difference between structural Link metrics and scientific or semantic acceptance. Generated Observatory HTML must be reproducible from its builder, template and pinned run data."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "data/observatory/runs-v1.json"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/build_observatory.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/observatory-template.html"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "docs/compiler/app.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "docs/compiler/engine.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "docs/compiler/index.html"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "docs/compiler/window-oracle.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "docs/compiler/window-ui.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/observatory.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/web-compiler.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/web-window-context.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/web-window-oracle.test.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/observatory/README.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/compiler/README.md"
+  - source:
+      kind: artifact
+      path: "scripts/build_observatory.mjs"
+    predicates: [generates]
+    target:
+      kind: artifact
+      path: "docs/observatory/index.html"

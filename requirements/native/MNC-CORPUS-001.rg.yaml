@@ -1,0 +1,88 @@
+format: repo-guard/requirement-v1
+id: MNC-CORPUS-001
+normative: "### MNC-CORPUS-001 — Reproducible pinned corpus and measured import\n\n**MUST:** corpus experiments use explicit source/provenance manifests, deterministic import and reporting, exact replay and fail-closed validation. Large-corpus and real-corpus workflows must keep source identity, observed structural counts and physical storage metrics distinct from probability or semantic claims; original source texts are not silently republished as generated artifacts."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "corpus/large-books-v1.json"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "corpus/pilot.json"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "corpus/real-sources-e0.json"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "corpus/wikimedia-sources.json"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: ".github/workflows/large-corpus.yml"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: ".github/workflows/real-corpus-e0.yml"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/build-large-corpus.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/compile-real-corpus-e0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/corpus-top-report-v1.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/numeric-corpus-loader-v1.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/real-corpus-e0.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/sqlite-archive-metrics-e0.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/corpus-sources.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/corpus-top-report-v1.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/numeric-corpus-loader-v1.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/real-corpus-e0.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/sqlite-archive-metrics-e0.test.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/large-corpus-top100.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/numeric-corpus-import-metrics.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/real-corpus-e0.md"

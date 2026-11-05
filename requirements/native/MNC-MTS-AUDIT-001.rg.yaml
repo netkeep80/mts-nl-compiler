@@ -1,0 +1,40 @@
+format: repo-guard/requirement-v1
+id: MNC-MTS-AUDIT-001
+normative: "### MNC-MTS-AUDIT-001 — Read-only pinned MTS requirement projection and audit\n\n**MUST:** the integrated I0/I1 MTS audit remains read-only and pinned to exact upstream identities, distinguishes structural existence/freshness from execution evidence and semantic correctness, rejects candidate self-authorization, and does not create a second MTS authority, FORMAL bridge, Gamma engine or persistent integration contract."
+lifecycle:
+  accepted: true
+  current: true
+  published: false
+relations:
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/i0-mts-requirement-projection.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "src/i1-mts-requirement-audit.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/i0_mts_requirement_projection.mjs"
+  - predicates: [implemented_by]
+    target:
+      kind: artifact
+      path: "scripts/i1_mts_requirement_audit.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/i0-mts-requirement-projection.test.mjs"
+  - predicates: [verified_by]
+    target:
+      kind: artifact
+      path: "tests/i1-mts-requirement-audit.test.mjs"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/i0_mts_requirement_projection.md"
+  - predicates: [documents]
+    target:
+      kind: artifact
+      path: "docs/i1_mts_relation_audit.md"

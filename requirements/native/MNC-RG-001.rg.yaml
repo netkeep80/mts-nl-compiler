@@ -1,6 +1,6 @@
 format: repo-guard/requirement-v1
 id: MNC-RG-001
-normative: "### MNC-RG-001 — Immutable fail-closed repository governance\n\n**MUST:** pull-request governance invokes RepoGuard from an immutable exact Git commit in a blocking, fail-closed workflow. RepoGuard policy or causal closure is repository-governance evidence only and MUST NOT be presented as scientific acceptance, semantic correctness, or proof of compiler behavior. Changes to the RepoGuard consumer architecture are performed as explicit migration slices rather than silently changing governance meaning."
+normative: "### MNC-RG-001 — Immutable fail-closed repository governance\n\n**MUST:** pull-request governance invokes RepoGuard from an immutable exact Git commit in a blocking, fail-closed workflow. The active consumer's required authority inputs remain present until an explicitly authorized migration slice replaces them. RepoGuard policy or causal closure is repository-governance evidence only and MUST NOT be presented as scientific acceptance, semantic correctness, or proof of compiler behavior. Changes to the RepoGuard consumer architecture are explicit migration slices rather than silent governance reinterpretation."
 lifecycle:
   accepted: true
   current: true
@@ -22,3 +22,7 @@ relations:
     target:
       kind: artifact
       path: ".github/PULL_REQUEST_TEMPLATE.md"
+  - predicates: [requires]
+    target:
+      kind: artifact
+      path: "requirements/MNC-001.yaml"
